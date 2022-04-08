@@ -28,8 +28,10 @@
 
 
 
-    Rotisserie Chicken 2022         |          matt 2022
-    Designed and developed by Matt - full credits inside
+            Copyright 2022 ROTISSERIE CHICKEN
+              Designed and Developed by Matt
+
+
 
 
 
@@ -531,7 +533,7 @@ h6{
 }
 
 #CREDITS{
-  animation: marquee 80s linear infinite;
+  animation: marquee 88s linear infinite;
   animation-delay: var(--CREDITS_DELAY);
 }
 
@@ -4105,12 +4107,15 @@ canvas{
 </g>
 </svg>
 
-    <div id="CREDITS_STATIC_DIV" class="noselect">designed and developed by matt  •  <a style="color:var(--UI-live" class="chickenLink" tabindex="-1" href="https://rotisseriechicken.world/" target="_blank">rotisserie chicken</a></div>
+    <div id="CREDITS_STATIC_DIV" class="noselect">designed and developed by matt  •  <a style="color:var(--UI-live" class="chickenLink" tabindex="-1" href="https://rotisseriechicken.world/" target="_blank">Ⓒ <span id="CREDITS_CHICKEN_YEAR">2022</span> rotisserie chicken</a></div>
     <div id="CREDITS_ACCOMPANY_DIV"><div id="CREDITS" class="noselect">
 
 
          DEVELOPMENT CREDITS
 
+
+matt             ┅┅┅   <a tabindex="-1" href="https://github.com/rotisseriechicken" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">github / rotisseriechicken</a>
+                         DDLIVE
 
 KyoZM            ┅┅┅   <a tabindex="-1" href="https://github.com/lsaa" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">github / LSAA</a>
                          <a tabindex="-1" href="https://github.com/lsaa/ddstats-rust/releases" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">ddstats-rust</a>, local websocket data link,
@@ -4127,7 +4132,7 @@ xvlv             ┅┅┅   <a tabindex="-1" href="https://github.com/noahstolk
 vhs              ┅┅┅   <a tabindex="-1" href="https://github.com/alexwilkerson" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">github / AlexWilkerson</a>
                          <a tabindex="-1" href="https://ddstats.com/" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">ddstats.com</a>, ddstats live websocket
    
-chupacabra       ┅┅┅   <a tabindex="-1" href="https://github.com/spoertm/" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">github / Spoertm</a>
+Chupacabra       ┅┅┅   <a tabindex="-1" href="https://github.com/spoertm/" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">github / Spoertm</a>
                          clubber twitch integration, clubber API,
                          swarmer v2, swarmer API
 
@@ -4223,22 +4228,26 @@ Material Icons   ┅┅┅   <a href="https://fonts.google.com/icons" target="_b
                          <a href="https://github.com/google/material-design-icons/blob/master/LICENSE" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">Apache License 2.0</a>
                          generic iconography
 
-     TWITCH, the TWITCH Logo, and/or Glitch Logo are 
-trademarks of Twitch Interactive, Inc. or its affiliates.
+
+            Copyright <span id="CREDITSBODY_YEAR">2022</span> ROTISSERIE CHICKEN
+
+
+       TWITCH, the TWITCH Logo, and/or Glitch Logo are 
+  trademarks of Twitch Interactive, Inc. or its affiliates.
 
 
 
 
 
 
-             DDLIVE is a weightless service.
-    The only cost is 30 dollars a year for the domain.
-  It relies on the APIs and databases of ddinfo/ddstats.
+               DDLIVE is a weightless service.
+      The only cost is 30 dollars a year for the domain.
+    It relies on the APIs and databases of ddinfo/ddstats.
 
-               If you enjoy using DDLIVE,
-           PLEASE <a href="https://devildaggers.info/donations" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">DONATE TO DDINFO</a> + <a href="https://donorbox.org/ddstats-com" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">DDSTATS</a>!
+                 If you enjoy using DDLIVE,
+             PLEASE <a href="https://devildaggers.info/donations" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">DONATE TO DDINFO</a> + <a href="https://donorbox.org/ddstats-com" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">DDSTATS</a>!
 
-                      Thank you!  ♥
+                        Thank you!  ♥
 
 
 
@@ -7571,6 +7580,7 @@ function toggleCredits(){ // don't use this...?
 }
 
     function prepCredits(){
+      var thisYear = new Date().getUTCFullYear();
       document.getElementById('CREDITS').innerHTML = `
 
 
@@ -7596,6 +7606,8 @@ function toggleCredits(){ // don't use this...?
                   ██████████████████████████████████  ` + 'v' + VERSION + `  
                    █████████████████████████████████ ` + document.getElementById('CREDITS').innerHTML;
       document.getElementById('CREDITS').innerHTML = document.getElementById('CREDITS').innerHTML + document.getElementById('CREDITS').innerHTML;
+      document.getElementById('CREDITSBODY_YEAR').innerHTML = thisYear;
+      document.getElementById('CREDITS_CHICKEN_YEAR').innerHTML = thisYear;
     }
 
 
@@ -16005,29 +16017,31 @@ var language = {
       ntimeout = ntOverride;
     }
 
-    iziToast.show({
-        class: notifClass,
-        position: 'bottomLeft',
-        transitionIn: 'fadeInBottom',
-        transitionOut: 'fadeOutLeft',
-        theme: 'dark',
-        progressBarColor: progColor,
-        timeout: ntimeout,
-        icon: 'material-icons',
-        iconText: ntIcon,
-        image: ntImage,
+    try{
+      iziToast.show({
+          class: notifClass,
+          position: 'bottomLeft',
+          transitionIn: 'fadeInBottom',
+          transitionOut: 'fadeOutLeft',
+          theme: 'dark',
+          progressBarColor: progColor,
+          timeout: ntimeout,
+          icon: 'material-icons',
+          iconText: ntIcon,
+          image: ntImage,
 
-        title: notifTitle,
-        message: msg,
+          title: notifTitle,
+          message: msg,
 
-        buttons: reportButton,
+          buttons: reportButton,
 
-        onOpening: function(){
-            if(img != undefined){
-                // $('.iziToast-cover').siblings('.iziToast-body').css('margin-left','65px');
-            }
-        }
-    });
+          onOpening: function(){
+              if(img != undefined){
+                  // $('.iziToast-cover').siblings('.iziToast-body').css('margin-left','65px');
+              }
+          }
+      });
+    }catch(e){console.log('iziToast ERROR! This is probably because it is not defined...?',e)}
     if(notifClass == 'notifError'){
       drapeLogError(premsg);
     } else if(notifClass == 'notifError'){
