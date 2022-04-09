@@ -135,6 +135,8 @@ Use with ddstats-rust to use DDLIVE's features with Devil Daggers." property="og
     --coverOpacity: 1;
 
     --CREDITS_DELAY: -400000s;
+
+    --INSIGHT-COLLAPSED-DISPLAY: block;
 }
 ::-webkit-scrollbar{
   width: 0.5vh;
@@ -1887,6 +1889,7 @@ canvas{
 .insightLeftSection{
   width: 3.5vh;
   flex-shrink: 0;
+  flex-direction: column;
 
   display: flex;
   justify-content: center;
@@ -1902,7 +1905,8 @@ canvas{
 .insightBodyWrapper{
   padding: 0.75vh;
   padding-left: 0.7vh;
-  padding-bottom: 0.95vh;
+  padding-bottom: 1vh;
+  padding-right: 1.5vh;
 }
 
 .insightTitle{
@@ -1912,9 +1916,45 @@ canvas{
 .insightDescription{
   white-space: normal;
   padding-left: 0.1vh;
-  font-weight: 800;
+  /* font-weight: 800; */
   line-height: 1.05vh;
   padding-top: 0.2vh;
+  font-size: 1.2vh;
+
+  font-style: italic;
+
+  display: var(--INSIGHT-COLLAPSED-DISPLAY);
+}
+
+.insightDetails{
+}
+.insightDetail{
+  padding-top: 0.1vh;
+  font-weight: 1000;
+  font-size: 1.25vh;
+  display: inline-flex;
+}
+.insightDetailText{
+  padding-left: 0.5vh;
+  font-size: 1.325vh;
+}
+.insightOuterCircle{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background-color: rgba(0,0,0,0); /* oops don't need this */
+  width: 1.05vh;
+  height: 1.05vh;
+  border-radius: 100vw;
+
+  position: relative;
+  top: 0.15vh;
+}
+.insightInnerCircle{
+  width: 0.9vh;
+  height: 0.9vh;
+  border-radius: 100vw;
 }
 
 .insightActive{
@@ -4845,7 +4885,7 @@ paginateLeaderboard(PAGE_LEADERBOARD_MAX);">last_page</i><div id="LEADERBOARD_MI
                   </div>
                   <div id="GAMEPAGE_INFO" style="min-width:35vh;  display:block;margin-left:1.75vh;width:50vh;">
 
-                    <div class="gameItem" game_id="-1" game_page_game_item style="margin-top:0.5vh;position:relative;cursor:default;width:calc(100% - 3px);border-radius:2vh 2vh 0 0;background-color:var(--UI-foretext);color:var(--BGFill) !important;"><div class="gamerName" style="font-size:3.25vh;margin-left:3.15vh;z-index:9999;color:var(--BGFill) !important;top:0.0575vh;"><span style="font-weight:800;"></span>Loading...</div><div class="gamerStats" style="padding-left:0px;color:var(--BGFill) !important;"> <br> </div><div class="gameButtonWrapper" style="left:calc(1px + 0vh + 0.275vh) !important;width:calc(100% - 0.3vh);justify-content:right;">
+                    <div class="gameItem" game_id="-1" game_page_game_item style="margin-top:0.5vh;position:relative;cursor:default;width:calc(100% - 3px);border-radius:2vh 2vh 0 0;background-color:var(--UI-foretext);color:var(--BGFill) !important;"><div class="gamerName" style="font-size:3.25vh;margin-left:2.725vh;z-index:9999;color:var(--BGFill) !important;top:0.0575vh;"><span style="font-weight:800;"></span>Loading...</div><div class="gamerStats" style="padding-left:0px;color:var(--BGFill) !important;"> <br> </div><div class="gameButtonWrapper" style="left:calc(1px + 0vh + 0.275vh) !important;width:calc(100% - 0.3vh);justify-content:right;">
 
                     <div class="gameButton" onmouseenter="tooltip('returnToLeaderboard')" onmouseleave="tooltip('close')" onmousedown="page(3,0);" style="position:absolute;left:0;overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_backward</i></div></div>
 
@@ -12374,10 +12414,10 @@ var language = {
         if(CL_DATA.category == 5){
           pacString = '';
         }
-        return '<div class="gameItem" PLAYER_ID="' + DATA.playerId + '" CUSTOM_ENTRY_ID="' + DATA.id + '"><div class="gamerName"><span class="gamerNameSub">' + DATA.rank + ' · </span><span class="gamerActualName' + ifLiveClass + '">' + deEmojifiedPlayerName + '</span></div><div class="gamerStats">' + truncateDecimals(DATA.time,4) + 's, <span timestamp_item="' + (new Date(DATA.submitDate + 'Z').getTime()) + '">' + timeSince(new Date(DATA.submitDate + 'Z')) + '</span>  ‣  ' + deathText(DATA.deathType) + '<br>' + pacString + DATA.daggersFired + ' daggers fired' + /*, ' + DATA.enemies_alive + ' alive, ' + DATA.enemies_killed + ' kills*/ '</div><div class="gameButtonWrapper"><div class="gameButton" onmouseenter="tooltip(\'favoriteButton\')" onmouseleave="tooltip(\'close\')" onmousedown="alert(this.parentElement.parentElement.attributes.custom_entry_id.nodeValue + \' can be favorited (UNIMPLEMENTED TO-DO)\'); toggleFavoriteIcon(this);"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.9955vh;position:relative;right:0.295vh;line-height:0px;top:0.125vh;">favorite_border</i></div></div>' + /*<div class="gameButton" onmousedown="loadGame(this.parentElement.parentElement.attributes.custom_entry_id.nodeValue)"><div class="gameButtonInside" style="left: 0.95vh; top: 0.525vh;">L</div></div><div class="gameButton" onmousedown="loadGame(this.parentElement.parentElement.attributes.custom_entry_id.nodeValue,\'R\')"><div class="gameButtonInside" style="left: 0.89vh; top: 0.525vh;">R</div></div> */ REPLAY_BUTTON_DATA + '</div><div class="gameItemBackgroundClickbox" onmouseenter="tooltip(\'viewDDCLGame\')" onmouseleave="tooltip(\'close\')" onmousedown="alert(this.parentElement.attributes.custom_entry_id.nodeValue + \' loadable into right side of recents or myGames (UNIMPLEMENTED TO-DO)\')"></div></div>';
+        return '<div class="gameItem" PLAYER_ID="' + DATA.playerId + '" CUSTOM_ENTRY_ID="' + DATA.id + '"><div class="gamerName"><span class="gamerNameSub">' + DATA.rank + ' · </span><span class="gamerActualName' + ifLiveClass + '">' + deEmojifiedPlayerName + '</span></div><div class="gamerStats">' + truncateDecimals(DATA.time,4) + 's, <span timestamp_item="' + (new Date(DATA.submitDate + 'Z').getTime()) + '">' + timeSince(new Date(DATA.submitDate + 'Z')) + '</span>  ‣  ' + deathText(DATA.deathType) + '<br>' + pacString + DATA.daggersFired + ' daggers fired' + /*, ' + DATA.enemies_alive + ' alive, ' + DATA.enemies_killed + ' kills*/ '</div><div class="gameButtonWrapper">' + /* <div class="gameButton" onmouseenter="tooltip(\'favoriteButton\')" onmouseleave="tooltip(\'close\')" onmousedown="alert(this.parentElement.parentElement.attributes.custom_entry_id.nodeValue + \' can be favorited (UNIMPLEMENTED TO-DO)\'); toggleFavoriteIcon(this);"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.9955vh;position:relative;right:0.295vh;line-height:0px;top:0.125vh;">favorite_border</i></div></div>' + /*<div class="gameButton" onmousedown="loadGame(this.parentElement.parentElement.attributes.custom_entry_id.nodeValue)"><div class="gameButtonInside" style="left: 0.95vh; top: 0.525vh;">L</div></div><div class="gameButton" onmousedown="loadGame(this.parentElement.parentElement.attributes.custom_entry_id.nodeValue,\'R\')"><div class="gameButtonInside" style="left: 0.89vh; top: 0.525vh;">R</div></div> */ REPLAY_BUTTON_DATA + '</div><div class="gameItemBackgroundClickbox" onmouseenter="tooltip(\'viewDDCLGame\')" onmouseleave="tooltip(\'close\')" onmousedown="alert(this.parentElement.attributes.custom_entry_id.nodeValue + \' loadable into right side of recents or myGames (UNIMPLEMENTED TO-DO)\')"></div></div>';
       } else {
         //  Not pacifist
-        return '<div class="gameItem" PLAYER_ID="' + DATA.playerId + '" CUSTOM_ENTRY_ID="' + DATA.id + '"><div class="gamerName"><span class="gamerNameSub">' + DATA.rank + ' · </span><span class="gamerActualName' + ifLiveClass + '">' + deEmojifiedPlayerName + '</span></div><div class="gamerStats">' + truncateDecimals(DATA.time,4) + 's, <span timestamp_item="' + (new Date(DATA.submitDate + 'Z').getTime()) + '">' + timeSince(new Date(DATA.submitDate + 'Z')) + '</span>  ‣  ' + deathText(DATA.deathType) + ', ' + DATA.gemsCollected + ' gems, ' + DATA.gemsDespawned + ' despawned, ' + DATA.gemsEaten + ' eaten<br>' + DATA.homingStored + ' homing, ' + DATA.homingEaten + ' eaten, ' + DATA.enemiesKilled + ' kills, ' + DATA.enemiesAlive + ' alive, ' + truncateDecimals((DATA.daggersHit / DATA.daggersFired)*100,2) + '% acc (' + DATA.daggersHit + '/' + DATA.daggersFired + ')' + /*, ' + DATA.enemies_alive + ' alive, ' + DATA.enemies_killed + ' kills*/ '</div><div class="gameButtonWrapper"><div class="gameButton" onmouseenter="tooltip(\'favoriteButton\')" onmouseleave="tooltip(\'close\')" onmousedown="alert(this.parentElement.parentElement.attributes.custom_entry_id.nodeValue + \' can be favorited (UNIMPLEMENTED TO-DO)\'); toggleFavoriteIcon(this);"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.9955vh;position:relative;right:0.295vh;line-height:0px;top:0.125vh;">favorite_border</i></div></div>' + /*<div class="gameButton" onmousedown="loadGame(this.parentElement.parentElement.attributes.custom_entry_id.nodeValue)"><div class="gameButtonInside" style="left: 0.95vh; top: 0.525vh;">L</div></div><div class="gameButton" onmousedown="loadGame(this.parentElement.parentElement.attributes.custom_entry_id.nodeValue,\'R\')"><div class="gameButtonInside" style="left: 0.89vh; top: 0.525vh;">R</div></div> */ REPLAY_BUTTON_DATA + '</div><div class="gameItemBackgroundClickbox" onmouseenter="tooltip(\'viewDDCLGame\')" onmouseleave="tooltip(\'close\')" onmousedown="alert(this.parentElement.attributes.custom_entry_id.nodeValue + \' loadable into right side of recents or myGames (UNIMPLEMENTED TO-DO)\')"></div></div>';
+        return '<div class="gameItem" PLAYER_ID="' + DATA.playerId + '" CUSTOM_ENTRY_ID="' + DATA.id + '"><div class="gamerName"><span class="gamerNameSub">' + DATA.rank + ' · </span><span class="gamerActualName' + ifLiveClass + '">' + deEmojifiedPlayerName + '</span></div><div class="gamerStats">' + truncateDecimals(DATA.time,4) + 's, <span timestamp_item="' + (new Date(DATA.submitDate + 'Z').getTime()) + '">' + timeSince(new Date(DATA.submitDate + 'Z')) + '</span>  ‣  ' + deathText(DATA.deathType) + ', ' + DATA.gemsCollected + ' gems, ' + DATA.gemsDespawned + ' despawned, ' + DATA.gemsEaten + ' eaten<br>' + DATA.homingStored + ' homing, ' + DATA.homingEaten + ' eaten, ' + DATA.enemiesKilled + ' kills, ' + DATA.enemiesAlive + ' alive, ' + truncateDecimals((DATA.daggersHit / DATA.daggersFired)*100,2) + '% acc (' + DATA.daggersHit + '/' + DATA.daggersFired + ')' + /*, ' + DATA.enemies_alive + ' alive, ' + DATA.enemies_killed + ' kills*/ '</div><div class="gameButtonWrapper">' + /* <div class="gameButton" onmouseenter="tooltip(\'favoriteButton\')" onmouseleave="tooltip(\'close\')" onmousedown="alert(this.parentElement.parentElement.attributes.custom_entry_id.nodeValue + \' can be favorited (UNIMPLEMENTED TO-DO)\'); toggleFavoriteIcon(this);"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.9955vh;position:relative;right:0.295vh;line-height:0px;top:0.125vh;">favorite_border</i></div></div>' + /*<div class="gameButton" onmousedown="loadGame(this.parentElement.parentElement.attributes.custom_entry_id.nodeValue)"><div class="gameButtonInside" style="left: 0.95vh; top: 0.525vh;">L</div></div><div class="gameButton" onmousedown="loadGame(this.parentElement.parentElement.attributes.custom_entry_id.nodeValue,\'R\')"><div class="gameButtonInside" style="left: 0.89vh; top: 0.525vh;">R</div></div> */ REPLAY_BUTTON_DATA + '</div><div class="gameItemBackgroundClickbox" onmouseenter="tooltip(\'viewDDCLGame\')" onmouseleave="tooltip(\'close\')" onmousedown="alert(this.parentElement.attributes.custom_entry_id.nodeValue + \' loadable into right side of recents or myGames (UNIMPLEMENTED TO-DO)\')"></div></div>';
       }
         //  "VISIBILITY" should be LOADING, and then ANOTHER FUNCTION should take care of
         //    CHECKING if REPLAY is present for GIVEN GAME IDs in THIS PAGE based on the IDS in elements
@@ -12530,7 +12570,7 @@ var language = {
         ifLiveClass = ' currentlyLive';
       }
 
-      return '<div class="gameItem" GAME_ID="' + DATA.id + '" PLAYER_ID="' + DATA.player_id + '"><div class="gamerName"><span class="gamerActualName' + ifLiveClass + '">' + deEmojifiedPlayerName + '</span></div><div class="gamerStats">' + DATA.game_time + 's  ‣  ' + DATA.spawnset + ', <span timestamp_item="' + (new Date(DATA.time_stamp).getTime()) + '">' + timeSince(new Date(DATA.time_stamp)) + '</span>' + homingParser + '<br>' + DATA.gems + ' gems, ' + DATA.accuracy + '% acc, ' + DATA.enemies_alive + ' alive, ' + DATA.enemies_killed + ' kills</div><div class="gameButtonWrapper"><div class="gameButton" onmouseenter="tooltip(\'favoriteButton\')" onmouseleave="tooltip(\'close\')" onmousedown="alert(this.parentElement.parentElement.attributes.game_id.nodeValue + \' can be favorited (UNIMPLEMENTED TO-DO)\'); toggleFavoriteIcon(this);"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.9955vh;position:relative;right:0.295vh;line-height:0px;top:0.125vh;">favorite_border</i></div></div><div class="gameButton" onmouseenter="tooltip(\'loadLeft\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue)"><div class="gameButtonInside" style="left: 0.95vh;">L</div></div><div class="gameButton" onmouseenter="tooltip(\'loadRight\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue,\'R\')"><div class="gameButtonInside" style="left: 0.89vh;">R</div></div><div REPLAY_BUTTON onmouseenter="tooltip(\'replayButton\')" onmouseleave="tooltip(\'close\')" class="gameButton gameButtonUnclickable gameButtonLoading" onclick="alert(\'Replay presence is still resolving! Please wait...\',\'warning\')"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.275vh;line-height:0px;">autorenew</i></div></div></div><div class="gameItemBackgroundClickbox" onmouseenter="tooltip(\'viewDDStatsGame\')" onmouseleave="tooltip(\'close\')" onmousedown="paginateGame(' + DATA.id + ')"></div></div>';
+      return '<div class="gameItem" GAME_ID="' + DATA.id + '" PLAYER_ID="' + DATA.player_id + '"><div class="gamerName"><span class="gamerActualName' + ifLiveClass + '">' + deEmojifiedPlayerName + '</span></div><div class="gamerStats">' + DATA.game_time + 's  ‣  ' + DATA.spawnset + ', <span timestamp_item="' + (new Date(DATA.time_stamp).getTime()) + '">' + timeSince(new Date(DATA.time_stamp)) + '</span>' + homingParser + '<br>' + DATA.gems + ' gems, ' + DATA.accuracy + '% acc, ' + DATA.enemies_alive + ' alive, ' + DATA.enemies_killed + ' kills</div><div class="gameButtonWrapper">' + /*<div class="gameButton" onmouseenter="tooltip(\'favoriteButton\')" onmouseleave="tooltip(\'close\')" onmousedown="alert(this.parentElement.parentElement.attributes.game_id.nodeValue + \' can be favorited (UNIMPLEMENTED TO-DO)\'); toggleFavoriteIcon(this);"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.9955vh;position:relative;right:0.295vh;line-height:0px;top:0.125vh;">favorite_border</i></div></div>*/ '<div class="gameButton" onmouseenter="tooltip(\'loadLeft\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue)"><div class="gameButtonInside" style="left: 0.95vh;">L</div></div><div class="gameButton" onmouseenter="tooltip(\'loadRight\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue,\'R\')"><div class="gameButtonInside" style="left: 0.89vh;">R</div></div><div REPLAY_BUTTON onmouseenter="tooltip(\'replayButton\')" onmouseleave="tooltip(\'close\')" class="gameButton gameButtonUnclickable gameButtonLoading" onclick="alert(\'Replay presence is still resolving! Please wait...\',\'warning\')"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.275vh;line-height:0px;">autorenew</i></div></div></div><div class="gameItemBackgroundClickbox" onmouseenter="tooltip(\'viewDDStatsGame\')" onmouseleave="tooltip(\'close\')" onmousedown="paginateGame(' + DATA.id + ')"></div></div>';
         //  "VISIBILITY" should be LOADING, and then ANOTHER FUNCTION should take care of
         //    CHECKING if REPLAY is present for GIVEN GAME IDs in THIS PAGE based on the IDS in elements
 
@@ -14862,7 +14902,6 @@ var language = {
           }
         }
 
-
         //  UNIQUE GAME ID RETURNED BY SERVER ON RETRIEVE OR GAME COMMIT
         Incubation_Block.block.DDSTATS_GAME_ID = DDSTATS_JSON.game_info.id;
 
@@ -14883,23 +14922,6 @@ var language = {
             Incubation_Block.frames.push(FRAME_OBJECT);
         }
 
-        //  Clean all undefined values and set them as values
-        /*
-        for(var prop in Incubation_Block.block){
-            if (Object.prototype.hasOwnProperty.call(Incubation_Block.block, prop)) {
-                prop = 0;
-            }
-        }
-        
-        //  alt programmatic attempt
-        Object.entries(Incubation_Block.block).forEach(([key, value]) => function(){
-          if(value == undefined){
-            value = 0;
-          }
-        });
-
-        */
-
         // manual it is then fucker... ill be back for you you fucking cunt bitch fhdgjsg;ljksadgk
         if(Incubation_Block.block.daggers_eaten == undefined){
           Incubation_Block.block.daggers_eaten = 0;
@@ -14910,9 +14932,6 @@ var language = {
         if(Incubation_Block.block.gems_eaten == undefined){
           Incubation_Block.block.gems_eaten = 0;
         }
-
-
-
 
         //  Spawnset MD5 cleaner
         if(Incubation_Block.block.survival_md5 == 'v3'){
@@ -14930,10 +14949,6 @@ var language = {
             Incubation_Block.block.starting_hand = 1;
         }
         
-
-        // = DDSTATS_JSON.game_info.
-        
-
         return Incubation_Block;
     }
 
@@ -15018,7 +15033,13 @@ var language = {
       var HOMING_USED_LAST = 0;
       var CACHED_HOMING_USED = 0;
       var PUSHED_LIVE_SPLIT = false;
+      var LIVE_SPLIT_DONE = false;
       var LIVE_SPLIT_DETERMINE_STRING = 'LIVE_SPLIT';
+
+      var splitNums = [];
+      for(i=0;i<SPLITS_TARGET.length;i++){
+          splitNums.push(SPLITS_TARGET[i][1]);
+      }
 
       for(i=0; i<SPLITS_TARGET.length; i++){
         var SplitElement = SPLITS_TARGET[i];
@@ -15083,6 +15104,74 @@ var language = {
             [Ltotal,homingCalc,gemCalc,LSPLIT_leftHomingUsed,liveSplitFlag,SPLITS_TARGET[i][1]]
           );
           //  [ homing total, homing split, gems collected, homing used , live split flag, time]
+        } else {
+          //  this is not a comparator model, so apply the live split as well
+
+          if(LIVE_SPLIT_DONE == false){
+
+          var L_LastFrame; // = DD_LEFT_GAME.frames.at(-1);
+          if(L_LastFrame == undefined){
+            L_LastFrame = GAME_OBJECT.frames.length-1;
+          }
+
+          var L_CLOSEST_FLOORED_SPLIT = closest(splitNums,(L_LastFrame + Math.floor(GAME_OBJECT.block.starting_time)),2);
+          var L_PREVIOUS_CLOSEST_SPLIT_INDEX = (splitNums.indexOf(L_CLOSEST_FLOORED_SPLIT))-1;
+          var L_DOES_AN_IN_PROGRESS_SPLIT_EXIST = (L_LastFrame > L_CLOSEST_FLOORED_SPLIT);
+          var L_PROGRESS_SPLIT_ALREADY_LOGGED = false;
+
+              var LSPLIT_leftHomingOffset = 0;
+              var LSPLIT_lvl3OffsetL = 0;
+              var LSPLIT_leftHomingUsed;
+              var Ltotal = 'BU';
+
+              var homingCalc;
+              var gemCalc;
+
+              var splitCalc;
+
+
+              if(GAME_OBJECT.frames[L_LastFrame] != undefined){
+                  var prevHoming = 0;
+                  var prevGems = 0;
+                  var prevUse = 0;
+                  if(i != 0 && GAME_OBJECT.frames[SPLITS_TARGET[L_PREVIOUS_CLOSEST_SPLIT_INDEX+1][1] - Math.floor(GAME_OBJECT.block.starting_time)] != undefined){
+                      prevHoming = GAME_OBJECT.frames[SPLITS_TARGET[L_PREVIOUS_CLOSEST_SPLIT_INDEX+1][1] - Math.floor(GAME_OBJECT.block.starting_time)].homing;
+                      prevGems = GAME_OBJECT.frames[SPLITS_TARGET[L_PREVIOUS_CLOSEST_SPLIT_INDEX+1][1] - Math.floor(GAME_OBJECT.block.starting_time)].gems_collected;
+                  } else if(GAME_OBJECT.block.starting_time < GAME_OBJECT.frames[SPLITS_TARGET[0][1]]){
+                      prevHoming = BASELINE_GEMS_AT_LEVI;
+                  } else if(i == 0){
+                      prevHoming = BASELINE_GEMS_AT_LEVI;
+                  } else {
+                      prevHoming = GAME_OBJECT.block.starting_homing;
+                  }
+                  homingCalc = (GAME_OBJECT.frames.at(-1).homing - prevHoming);
+                  gemCalc = Math.abs((GAME_OBJECT.frames.at(-1).gems_collected - prevGems));
+                  //  PER SEGMENT USE CALCULATOR
+                  if((GAME_OBJECT.block.time_lvl4 == 0 || GAME_OBJECT.block.time_lvl4 == undefined) && (GAME_OBJECT.block.time_lvl3 == 0 || GAME_OBJECT.block.time_lvl3 == undefined) && GAME_OBJECT.block.starting_hand != 3 && GAME_OBJECT.block.starting_hand != 4){
+                      LSPLIT_leftHomingUsed = 0;
+                  } else { // it shouldn't be THAT easy
+
+                  var startingOffset = 0;
+                  if(GAME_OBJECT.block.time_lvl3 != 0){
+                      startingOffset = 70;
+                  } 
+                  if(GAME_OBJECT.block.time_lvl3 != 0 && GAME_OBJECT.block.time_lvl4 != 0){
+                      startingOffset = 220;
+                  }
+                      LSPLIT_leftHomingUsed = GAME_OBJECT.frames.at(-1).gems_collected - startingOffset - (GAME_OBJECT.frames.at(-1).homing - GAME_OBJECT.block.starting_homing) - CACHED_HOMING_USED;
+                      CACHED_HOMING_USED = CACHED_HOMING_USED + LSPLIT_leftHomingUsed;
+
+                  }
+                  var useCalc = LSPLIT_leftHomingUsed.toString();
+                  Ltotal = GAME_OBJECT.frames.at(-1).homing;
+                  splitCalc = Ltotal.toString().padEnd(5,' ') + '(' + signer(homingCalc,true).padEnd(4,' ') + ') [' + gemCalc.toString().padEnd(3,' ') + '-' + useCalc.padEnd(3,' ') + ']  ';
+              }
+
+              SPLITCOMP.push([Ltotal,homingCalc,gemCalc,LSPLIT_leftHomingUsed,true,DD_LEFT_GAME.block.time]);
+              //  [ homing total, homing split, gems collected, homing used , ALWAYS LIVE SPLIT, frame]
+              LIVE_SPLIT_DONE = true;
+
+          }
         }
       }
       if(COMPARATOR != undefined){
@@ -15355,7 +15444,7 @@ var language = {
           //  browser building
           L_REF.innerHTML = '';
           S_REF.innerHTML = GAME_OBJECT.block.replay_player_name+'<br>'+(GAME_OBJECT.block.time+GAME_OBJECT.block.starting_time);
-          buildInsightDetailsList(GAME_INSIGHTS);
+          buildInsightList(GAME_INSIGHTS);
 
           //  set titles and widths
           document.getElementById('GAMES_SUBNAVIGATOR_TEXT').innerHTML = GAME_OBJECT.block.DDSTATS_GAME_ID;
@@ -15384,16 +15473,18 @@ var language = {
       // alert(INSIGHT_OBJECT.insightTitle);
     }
 
-    function insight(insightText,color,time,parent_array,parent_organized_array,label_if_any,insight_category,wave_data,insightDescription,  override_categorical,return_instead){
+    function insight(insightText,color,time,parent_array,parent_organized_array,label_if_any,insight_category,wave_data,insightDescription,ins_details,icon,  override_categorical,return_instead){
       var labelFlag = false;
       if(label_if_any != undefined){
         labelFlag = true;
       }
+
       var returnedInsight = {
           madeWithVersion: VERSION,
           index: DD_INS_IND_CACHE,
 
           time: time,
+          icon: icon, // material icons name
           colorType: color, // not the literal color, rather a string of the color variable
           borderWidth: 4,
           borderDash: [4,5000],
@@ -15409,8 +15500,12 @@ var language = {
           insightCategory: insight_category, // Category (a la TOG_ID names)
           waveData: wave_data, // Wave data for this time,
 
+          //  insight details are [symbol or color, text], each, in descending order. 
+          //  ins_details = [[1,2],[1,2]]
+          insight_details: ins_details,
 
         };
+
       DD_INS_IND_CACHE++; // iterate index
       if(return_instead == undefined){
         parent_array.push(returnedInsight);
@@ -15426,6 +15521,8 @@ var language = {
 
         var INSIGHTS = []; // All insights, ordered by final determined priority
         var ORGANIZED_INSIGHTS = []; // Insights organized by time occurred (for chart hover interactions)
+        var GAME_SPLITS = getSplits(GAME_OBJECT); // This run's splits, for reference throughout Insights
+
         DD_INS_IND_CACHE = 0; // reset index cache
         var L_REF = document.querySelector('#GAMEPAGE_INFO .gameItem .gamerName');
 
@@ -15477,14 +15574,14 @@ var language = {
                 if(i < 800){ // before 800
                   if((GAME_OBJECT.frames[i].daggers_hit / GAME_OBJECT.frames[i].daggers_fired) * 100 > ((GAME_OBJECT.frames[i+5].daggers_hit / GAME_OBJECT.frames[i+5].daggers_fired) * 100) + 0.75  && accuracyFramesSince > 4){
                     var acc_loss_here = truncateDecimals(((GAME_OBJECT.frames[i].daggers_hit / GAME_OBJECT.frames[i].daggers_fired) * 100) - (((GAME_OBJECT.frames[i+5].daggers_hit / GAME_OBJECT.frames[i+5].daggers_fired) * 100)),2);
-                    insight('Early Loop Accuracy Loss: -'+acc_loss_here+'%','ui_accuracy',i,INSIGHTS,ORGANIZED_INSIGHTS,'A','accuracy',waveData,'Accuracy loss from Orb to 800 is normal, but drops of 0.75% or more in 5 seconds is likely an issue with clearing habits.');
+                    insight('Early Loop Accuracy Loss','ui_accuracy',i,INSIGHTS,ORGANIZED_INSIGHTS,'A','accuracy',waveData,'Accuracy loss from Orb to 800 is normal, but quick drops are likely an issue with clearing habits.',[['var(--UI-goodsplit)','Expected Accuracy Loss: < 0.75%'],['var(--UI-badsplit)',"Accuracy Loss: "+acc_loss_here+"%"]],'location_disabled');
                     accuracyFramesSince = 0;
                     //  Accuracy loss after orb is normal, but accuracy should be lost smoothly over time due to spraying skulls being less accurate than teching orb; Could be teching air here.
                   }
                 } else if(i >= 800){ // 800 and above
                   if((GAME_OBJECT.frames[i].daggers_hit / GAME_OBJECT.frames[i].daggers_fired) * 100 > ((GAME_OBJECT.frames[i+5].daggers_hit / GAME_OBJECT.frames[i+5].daggers_fired) * 100) + 0.2  && accuracyFramesSince > 4){
                     var acc_loss_here = truncateDecimals(((GAME_OBJECT.frames[i].daggers_hit / GAME_OBJECT.frames[i].daggers_fired) * 100) - (((GAME_OBJECT.frames[i+5].daggers_hit / GAME_OBJECT.frames[i+5].daggers_fired) * 100)),2);
-                    insight('Late Loop Accuracy Loss: -'+acc_loss_here+'%','ui_accuracy',i,INSIGHTS,ORGANIZED_INSIGHTS,'A','accuracy',waveData,'Missing shots from 800 onward directly correlates to needing more homing to stay on pace.');
+                    insight('Late Loop Accuracy Loss','ui_accuracy',i,INSIGHTS,ORGANIZED_INSIGHTS,'A','accuracy',waveData,'Missing shots from 800 onward directly correlates to needing more homing to stay on pace.',[['var(--UI-goodsplit)','Expected Accuracy Loss: < 0.2%'],['var(--UI-badsplit)',"Accuracy Loss: "+acc_loss_here+"%"]],'location_disabled');
                     accuracyFramesSince = 0;
                     // alert('Spuggy');
                     //  Accuracy loss after 800 is abnormal, and is a serious problem; Teching air here should be dealt with.
@@ -15506,21 +15603,26 @@ var language = {
                 if(i <= 350 && homingUsedNow > Excessive_Early_Homing_Use){
                   //  DETECT MORE SPECIFICS ABOUT THIS RUN, AND SERVE DIFFERENT BASED ON:
                   //  - Was this run a farm? If so, serve the farm response.
-                  insight('Excessive Homing Use: '+homingUsedNow+'','ui_homing_used',i,INSIGHTS,ORGANIZED_INSIGHTS,'H','homing_used',waveData,'Using homing before gigapedes in a chaos farm, with intent to kill Squid 2s (2 gems per 1 homing for time efficiency), is viable in moderation; Using 10 or more homing, however, starts to enter likelihood of waste or farm negation.');
+                  insight('Excessive Homing Use','ui_homing_used',i,INSIGHTS,ORGANIZED_INSIGHTS,'H','homing_used',waveData,'Using homing before gigapedes in a chaos farm, with intent to kill Squid 2s (2 gems per 1 homing for time efficiency), is viable in moderation; Using 10 or more homing, however, starts to enter likelihood of waste or farm negation.',[['var(--UI-goodsplit)','Expected Homing Use Here: < ' + Excessive_Early_Homing_Use],['var(--UI-badsplit)',"Homing Use Here: "+homingUsedNow+" ("+signer((homingUsedNow - Excessive_Early_Homing_Use))+")"]],'trending_down');
                   //  - If not, serve a priority-scaled warning that using homing when skulls are up
                   //    does not target squids; detect enemies alive to calcualte this, but also mention
                   //    that using homing to stay alive is better than not using it at all.
 
                 } else if(i <= 700 && homingUsedNow > Excessive_350_Plus_Homing_Use){
-                  insight('Excessive Homing Use: '+homingUsedNow+'','ui_homing_used',i,INSIGHTS,ORGANIZED_INSIGHTS,'H','homing_used',waveData,'A Scannered 15 homing spray will clear almost any Levi and Post-Orb.');
+                  insight('Excessive Homing Use','ui_homing_used',i,INSIGHTS,ORGANIZED_INSIGHTS,'H','homing_used',waveData,'A Scannered 15 homing spray will clear almost any Levi, Post-Orb, and early loop wave.',[['var(--UI-goodsplit)','Expected Homing Use Here: < ' + Excessive_350_Plus_Homing_Use],['var(--UI-badsplit)',"Homing Use Here: "+homingUsedNow+" ("+signer((homingUsedNow - Excessive_350_Plus_Homing_Use))+")"]],'trending_down');
+
                 } else if(i <= 800 && homingUsedNow > Excessive_700_Plus_Homing_Use){
-                  insight('Excessive Homing Use: '+homingUsedNow+'','ui_homing_used',i,INSIGHTS,ORGANIZED_INSIGHTS,'H','homing_used',waveData,'A homing shotgun\'s worth of use is never necessary to clear a 700 wave; Focus on using less proactively, prefiring gushes, and improving target priority.');
+                  insight('Excessive Homing Use','ui_homing_used',i,INSIGHTS,ORGANIZED_INSIGHTS,'H','homing_used',waveData,'A homing shotgun\'s worth of use is never necessary to clear a 700 wave; Focus on using less proactively, prefiring gushes, and improving target priority.',[['var(--UI-goodsplit)','Expected Homing Use Here: < ' + Excessive_700_Plus_Homing_Use],['var(--UI-badsplit)',"Homing Use Here: "+homingUsedNow+" ("+signer((homingUsedNow - Excessive_700_Plus_Homing_Use))+")"]],'trending_down');
+
                 } else if(i <= 915 && homingUsedNow > Excessive_800_Plus_Homing_Use){
-                  insight('Excessive Homing Use: '+homingUsedNow+'','ui_homing_used',i,INSIGHTS,ORGANIZED_INSIGHTS,'H','homing_used',waveData,'2 homing shotguns, with a small stream, will clear between 800 and 900, and allow for long collection times.');
+                  insight('Excessive Homing Use','ui_homing_used',i,INSIGHTS,ORGANIZED_INSIGHTS,'H','homing_used',waveData,'2 homing shotguns, with a small stream, will clear between 800 and 900, and allow for long collection times.',[['var(--UI-goodsplit)','Expected Homing Use Here: < ' + Excessive_800_Plus_Homing_Use],['var(--UI-badsplit)',"Homing Use Here: "+homingUsedNow+" ("+signer((homingUsedNow - Excessive_800_Plus_Homing_Use))+")"]],'trending_down');
+
                 } else if(i < 980 && homingUsedNow > Excessive_915_Plus_Homing_Use){
-                  insight('Excessive Homing Use: '+homingUsedNow+'','ui_homing_used',i,INSIGHTS,ORGANIZED_INSIGHTS,'H','homing_used',waveData,'3 homing shotguns, without minor streaming after, will clear any board from 900 up to 1000.');
+                  insight('Excessive Homing Use','ui_homing_used',i,INSIGHTS,ORGANIZED_INSIGHTS,'H','homing_used',waveData,'3 homing shotguns, without minor streaming after, will clear any board from 900 up to 1000.',[['var(--UI-goodsplit)','Expected Homing Use Here: < ' + Excessive_915_Plus_Homing_Use],['var(--UI-badsplit)',"Homing Use Here: "+homingUsedNow+" ("+signer((homingUsedNow - Excessive_915_Plus_Homing_Use))+")"]],'trending_down');
+
                 } else if(i >= 980 && homingUsedNow > Excessive_980_Plus_Homing_Use){
-                  insight('Excessive Homing Use: '+homingUsedNow+'','ui_homing_used',i,INSIGHTS,ORGANIZED_INSIGHTS,'H','homing_used',waveData,'5 homing shotguns will kill almost any recoverable arena in 1000+, and uses 150 homing.');
+                  insight('Excessive Homing Use','ui_homing_used',i,INSIGHTS,ORGANIZED_INSIGHTS,'H','homing_used',waveData,'5 homing shotguns will kill almost any recoverable arena in 1000+, and uses 150 homing.',[['var(--UI-goodsplit)','Expected Homing Use Here: < ' + Excessive_980_Plus_Homing_Use],['var(--UI-badsplit)',"Homing Use Here: "+homingUsedNow+" ("+signer((homingUsedNow - Excessive_980_Plus_Homing_Use))+")"]],'trending_down');
+
                 }
               }
             } // End 5 second look-ahead
@@ -15554,11 +15656,13 @@ var language = {
 
 
         var INSIGHTS_OBJECT = {   //  Finalize and generate the final insights object
+        //  DIAGNOSTIC 
           madeWithVersion: VERSION,
           forGameID: GAME_OBJECT.block.DDSTATS_GAME_ID,
-          //  GENERAL DATA
+        //  DETAILS
+          splits: GAME_SPLITS,
           nofarm: true,
-          //  HOMING DATA
+        //  HOMING DATA
           homing_points_of_deviation: [],
 
           insights_available: ARE_AVAILABLE_CONDITIONS,
@@ -16919,6 +17023,10 @@ var language = {
           var ddstats_alertBody = JSON.parse(ThisData.body);
           var pb_improvement = parseFloat(ddstats_alertBody.GameTime) - parseFloat(ddstats_alertBody.PreviousGameTime);
           alert(ddstats_alertBody.PlayerName + ' just got a new PB of ' + ddstats_alertBody.GameTime.toFixed(4) + 's, beating their previous PB by ' + pb_improvement.toFixed(4) + 's!','DoneGame',undefined,'leaderboard',undefined,undefined,undefined,15000,ddstats_alertBody.GameID);
+          //  also update the player page if the player page has this player open
+          if(ddstats_alertBody.GameID == CURRENT_PLAYER_PAGE_ID){
+            paginatePlayer(CURRENT_PLAYER_PAGE_ID,true);
+          }
         }
 
       } else if(ThisData.func == 'past_threshold_broadcast'){
@@ -22624,7 +22732,6 @@ var GLOBAL_STAT_CHART = new Chart(ctx3, {
           display: false,
         },
       },
-      
     },
   },
 });
@@ -22637,11 +22744,37 @@ function returnInsightsFromChartIndex_NEAREST_NEIGHBOR(IND){
   return GAMEPAGE_INSIGHTS_CACHE.insights_organized_bleed[IND];
 }
 
-function buildInsightDetailsList(INSIGHTS_OBJECT){
+function buildInsightDetails(INSIGHT){
+  var insightDetailsString = '';
+  var first = true;
+  for(var INSIGHT_DETAIL of INSIGHT.insight_details){
+    var breakBuffer = '<br>';
+    var preBuffer = '<i tabindex="-1" class="material-icons" style="font-size:1.25vh;position:relative;">'+INSIGHT_DETAIL[0]+'</i>';
+    if(INSIGHT_DETAIL[0].startsWith('var(--')){
+      //  This is a color
+      preBuffer = '<div class="insightDetail"><div class="insightOuterCircle"><div class="insightInnerCircle" style="background-color:'+INSIGHT_DETAIL[0]+'"></div></div>';
+    } else {  //  this is an icon
+
+    }
+    if(first){
+      breakBuffer = '';
+    }
+    insightDetailsString += breakBuffer + preBuffer + '<div class="insightDetailText">'+INSIGHT_DETAIL[1]+'</div></div>';
+    first = false;
+  }
+  return insightDetailsString;
+}
+
+function buildInsightList(INSIGHTS_OBJECT){
   document.getElementById('INSIGHT_DETAILS_WRAPPER').innerHTML = '';
   for(var INSIGHT of INSIGHTS_OBJECT.insights){
+    var PAD_BUFFER = 'padding-top:0.2vh';
+    var INS_DETAILS = buildInsightDetails(INSIGHT);
+    if(INS_DETAILS == '' || INS_DETAILS == null || INS_DETAILS == undefined){
+      PAD_BUFFER = '';
+    }
     document.getElementById('INSIGHT_DETAILS_WRAPPER').innerHTML += 
-      '<div class="insight" insight_index="'+INSIGHT.index+'"><div class="insightLeftSection"><span class="insightLeftTime">'+INSIGHT.time+'</span></div><div class="insightBodyWrapper"><div class="insightTitle">'+INSIGHT.insightTitle+'</div><div class="insightDescription">'+INSIGHT.insightDescription+'</div><div class="insightDetails"></div></div></div>';
+      '<div class="insight" insight_index="'+INSIGHT.index+'"><div class="insightLeftSection"><div class="insightLeftIcon"><i tabindex="-1" class="material-icons" style="font-size:2.5vh;position:relative;top:-0.75vh;line-height:3vh;">'+INSIGHT.icon+'</i></div><span class="insightLeftTime">'+INSIGHT.time+'</span></div><div class="insightBodyWrapper"><div class="insightTitle">'+INSIGHT.insightTitle+'</div><div class="insightDescription">'+INSIGHT.insightDescription+'</div><div class="insightDetails" style="'+PAD_BUFFER+'">'+INS_DETAILS+'</div></div></div>';
   }
 }
 
