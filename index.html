@@ -6449,7 +6449,7 @@ void main() {
     var DD_LAST_LEFT_ID = 280655; // last text set to left game ID
     var DD_LAST_RIGHT_ID = 279441; // last text set to right game ID
     var DD_LIVE_PLAYERS = []; // list of live player IDs, updated by ddstats websocket
-    var DD_LIVE_CACHE = []; // full information of currently live players
+    var DD_LIVE_CACHE = {players: []}; // full information of currently live players
 
     var ERR_CACHE; // used to prevent console spam
     var NODRAW_CACHE = false; // if true, nodraw has been fired already.

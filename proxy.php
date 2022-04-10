@@ -1,6 +1,6 @@
 <?php header('Access-Control-Allow-Origin: *');
 
-$protocol = 'https://';
+$protocol = 'http://';
 $url = $_GET['url'];
 $requestURL = $protocol . $url;
 $data = file_get_contents($requestURL);
