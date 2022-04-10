@@ -10431,7 +10431,7 @@ var language = {
       if(THEME.StyleAuthorID != undefined){
         stauthorid = THEME.StyleAuthorID;
       }
-      return '<div themeIndex="' + INDEX + '" theme="' + THEME.StyleName + '" class="theme" style="background:' + THEME.ui_bg_fill + ';border:1px solid ' + THEME.ui_bg_fill + '" onmouseenter="tooltip(\'themeObject\')" onmouseleave="tooltip(\'close\')"><div class="themeClickBackground" style="' + buttonBuffer + '" onmousedown="requestSetTheme(this.parentElement.attributes.themeindex.nodeValue,this.parentElement);" onMouseOver="this.parentElement.querySelector(\'.themeTitle\').style.color = \'' + THEME.ui_active + '\';this.parentElement.querySelector(\'.themeDescription\').style.color = \'' + THEME.ui_active + '\';" onMouseOut="this.parentElement.querySelector(\'.themeTitle\').style.color = \'' + THEME.ui_foretext + '\';this.parentElement.querySelector(\'.themeDescription\').style.color = \'' + THEME.ui_subtext + '\';"></div><div class="themeSphereContainer"><div class="themeSphere" style="background:linear-gradient(to right, ' + THEME.ui_goodsplit + ' 50%, ' + THEME.ui_badsplit + ' 50%)"><div class="themeInnerSphere" style="background:' + THEME.ui_inactive + '"><div class="themeInnerestSphere" style="background:' + THEME.ui_active + '"></div></div></div></div><a style="color:' + THEME.ui_foretext + '"><span class="themeTitle">' + THEME.StyleName + '</span><br><span class="themeDescription" style="white-space:pre;color:' + THEME.ui_subtext + '"><span styleAuthorID="' + stauthorid + '">' + stauthor + '</span>' + THEME.StyleDescription + '</span></a>' + customStyleModifierMaterial + '<div selectionindicator class="THEME_SELECTED themeButton" style="display:none;font-size:1.6vh;z-index:0;right:' + selectedRight + ';padding-top:0vh;color:' + THEME.ui_foretext + '"><i class="material-icons" style="position:relative;">check_circle</i></div></div>';
+      return '<div themeIndex="' + INDEX + '" theme="' + cleanString(THEME.StyleName) + '" class="theme" style="background:' + THEME.ui_bg_fill + ';border:1px solid ' + THEME.ui_bg_fill + '" onmouseenter="tooltip(\'themeObject\')" onmouseleave="tooltip(\'close\')"><div class="themeClickBackground" style="' + buttonBuffer + '" onmousedown="requestSetTheme(this.parentElement.attributes.themeindex.nodeValue,this.parentElement);" onMouseOver="this.parentElement.querySelector(\'.themeTitle\').style.color = \'' + THEME.ui_active + '\';this.parentElement.querySelector(\'.themeDescription\').style.color = \'' + THEME.ui_active + '\';" onMouseOut="this.parentElement.querySelector(\'.themeTitle\').style.color = \'' + THEME.ui_foretext + '\';this.parentElement.querySelector(\'.themeDescription\').style.color = \'' + THEME.ui_subtext + '\';"></div><div class="themeSphereContainer"><div class="themeSphere" style="background:linear-gradient(to right, ' + THEME.ui_goodsplit + ' 50%, ' + THEME.ui_badsplit + ' 50%)"><div class="themeInnerSphere" style="background:' + THEME.ui_inactive + '"><div class="themeInnerestSphere" style="background:' + THEME.ui_active + '"></div></div></div></div><a style="color:' + THEME.ui_foretext + '"><span class="themeTitle">' + cleanString(THEME.StyleName) + '</span><br><span class="themeDescription" style="white-space:pre;color:' + THEME.ui_subtext + '"><span styleAuthorID="' + stauthorid + '">' + cleanString(stauthor) + '</span>' + cleanString(THEME.StyleDescription) + '</span></a>' + customStyleModifierMaterial + '<div selectionindicator class="THEME_SELECTED themeButton" style="display:none;font-size:1.6vh;z-index:0;right:' + selectedRight + ';padding-top:0vh;color:' + THEME.ui_foretext + '"><i class="material-icons" style="position:relative;">check_circle</i></div></div>';
     }
 
     function appendThemeDuplicateSuffix(THEME_DATA){
@@ -12311,8 +12311,9 @@ var language = {
 
     function formatLiveObject(DATA){
       var deEmojifiedPlayerName = '';
-      for(i=0;i<DATA.player_name.length;i++){
-        deEmojifiedPlayerName += DATA.player_name[i] += '&#xFE0E;';
+      var CLEANED_PLAYER_NAME = cleanString(DATA.player_name);
+      for(i=0;i<CLEANED_PLAYER_NAME.length;i++){
+        deEmojifiedPlayerName += CLEANED_PLAYER_NAME[i] += '&#xFE0E;';
       }
       var cleaned_status = DATA.status;
       if(cleaned_status == '' || cleaned_status == null || cleaned_status == undefined){
@@ -12335,8 +12336,9 @@ var language = {
       */
 
       var deEmojifiedPlayerName = '';
-      for(i=0;i<DATA.player_name.length;i++){
-        deEmojifiedPlayerName += DATA.player_name[i] += '&#xFE0E;';
+      var CLEANED_PLAYER_NAME = cleanString(DATA.player_name);
+      for(i=0;i<CLEANED_PLAYER_NAME.length;i++){
+        deEmojifiedPlayerName += CLEANED_PLAYER_NAME[i] += '&#xFE0E;';
       }
 
       var ifLiveClass = '';
@@ -12368,7 +12370,7 @@ var language = {
       }
       */
 
-      return '<div class="leaderboardItem" PLAYER_ID="' + DATA.id + '"><div class="leaderboardName"><span class="leaderboardRank">' + DATA.rank + '  </span>' + DATA.player_name + '</div><div class="leaderboardStats">' + DATA.game_time + 's - ' + DATA.death_type + ', ' + DATA.gems + ' gems, ' + DATA.enemies_killed + ' kills, ' + DATA.accuracy + '% acc</div><div class="leaderboardButtonWrapper"><div class="leaderboardButton" onmousedown="alert(this.parentElement.parentElement.attributes.player_id.nodeValue + \' can be favorited (UNIMPLEMENTED TO-DO)\'); toggleFavoriteIcon(this);"><div class="leaderboardButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.2vh;position:relative;top:-0.185vh;right:0.65vh;line-height:0px;">favorite_border</i></div></div>' /* <div class="leaderboardButton" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue)"><div class="leaderboardButtonInside" style="left: 0.35vh; top: 0.65vh;">L</div></div><div class="leaderboardButton" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue,\'R\')"><div class="gameButtonInside" style="left: 0.32vh; top: 0.65vh;">R</div></div><div class="leaderboardButton leaderboardButtonUnclickable" onmousedown="alert(this.parentElement.parentElement.attributes.game_id.nodeValue + \' not watchable as replay\',\'warning\')"><div class="leaderboardButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.1vh;position:relative;top:-0.3vh;right:0.595vh;line-height:0px;">visibility_off</i></div></div></div>*/ + '<div class="leaderboardItemBackgroundClickbox" onmousedown="alert(this.parentElement.attributes.game_id.nodeValue + \' loadable into right side of recents (UNIMPLEMENTED TO-DO)\')"></div></div>';
+      return '<div class="leaderboardItem" PLAYER_ID="' + DATA.id + '"><div class="leaderboardName"><span class="leaderboardRank">' + DATA.rank + '  </span>' + /* DATA.player_name +   UNSAFE    */ '</div><div class="leaderboardStats">' + DATA.game_time + 's - ' + DATA.death_type + ', ' + DATA.gems + ' gems, ' + DATA.enemies_killed + ' kills, ' + DATA.accuracy + '% acc</div><div class="leaderboardButtonWrapper"><div class="leaderboardButton" onmousedown="alert(this.parentElement.parentElement.attributes.player_id.nodeValue + \' can be favorited (UNIMPLEMENTED TO-DO)\'); toggleFavoriteIcon(this);"><div class="leaderboardButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.2vh;position:relative;top:-0.185vh;right:0.65vh;line-height:0px;">favorite_border</i></div></div>' /* <div class="leaderboardButton" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue)"><div class="leaderboardButtonInside" style="left: 0.35vh; top: 0.65vh;">L</div></div><div class="leaderboardButton" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue,\'R\')"><div class="gameButtonInside" style="left: 0.32vh; top: 0.65vh;">R</div></div><div class="leaderboardButton leaderboardButtonUnclickable" onmousedown="alert(this.parentElement.parentElement.attributes.game_id.nodeValue + \' not watchable as replay\',\'warning\')"><div class="leaderboardButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.1vh;position:relative;top:-0.3vh;right:0.595vh;line-height:0px;">visibility_off</i></div></div></div>*/ + '<div class="leaderboardItemBackgroundClickbox" onmousedown="alert(this.parentElement.attributes.game_id.nodeValue + \' loadable into right side of recents (UNIMPLEMENTED TO-DO)\')"></div></div>';
         //  "VISIBILITY" should be LOADING, and then ANOTHER FUNCTION should take care of
         //    CHECKING if REPLAY is present for GIVEN GAME IDs in THIS PAGE based on the IDS in elements
 
@@ -12388,8 +12390,9 @@ var language = {
       */
 
       var deEmojifiedPlayerName = '';
-      for(i=0;i<DATA.playerName.length;i++){
-        deEmojifiedPlayerName += DATA.playerName[i] += '&#xFE0E;';
+      var CLEANED_PLAYER_NAME = cleanString(DATA.playerName);
+      for(i=0;i<CLEANED_PLAYER_NAME.length;i++){
+        deEmojifiedPlayerName += CLEANED_PLAYER_NAME[i] += '&#xFE0E;';
       }
 
       //  THE BUTTON STATE IN THIS CASE IS IMMEDIATELY PASSED TO US AS 
@@ -12451,8 +12454,9 @@ var language = {
     function formatNewsItemObject(DATA,IND){
 
       var deEmojifiedPlayerName = '';
-      for(i=0;i<DATA.newEntry.username.length;i++){
-        deEmojifiedPlayerName += DATA.newEntry.username[i] += '&#xFE0E;';
+      var CLEANED_PLAYER_NAME = cleanString(DATA.newEntry.username);
+      for(i=0;i<CLEANED_PLAYER_NAME.length;i++){
+        deEmojifiedPlayerName += CLEANED_PLAYER_NAME[i] += '&#xFE0E;';
       }
 
       var ifLiveClass = '';
@@ -12491,14 +12495,17 @@ var language = {
     function formatCustomObject(DATA){
 
       var deEmojifiedPlayerName = '';
-      for(i=0;i<DATA.spawnsetAuthorName.length;i++){
-        deEmojifiedPlayerName += DATA.spawnsetAuthorName[i] += '&#xFE0E;';
+      var CLEANED_PLAYER_NAME = cleanString(DATA.spawnsetAuthorName);
+      for(i=0;i<CLEANED_PLAYER_NAME.length;i++){
+        deEmojifiedPlayerName += CLEANED_PLAYER_NAME[i] += '&#xFE0E;';
       }
 
       var deEmojifiedWRName = '';
+      var CLEANED_WR_NAME = '';
       if(DATA.topPlayerName != undefined){
-        for(i=0;i<DATA.topPlayerName.length;i++){
-          deEmojifiedWRName += DATA.topPlayerName[i] += '&#xFE0E;';
+        CLEANED_WR_NAME = cleanString(DATA.topPlayerName);
+        for(i=0;i<CLEANED_WR_NAME.length;i++){
+          deEmojifiedWRName += CLEANED_WR_NAME[i] += '&#xFE0E;';
         }
       }
 
@@ -12567,8 +12574,9 @@ var language = {
       }
 
       var deEmojifiedPlayerName = '';
-      for(i=0;i<DATA.player_name.length;i++){
-        deEmojifiedPlayerName += DATA.player_name[i] += '&#xFE0E;';
+      var CLEANED_PLAYER_NAME = cleanString(DATA.player_name);
+      for(i=0;i<CLEANED_PLAYER_NAME.length;i++){
+        deEmojifiedPlayerName += CLEANED_PLAYER_NAME[i] += '&#xFE0E;';
       }
 
       var ifLiveClass = '';
@@ -12820,8 +12828,9 @@ var language = {
 
             //  de emojify player name
             var deEmojifiedPlayerName = '';
-            for(i=0;i<DELTA_WORLD_ITEM.user_name.length;i++){
-              deEmojifiedPlayerName += DELTA_WORLD_ITEM.user_name[i] += '&#xFE0E;';
+            var CLEANED_PLAYER_NAME = cleanString(DELTA_WORLD_ITEM.user_name);
+            for(i=0;i<CLEANED_PLAYER_NAME.length;i++){
+              deEmojifiedPlayerName += CLEANED_PLAYER_NAME[i] += '&#xFE0E;';
             }
 
             //  RIGHT LINES STRUCTURE
@@ -13268,8 +13277,9 @@ var language = {
         var devilIterator = 0;
         for(var DEVIL_DAGGER of LAST_MAINPAGE_DATA.devil_daggers_list){
           var deEmojifiedPlayerName = '';
-          for(i=0;i<DEVIL_DAGGER.player_name.length;i++){
-            deEmojifiedPlayerName += DEVIL_DAGGER.player_name[i] += '&#xFE0E;';
+          var CLEANED_PLAYER_NAME = cleanString(DEVIL_DAGGER.player_name);
+          for(i=0;i<CLEANED_PLAYER_NAME.length;i++){
+            deEmojifiedPlayerName += CLEANED_PLAYER_NAME[i] += '&#xFE0E;';
           }
           var thOrTd = 'td';
           if(devilIterator == 0){
@@ -13293,8 +13303,9 @@ var language = {
         var goldenIterator = 0;
         for(var GOLDEN_DAGGER of LAST_MAINPAGE_DATA.gold_daggers_list){
           var deEmojifiedPlayerName = '';
-          for(i=0;i<GOLDEN_DAGGER.player_name.length;i++){
-            deEmojifiedPlayerName += GOLDEN_DAGGER.player_name[i] += '&#xFE0E;';
+          var CLEANED_PLAYER_NAME = cleanString(GOLDEN_DAGGER.player_name);
+          for(i=0;i<CLEANED_PLAYER_NAME.length;i++){
+            deEmojifiedPlayerName += CLEANED_PLAYER_NAME[i] += '&#xFE0E;';
           }
           var thOrTd = 'td';
           if(goldenIterator == 0){
@@ -13318,8 +13329,9 @@ var language = {
         var silverIterator = 0;
         for(var SILVER_DAGGER of LAST_MAINPAGE_DATA.silver_daggers_list){
           var deEmojifiedPlayerName = '';
-          for(i=0;i<SILVER_DAGGER.player_name.length;i++){
-            deEmojifiedPlayerName += SILVER_DAGGER.player_name[i] += '&#xFE0E;';
+          var CLEANED_PLAYER_NAME = cleanString(SILVER_DAGGER.player_name);
+          for(i=0;i<CLEANED_PLAYER_NAME.length;i++){
+            deEmojifiedPlayerName += CLEANED_PLAYER_NAME[i] += '&#xFE0E;';
           }
           var thOrTd = 'td';
           if(silverIterator == 0){
@@ -13343,8 +13355,9 @@ var language = {
         var bronzeIterator = 0;
         for(var BRONZE_DAGGER of LAST_MAINPAGE_DATA.bronze_daggers_list){
           var deEmojifiedPlayerName = '';
-          for(i=0;i<BRONZE_DAGGER.player_name.length;i++){
-            deEmojifiedPlayerName += BRONZE_DAGGER.player_name[i] += '&#xFE0E;';
+          var CLEANED_PLAYER_NAME = cleanString(BRONZE_DAGGER.player_name);
+          for(i=0;i<CLEANED_PLAYER_NAME.length;i++){
+            deEmojifiedPlayerName += CLEANED_PLAYER_NAME[i] += '&#xFE0E;';
           }
           var thOrTd = 'td';
           if(bronzeIterator == 0){
@@ -13368,8 +13381,9 @@ var language = {
         var newPlayersIterator = 0;
         for(var NEW_PLAYER of LAST_MAINPAGE_DATA.new_players_list){
           var deEmojifiedPlayerName = '';
-          for(i=0;i<NEW_PLAYER.player_name.length;i++){
-            deEmojifiedPlayerName += NEW_PLAYER.player_name[i] += '&#xFE0E;';
+          var CLEANED_PLAYER_NAME = cleanString(NEW_PLAYER.player_name);
+          for(i=0;i<CLEANED_PLAYER_NAME.length;i++){
+            deEmojifiedPlayerName += CLEANED_PLAYER_NAME[i] += '&#xFE0E;';
           }
           var thOrTd = 'td';
           if(newPlayersIterator == 0){
@@ -13394,8 +13408,9 @@ var language = {
         var activeIterator = 0;
         for(var ACTIVE_PLAYER of LAST_MAINPAGE_DATA.active_players_list){
           var deEmojifiedPlayerName = '';
-          for(i=0;i<ACTIVE_PLAYER.player_name.length;i++){
-            deEmojifiedPlayerName += ACTIVE_PLAYER.player_name[i] += '&#xFE0E;';
+          var CLEANED_PLAYER_NAME = cleanString(ACTIVE_PLAYER.player_name);
+          for(i=0;i<CLEANED_PLAYER_NAME.length;i++){
+            deEmojifiedPlayerName += CLEANED_PLAYER_NAME[i] += '&#xFE0E;';
           }
           var thOrTd = 'td';
           if(activeIterator == 0){
@@ -13724,8 +13739,9 @@ var language = {
             document.querySelector('.playerInfoGrid').innerHTML = PLAYER_DATA_CONSTRUCTOR; 
 
             var deEmojifiedPlayerName = '';
-            for(i=0;i<data_ddinfo_lb.username.length;i++){
-              deEmojifiedPlayerName += data_ddinfo_lb.username[i] += '&#xFE0E;';
+            var CLEANED_PLAYER_NAME = cleanString(data_ddinfo_lb.username);
+            for(i=0;i<CLEANED_PLAYER_NAME.length;i++){
+              deEmojifiedPlayerName += CLEANED_PLAYER_NAME[i] += '&#xFE0E;';
             }
 
             // wrapperElement.querySelector('.gameItem').innerHTML = '<div class="gamerName" style="color:var(--BGFill) !important;"><span style="font-weight:800">' + data_ddstats.rank + '</span>  ' + data_ddstats.game_time + '  ‣  ' + deEmojifiedPlayerName + '</div><div class="gamerStats" style="color:var(--BGFill) !important;"> <br> </div>';
@@ -15450,9 +15466,16 @@ var language = {
           makeGamePageMarkers(GAME_OBJECT, GAME_INSIGHTS);
           INSIGHTS_GRAPH.update();
 
+          //  name cleaner
+          var deEmojifiedPlayerName = '';
+          var CLEANED_PLAYER_NAME = cleanString(GAME_OBJECT.block.replay_player_name);
+          for(i=0;i<CLEANED_PLAYER_NAME.length;i++){
+            deEmojifiedPlayerName += CLEANED_PLAYER_NAME[i] += '&#xFE0E;';
+          }
+
           //  browser building
           L_REF.innerHTML = '';
-          S_REF.innerHTML = GAME_OBJECT.block.replay_player_name+'<br>'+(GAME_OBJECT.block.time+GAME_OBJECT.block.starting_time);
+          S_REF.innerHTML = deEmojifiedPlayerName+'<br>'+(GAME_OBJECT.block.time+GAME_OBJECT.block.starting_time);
           buildInsightList(GAME_INSIGHTS);
 
           //  set titles and widths
@@ -16178,6 +16201,16 @@ var language = {
         case 3:  return "rd";
         default: return "th";
       }
+    }
+
+    function cleanString(UNSAFE_STRING){
+      var NEW_STRING = UNSAFE_STRING;
+      NEW_STRING = NEW_STRING.replace('&','&amp;')
+                             .replace('<','&lt;')
+                             .replace('>','&gt;')
+                             .replace('"','&quot;')
+                             .replace('\'','&#39;');
+      return NEW_STRING;
     }
 
     function randomHexColor(){
