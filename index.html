@@ -1921,9 +1921,11 @@ canvas{
   padding-top: 0.2vh;
   font-size: 1.2vh;
 
-  font-style: italic;
+  font-weight: 800;
 
   display: var(--INSIGHT-COLLAPSED-DISPLAY);
+
+  color: var(--UI-inactive);
 }
 
 .insightDetails{
@@ -1960,6 +1962,9 @@ canvas{
 .insightActive{
   background-color: var(--UI-foretext) !important;
   color: var(--BGFill);
+}
+.insightActive .insightDescription{
+  color: var(--BGFill) !important;
 }
 
 
@@ -4216,6 +4221,10 @@ psy_dyl           ┃
 No Hit            ┃
 Stephen           ┃  
 Stephanstein     ┅┛ 
+
+Carson           ┅┓
+Henry             ┣┅   security
+KyoZM            ┅┛
 
 
          DEPENDENCY CREDITS
@@ -12921,7 +12930,7 @@ var language = {
           var SUCCESSFUL_DEATHS_VALIDATE = LAST_SUCCESSFUL_DEATHS_GET;
 
           TRAY_CALL(0,0,'loading');
-          var deaths = await ajaxProxy('http://dd.hasmodai.com/dd3/get_recent.php?start=' + (Math.floor(LAST_GLOBAL_DEATHS_LIMITER) - 5) + '?limit=20');
+          var deaths = await ajaxProxy('dd.hasmodai.com/dd3/get_recent.php?start=' + (Math.floor(LAST_GLOBAL_DEATHS_LIMITER) - 5) + '?limit=20');
 
           if(deaths != 'ERR' && deaths.data != undefined){
             var deaths_cleaned = deaths.data.replace(/}/g, "},");
@@ -13160,7 +13169,7 @@ var language = {
     }
 
     async function getPlayers(UNUSED_ATTRIBUTE,FORCE){
-      var data_players = await ajaxProxy('http://dd.hasmodai.com/dd3/get_active_users.php');
+      var data_players = await ajaxProxy('dd.hasmodai.com/dd3/get_active_users.php');
       if(data_players != 'ERR'){
         LAST_INGAME_PLAYERS_ONLINE = data_players;
         propagateStats();
@@ -13204,7 +13213,7 @@ var language = {
     }
 
     async function getLatestDDRustVersion(){
-      var L_VER = await ajaxProxy('https://raw.githubusercontent.com/lsaa/ddstats-rust/master/version_info.json');
+      var L_VER = await ajaxProxy('raw.githubusercontent.com/lsaa/ddstats-rust/master/version_info.json');
       if(L_VER != 'ERR'){
         LATEST_DDRUST_VERSION = L_VER.version;
         checkForDDRustUpdate();
@@ -13219,7 +13228,7 @@ var language = {
     }
 
     async function getDonors(UNUSED_ATTRIBUTE,FORCE){
-      var data_donors = await ajaxProxy('https://ddstats.live/donors.json');
+      var data_donors = await ajaxProxy('ddstats.live/donors.json');
       if(data_donors != 'ERR'){
         LAST_DONORS_DATA = data_donors;
       }
