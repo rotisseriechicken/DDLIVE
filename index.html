@@ -1977,17 +1977,94 @@ canvas{
   width: 100%;
   height: 31vh;
   position: relative;
+  overflow: hidden;
+}
+#GAMEPAGE_INFO_PAGE_WRAPPER{
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: transform 0.3s cubic-bezier(.01,.81,.55,1.01) !important;
+  width: 100%;
+  height: 100%;
+  display: inline-block;
 }
 #INSIGHT_DETAILS_WRAPPER{
   height: 100%;
   overflow: hidden;
   overflow-y: scroll;
+  position: absolute;
+  right: 110%;
+  width: 100%;
+  transition: right 0.2s cubic-bezier(.01,.81,.55,1.01) !important; 
+
+  z-index: 500;
+  background-color: var(--BGFill);
 }
 
-.gameSubPage{
+.gamepageInfoPage{
   height: 100%;
   width: 100%;
+  display: inline-block;
+  overflow: hidden;
+}
+.gamepageInfoHeader{
+  display: block;
+  height: 2.125vh;
+  font-size: 2vh;
+  padding-top: 0.33vh;
+  padding-bottom: 0.33vh;
+  padding-left: 0.5vh;
+  width: calc(100% - 1vh);
+}
+.gamepageInfoBody{
+  display: flex;
+  height: calc(100% - 2.125vh - 0.33vh - 0.33vh);
+}
 
+#SPLIT_GRID{
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  width: 100%;
+  height: 100%;
+}
+.splitGridColumn{
+  display: flex;
+  flex-direction: column;
+}
+.splitGridColumn > .splitGridCell{
+  flex: 1;
+}
+.splitGridCellText{
+  position: relative;
+  left: -0.125vh;
+}
+
+.splitGridCell{
+  background-color: var(--UI-inactive);
+  color: var(--UI-active);
+  font-size: 1.5vh;
+  font-weight: 800;
+  font-family: 'OPM3';
+
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
+
+  padding-top: 0.4vh;
+
+  /*               we're just gonna use the anticolor detector instead i think
+  text-shadow:
+    -1px -1px 0 var(--BGFill),
+     0   -1px 0 var(--BGFill),
+     1px -1px 0 var(--BGFill),
+     1px  0   0 var(--BGFill),
+     1px  1px 0 var(--BGFill),
+     0    1px 0 var(--BGFill),
+    -1px  1px 0 var(--BGFill),
+    -1px  0   0 var(--BGFill);
+  */
 }
 
 .INSIGHTS-ITEM{
@@ -2216,6 +2293,23 @@ canvas{
 
     transition: color 0.2s cubic-bezier(.01,.81,.55,1.01) !important;
 }
+
+.gamerNameHitbox{
+    font-size: 3.28vh;
+    /* position: absolute; */
+    /* left: 23px; */
+    color: rgba(0,0,0,0); /* this is a decoy element for clicking only */
+    padding-top: 0vh;
+    padding-left: 23px;
+    display: inline-block;
+    position: relative;
+    top: 0.1vh;
+
+    line-height: 0px;
+
+    transition: color 0.2s cubic-bezier(.01,.81,.55,1.01) !important;
+}
+
 .gamerActualName{
   transition: color 0.2s cubic-bezier(.01,.81,.55,1.01) !important;
 }
@@ -4863,7 +4957,7 @@ paginateLeaderboard(PAGE_LEADERBOARD_MAX);">last_page</i><div id="LEADERBOARD_MI
             </div>
 
 
-            <div id="TL_MYGAMES"   class="TL_PAGE" page="3">
+            <div id="TL_MYGAMES" onmouseleave="hideInsights();" class="TL_PAGE" page="3">
 
               <div id="INSIGHTS_WRAPPER" style="left:-100%" class="pageWrapper">
 
@@ -4889,19 +4983,18 @@ paginateLeaderboard(PAGE_LEADERBOARD_MAX);">last_page</i><div id="LEADERBOARD_MI
                           <div onclick="setInsightsGraphToggle(this);" onmouseenter="tooltip('toggleKills')" onmouseleave="tooltip('close')" TOG_ID="11" id="TOGGLE_KILLS" class="INSIGHTS-ITEM">kills</div>
                 </div>
                 <div id="INSIGHTS_INNER_WRAPPER" class="gamePageWrapper">
-                  <div id="INSIGHTS_GRAPH_WRAPPER" style="flex:1;flex-shrink:1;width:calc((100vw - 49.75vh - 23px - 0.3vw - 8px) / 2.5)">
+                  <div id="INSIGHTS_GRAPH_WRAPPER" onmouseenter="showInsights();" style="flex:1;flex-shrink:1;width:calc((100vw - 49.75vh - 23px - 0.3vw - 8px) / 2.5)">
                     <canvas id="INSIGHTS_GRAPH" width="400" height="400" style="font-family: Overpass Mono"></canvas>
                   </div>
                   <div id="GAMEPAGE_INFO" style="min-width:35vh;  display:block;margin-left:1.75vh;width:50vh;">
 
-                    <div class="gameItem" game_id="-1" game_page_game_item style="margin-top:0.5vh;position:relative;cursor:default;width:calc(100% - 3px);border-radius:2vh 2vh 0 0;background-color:var(--UI-foretext);color:var(--BGFill) !important;"><div class="gamerName" style="font-size:3.25vh;margin-left:2.725vh;z-index:9999;color:var(--BGFill) !important;top:0.0575vh;"><span style="font-weight:800;"></span>Loading...</div><div class="gamerStats" style="padding-left:0px;color:var(--BGFill) !important;"> <br> </div><div class="gameButtonWrapper" style="left:calc(1px + 0vh + 0.275vh) !important;width:calc(100% - 0.3vh);justify-content:right;">
+                    <div class="gameItem" onmouseenter="hideInsights();" game_id="-1" game_page_game_item style="margin-top:0.5vh;position:relative;cursor:default;width:calc(100% - 3px);border-radius:2vh 2vh 0 0;background-color:var(--UI-foretext);color:var(--BGFill) !important;"><div class="gamerName" style="font-size:3.25vh;margin-left:2.725vh;z-index:9999;color:var(--BGFill) !important;top:0.0575vh;"><span style="font-weight:800;"></span>Loading...</div><div class="gamerStats" style="padding-left:0px;color:var(--BGFill) !important;"> <br> </div><div id="GAMEPAGE_BUTTON_WRAPPER" class="gameButtonWrapper" style="left:calc(1px + 0vh + 0.275vh) !important;width:calc(100% - 0.3vh);justify-content:right;">
 
-                    <div class="gameButton" onmouseenter="tooltip('returnToLeaderboard')" onmouseleave="tooltip('close')" onmousedown="page(3,0);" style="position:absolute;left:0;overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_backward</i></div></div>
+                      <div class="gameButton" onmouseenter="tooltip('prevGameInfoPage')" onmouseleave="tooltip('close')" onmousedown="prevGameInfoPage();" style="position:absolute;left:0;overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_backward</i></div></div>
 
-                      <!-- L and R buttons,   List other games by this player button,   replay,   ETC -->
                         <div class="gameButton gameButtonUnclickable gameButtonLoading"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.275vh;line-height:0px;">autorenew</i></div></div>
 
-                    <div class="gameButton" onmouseenter="tooltip('returnToLeaderboard')" onmouseleave="tooltip('close')" onmousedown="page(3,0);" style="overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_forward</i></div></div>
+                      <div class="gameButton" onmouseenter="tooltip('nextGameInfoPage')" onmouseleave="tooltip('close')" onmousedown="nextGameInfoPage();" style="overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_forward</i></div></div>
                   </div></div>
 
 
@@ -4909,9 +5002,57 @@ paginateLeaderboard(PAGE_LEADERBOARD_MAX);">last_page</i><div id="LEADERBOARD_MI
                       
                       <div id="INSIGHT_DETAILS_WRAPPER"></div>
 
+                      <div id="GAMEPAGE_INFO_PAGE_WRAPPER">
+                        <div class="gamepageInfoPage">
+                          <div class="gamepageInfoHeader">overview</div>
+                        </div><!--  THIS SPACE IS REQUIRED TO PREVENT PAGE MARGINS
+                     --><div class="gamepageInfoPage">
+                          <div class="gamepageInfoHeader"></div>
+                          <div class="gamepageInfoBody" style="height:calc(100%);position:relative;top:calc(0px - 2.125vh - 0.33vh - 0.33vh)">
+                            <div id="SPLIT_GRID">
+                              <div class="splitGridColumn">
+                                <div class="splitGridCell">1</div>
+                                <div class="splitGridCell">2</div>
+                                <div class="splitGridCell">3</div>
+                                <div class="splitGridCell">4</div>
+                                <div class="splitGridCell">5</div>
+                                <div class="splitGridCell">6</div>
+                                
+                              </div>
+                              <div class="splitGridColumn">
+                                <div class="splitGridCell">1</div>
+                                <div class="splitGridCell">2</div>
+                                <div class="splitGridCell">3</div>
+                                <div class="splitGridCell">4</div>
+                                <div class="splitGridCell">5</div>
+                                <div class="splitGridCell">6</div>
+                                
+                              </div>
+                              <div class="splitGridColumn">
+                                <div class="splitGridCell">1</div>
+                                <div class="splitGridCell">2</div>
+                                <div class="splitGridCell">3</div>
+                                <div class="splitGridCell">4</div>
+                                <div class="splitGridCell">5</div>
+                                <div class="splitGridCell">6</div>
+                                
+                              </div>
+                              <div class="splitGridColumn">
+                                <div class="splitGridCell">8</div>
+                                <div class="splitGridCell">8</div>
+                                <div class="splitGridCell">8</div>
+                                <div class="splitGridCell">8</div>
+                                <div class="splitGridCell">8</div>
+                                <div class="splitGridCell">8</div>
+                                
+                              </div>
+                              
+                            </div>
+                          </div>
+                        </div><!--
+                     -->
+                      </div>
                     </div>
-
-
                   </div>
                 </div>
               </div>
@@ -4946,7 +5087,7 @@ paginateRecent(PAGE_RECENT+1);">chevron_right</i><div onmouseenter="tooltip('nav
 paginateRecent(PAGE_RECENT + PAGE_RECENT_FAST_NAV);"><i tabindex="-1" class="material-icons" style="font-size:3.5vh;position:relative;top:0.3vh;right:0vh;line-height:3.5vh;">chevron_right</i><i tabindex="-1" class="material-icons" style="font-size:3.5vh;position:relative;top:0.3vh;left:-2.55vh;line-height:3.5vh;">chevron_right</i></div><i tabindex="-1" class="material-icons" style="font-size:3.5vh;position:relative;top:0.3vh;right:0vh;line-height:3.5vh;" onmouseenter="tooltip('navigatorLast')" onmouseleave="tooltip('close')" onmousedown="
 paginateRecent(PAGE_RECENT_MAX);">last_page</i><div id="RECENT_NAVIGATOR_TEXT" class="ddstats-navigator-text">loading...</div>
 
-<div id="GAMES_SUBNAVIGATOR" class="subnavigatorWrapper" style="right:0;">
+<div id="GAMES_SUBNAVIGATOR" onmouseenter="hideInsights();" class="subnavigatorWrapper" style="right:0;">
 
   <div GSNAVID="-1" class="subnavigatorReturnButton" style="border-radius:2vh 0 0 2vh;padding-right:0.1vh;" onmouseenter="tooltip('goToGamePage')" onmouseleave="tooltip('close')" onmouseup="page(4,-1)"><div class="subnavigatorReturnButtonText" style="padding-right:1vh" id="GAMES_SUBNAVIGATOR_TEXT">game page</div><i tabindex="-1" class="material-icons" style="font-size:2.25vh;position:relative;top:0vh;right:0.2vh;line-height:0vh;">query_stats</i></div>
 
@@ -5671,7 +5812,7 @@ void main() {
 <script id="SCRIPTBODY" type="text/javascript">
 
     //  VERSION CONTROL AND AUTO-UPDATING
-    var VERSION = 83 // DDLIVE Version
+    var VERSION = 85 // DDLIVE Version
     var SUPPORTED_VERSIONS = [4,5]; // Acceptable ddrust versions; If not on this list, link will be rejected
 
     var CUSTOM_DDREPLAY_ENDPOINT_STATIC = 'https://ddstats.live/ddcl/';
@@ -6334,6 +6475,7 @@ void main() {
           }
           setInitState('paginating gamepage'); await sleep(INIT_MSG_WAIT);
           paginateGame(undefined,true,true);
+          setGameInfoPage(undefined,true);
           setInitState('requesting latest ddrust ver'); await sleep(INIT_MSG_WAIT);
           getLatestDDRustVersion();
           setInitState('cleaning up'); await sleep(INIT_MSG_WAIT);
@@ -6462,6 +6604,14 @@ void main() {
     var SELECTED_GRAPH_NAME = "DD_RIGHT_GAME"; // name of the graph that is currently active (uses window[])
 
     const GAME_PAGE_ANNOTATIONS = []; // Annotation cache by which paginateGame() draws markers/insights
+    var SHOW_INSIGHTS_BUTTON_ON = false; // if true, keeps insights window open
+    var INSIGHTS_ON_GAME_GRAPH_HOVER = true; // if false, insights will not pop out on game graph hover
+    var GAMEPAGE_INFO_LAST_PAGE = 1; // which is the last page +index that exists in Gamepage Info viewer
+    var GAMEPAGE_INFO_SUBPAGE = 0; // which page +index the user was last on in the Gamepage Info viewer
+    var INSIGHT_TRANSITIONING_FLAG = false; // when true, graph hover activity is paused
+    var INSIGHTS_TRAY_OPEN = false; // if true, insights tray is currently open
+    var SPLITGRID_OMIT_BEST = false; // if true, omits Sum Of Best from the Splitgrid
+    var SPLITGRID_OMIT_GAMES = []; // any indecies here ([0, 2, 5]) will be omitted from the Splitgrid
 
     var CURRENT_HEIGHT = document.getElementById('WRAPPER').offsetHeight; // current page height
     var CURRENT_WIDTH = document.getElementById('WRAPPER').offsetWidth; // current page width
@@ -6661,21 +6811,22 @@ void main() {
         },
     };
 
-    var V3_SPLITS =  [  // Standard split model, which does not change
-        ['350',  366 ],
-        ['700',  709 ],
-        ['800',  800 ],
-        ['880',  875 ],
-        ['930',  942 ],
-        ['1000', 996 ],
-        ['1040', 1047],
-        ['1080', 1091],
-        ['1130', 1133],
-        ['1160', 1170],
-        ['1200', 1203],
-        ['1230', 1231],
-        ['1260', 1260],
-        ['1290', 1290],
+    var V3_SPLITS =  [  // Standard split model, which does not change. 
+                        //  Third index is best splits-- This DOES NOT include In-Progress splits!
+        ['350',  366,  214],
+        ['700',  709,  550], // bullshit
+        ['800',  800,  170], // bullshit
+        ['880',  875,  130], // bullshit
+        ['930',  942,  100], // bullshit
+        ['1000', 996,  20], // bullshit
+        ['1040', 1047, -20], // bullshit
+        ['1080', 1091, -90], // bullshit
+        ['1130', 1133, -120], // bullshit
+        ['1160', 1170, -180], // bullshit
+        ['1200', 1203, -250], // bullshit
+        ['1230', 1231, undefined], // bullshit
+        ['1260', 1260, undefined], // bullshit
+        ['1290', 1290, undefined], // bullshit
     ];
 
     var BASELINE_GEMS_AT_LEVI = 105; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -7756,6 +7907,11 @@ function toggleCredits(){ // don't use this...?
           PlayerGamesId:    PLAYERGAMES_ID, // v83
           NavPage:          GLOBAL_NAV_PAGE,
           PageOffsets:      GLOBAL_NAV_PAGE_OFFSETS,
+          InsightsButton:   SHOW_INSIGHTS_BUTTON_ON, // v84
+          InsightsOnHover:  INSIGHTS_ON_GAME_GRAPH_HOVER, // v84
+          GameInfoPage:     GAMEPAGE_INFO_SUBPAGE, // v84
+          SplitOmitBest:    SPLITGRID_OMIT_BEST, // v85
+          SplitOmitGames:   SPLITGRID_OMIT_GAMES, // v85
 
           //  COLLAPSABLES
           LeviCollapsed:    LEVI_COLLAPSED, // v79
@@ -7877,6 +8033,15 @@ function toggleCredits(){ // don't use this...?
             CLEANED_SETTINGS.Settings.PagePlayerGames = PAGE_PLAYERGAMES;
             CLEANED_SETTINGS.Settings.PlayerGamesId = PLAYERGAMES_ID;
           }
+          if(SETTINGS_OBJECT.Version < 84){ //  Clean for INSIGHTS TOGGLES and GAMEINFO SUBPAGE
+            CLEANED_SETTINGS.Settings.InsightsButton = SHOW_INSIGHTS_BUTTON_ON;
+            CLEANED_SETTINGS.Settings.GameInfoPage = GAMEPAGE_INFO_SUBPAGE;
+            CLEANED_SETTINGS.Settings.InsightsOnHover = INSIGHTS_ON_GAME_GRAPH_HOVER;
+          }
+          if(SETTINGS_OBJECT.Version < 85){ //  Clean for SPLITGRID
+            CLEANED_SETTINGS.Settings.SplitOmitBest = SPLITGRID_OMIT_BEST;
+            CLEANED_SETTINGS.Settings.SplitOmitGames = SPLITGRID_OMIT_GAMES;
+          }
 
 
           if(Lcompatible){ // Perform Upgrade depending on VERSION
@@ -7888,6 +8053,7 @@ function toggleCredits(){ // don't use this...?
         //  GENERAL
           GLOBAL_STATUS_ALERTS_ENABLED =  CLEANED_SETTINGS.Settings.GlobalNotifs; // v71
           GLOBAL_STATUS_ALERT_ALL_NOTIF = CLEANED_SETTINGS.Settings.GlobalNotifAll; // v72
+          INSIGHTS_ON_GAME_GRAPH_HOVER =  CLEANED_SETTINGS.Settings.InsightsOnHover; // v84
 
         //  PERFORMANCE
           FULL_BLOCK_FPS =                CLEANED_SETTINGS.Settings.BlockFps;
@@ -7952,6 +8118,10 @@ function toggleCredits(){ // don't use this...?
           PLAYERGAMES_ID =                CLEANED_SETTINGS.Settings.PlayerGamesId; // v83
           GLOBAL_NAV_PAGE =               CLEANED_SETTINGS.Settings.NavPage;
           GLOBAL_NAV_PAGE_OFFSETS =       CLEANED_SETTINGS.Settings.PageOffsets;
+          SHOW_INSIGHTS_BUTTON_ON =       CLEANED_SETTINGS.Settings.InsightsButton; // v84
+          GAMEPAGE_INFO_SUBPAGE =         CLEANED_SETTINGS.Settings.GameInfoPage; // v84
+          SPLITGRID_OMIT_BEST =           CLEANED_SETTINGS.Settings.SplitOmitBest; // v85
+          SPLITGRID_OMIT_GAMES =          CLEANED_SETTINGS.Settings.SplitOmitGames; // v85
 
         //  COLLAPSABLES
           LEVI_COLLAPSED =                CLEANED_SETTINGS.Settings.LeviCollapsed; // v79
@@ -9381,6 +9551,14 @@ var language = {
             returnToPlayerPage:   
                                 ['Return to Player Page', // Title
                                 'Return to the page of the last visited player.'], // Description
+
+            nextGameInfoPage:   
+                                ['Next Game Info Page', // Title
+                                'Shows the next page in the Game Info carousel.'], // Description
+
+            prevGameInfoPage:   
+                                ['Previous Game Info Page', // Title
+                                'Shows the previous page in the Game Info carousel.'], // Description
 
             leaderboardGoToRank:   
                                 ['Go To Rank', // Title
@@ -12119,6 +12297,8 @@ var language = {
         refreshStatStyles();
         setInitState('    refreshing applied styles');
         refreshAppliedStyles();
+        setInitState('    building splitgrid');
+        splitGrid();
         setInitState('    initializing color picker');
         initColorPicker();
         if(SYNC_THEMES_WITH_DDRUST){
@@ -12216,49 +12396,87 @@ var language = {
         // THIS FUNCTION IS TRIGGERED ON SNOWFLAKE CHANGE, OR TRIGGERED BY AN extra MINIBLOCK EVENT!
     }
 
-    async function loadGame(ID,LR,NO_R_FORCE,JUST_RETURN){
-      if(ID != -1 && ID != undefined){
-        var data = await ajaxRequest('https://ddstats.com/api/v2/game/full?id=' + ID,true);
-        drapeLog(arguments.callee.name,' ID: ',ID,' LR: ',LR,'NO_R_FORCE:',NO_R_FORCE,'DATA: ',data);
-
-        if(JUST_RETURN){
-          if(data != 'ERR'){
-            var DD_RET = buildDDStatsGame(data);
-            return DD_RET;
-          } else {
-            alert('Error in loadGame for Game Page - Game not loaded (see console).','error');
-            return data;
+    function setLeftGame(GAME_OBJECT, data){
+      var dataCleaner;
+      if(data == undefined){
+        if(GAME_OBJECT.block.DDSTATS_GAME_ID == undefined);
+        dataCleaner = {
+          game_info: {
+            id: GAME_OBJECT.block.DDSTATS_GAME_ID
           }
+        }
+      }
+      if(dataCleaner.game_info.id == undefined){
+        alert('Error in game data cleaner - Game not loaded (see console).','error');
+      } else {
+        document.getElementById('LEFTGAME_ID').value = data.game_info.id;
+        updateGraph(undefined,true);
+        alert(data.game_info.id + ' loaded as left game in the statistics comparator.',undefined,undefined,'check');
+        saveSettings();
+      }
+    }
+
+    function setRightGame(GAME_OBJECT, NO_R_FORCE, data){
+      var dataCleaner;
+      if(data == undefined){
+        if(GAME_OBJECT.block.DDSTATS_GAME_ID == undefined);
+        dataCleaner = {
+          game_info: {
+            id: GAME_OBJECT.block.DDSTATS_GAME_ID
+          }
+        }
+      }
+      if(dataCleaner.game_info.id == undefined){
+        alert('Error in game data cleaner - Game not loaded (see console).','error');
+      } else {
+        document.getElementById('RIGHTGAME_ID').value = dataCleaner.game_info.id;
+        updateGraph(undefined,true);
+        alert(dataCleaner.game_info.id + ' loaded as right game in the statistics comparator.',undefined,undefined,'check');
+        saveSettings();
+
+        if(NO_R_FORCE){ 
+            //  DD_RIGHT_GAME is set, but STAT_is_RIGHT_GAME_CURRENT is not forced to FALSE
         } else {
-          if(data != 'ERR'){
-              if(LR == 'R'){
+            //  DD_RIGHT_GAME set and STAT_is_RIGHT_GAME_CURRENT is forced to FALSE
+            setRightGameCurrent(false);
+        }
+      }
+    }
 
-                  DD_RIGHT_GAME = buildDDStatsGame(data);
-                  document.getElementById('RIGHTGAME_ID').value = data.game_info.id;
-                  updateGraph(undefined,true);
-                  alert(data.game_info.id + ' loaded as right game in the statistics comparator.',undefined,undefined,'check');
-                  saveSettings();
+    async function loadGame(ID,LR,NO_R_FORCE,JUST_RETURN,GAME_OBJECT_INSTEAD){
+      if(GAME_OBJECT_INSTEAD != undefined){
+        if(LR == 'R'){
+          setRightGame(GAME_OBJECT_INSTEAD, NO_R_FORCE);
+        } else {
+          setLeftGame(GAME_OBJECT_INSTEAD);
+        }
+      } else {
+        if(ID != -1 && ID != undefined){
+          var data = await ajaxRequest('https://ddstats.com/api/v2/game/full?id=' + ID,true);
+          drapeLog(arguments.callee.name,' ID: ',ID,' LR: ',LR,'NO_R_FORCE:',NO_R_FORCE,'DATA: ',data);
 
-                  if(NO_R_FORCE){ 
-                      //  DD_RIGHT_GAME is set, but STAT_is_RIGHT_GAME_CURRENT is not forced to FALSE
-                  } else {
-                      //  DD_RIGHT_GAME set and STAT_is_RIGHT_GAME_CURRENT is forced to FALSE
-                      setRightGameCurrent(false);
-                  }
-
-              } else {
-
-                  DD_LEFT_GAME = buildDDStatsGame(data);
-                  document.getElementById('LEFTGAME_ID').value = data.game_info.id;
-                  updateGraph(undefined,true);
-                  alert(data.game_info.id + ' loaded as left game in the statistics comparator.',undefined,undefined,'check');
-                  saveSettings();
-
-              }
+          if(JUST_RETURN){
+            if(data != 'ERR'){
+              var DD_RET = buildDDStatsGame(data);
+              return DD_RET;
+            } else {
+              alert('Error in loadGame for Game Page - Game not loaded (see console).','error');
+              return data;
+            }
           } else {
-            alert('Error in loadGame - Game not loaded (see console).','error')
+            if(data != 'ERR'){
+                if(LR == 'R'){
+                    DD_RIGHT_GAME = buildDDStatsGame(data);
+                    setRightGame(DD_RIGHT_GAME, NO_R_FORCE, data);
+                } else {
+                    DD_LEFT_GAME = buildDDStatsGame(data);
+                    setLeftGame(DD_LEFT_GAME, data);
+                }
+            } else {
+              alert('Error in loadGame - Game not loaded (see console).','error')
+            }
+            FORCE_STAT_DRAW = true;
           }
-          FORCE_STAT_DRAW = true;
         }
       }
     }
@@ -15192,7 +15410,7 @@ var language = {
                   splitCalc = Ltotal.toString().padEnd(5,' ') + '(' + signer(homingCalc,true).padEnd(4,' ') + ') [' + gemCalc.toString().padEnd(3,' ') + '-' + useCalc.padEnd(3,' ') + ']  ';
               }
 
-              SPLITCOMP.push([Ltotal,homingCalc,gemCalc,LSPLIT_leftHomingUsed,true,DD_LEFT_GAME.block.time]);
+              SPLITCOMP.push([Ltotal,homingCalc,gemCalc,LSPLIT_leftHomingUsed,true,GAME_OBJECT.block.time]);
               //  [ homing total, homing split, gems collected, homing used , ALWAYS LIVE SPLIT, frame]
               LIVE_SPLIT_DONE = true;
 
@@ -15431,15 +15649,18 @@ var language = {
         var TO_SAVE_ON_SUCCESS_FLAG = false;
         var L_REF = document.querySelector('#GAMEPAGE_INFO .gameItem .gamerName');
         var S_REF = document.querySelector('#GAMEPAGE_INFO .gameItem .gamerStats');
+        var BUTTON_WRAPPER = document.getElementById('GAMEPAGE_BUTTON_WRAPPER');
         if(LOAD_FROM_CACHE == undefined && (GAME_ID != DD_GAMEPAGE_GAME.block.DDSTATS_GAME_ID && GAME_ID != undefined)){
-          //  Clear the graph so as not to misrepresent this DDStats game
-          INSIGHTS_GRAPH.data = [];
-          INSIGHTS_GRAPH.update();
-          //  Paginate a new DDStats game
+          //  Clear the graph and buttons so as not to misrepresent this DDStats game
           TRAY_CALL(4,-1,'loading');
           L_REF.innerHTML = 'Loading...'; await sleep(0.0001);
           S_REF.innerHTML = ' <br> '; await sleep(0.0001);
+          INSIGHTS_GRAPH.data = [];
+          INSIGHTS_GRAPH.update();
           document.getElementById('INSIGHT_DETAILS_WRAPPER').innerHTML = '';
+          BUTTON_WRAPPER.innerHTML = '<div class="gameButton" onmouseenter="tooltip(\'prevGameInfoPage\')" onmouseleave="tooltip(\'close\')" onmousedown="prevGameInfoPage();" style="position:absolute;left:0;overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_backward</i></div></div><div class="gameButton gameButtonUnclickable gameButtonLoading"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.275vh;line-height:0px;">autorenew</i></div></div><div class="gameButton" onmouseenter="tooltip(\'nextGameInfoPage\')" onmouseleave="tooltip(\'close\')" onmousedown="nextGameInfoPage();" style="overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_forward</i></div></div>';
+
+          //  Paginate a new DDStats game
           GAME_OBJECT = await loadGame(GAME_ID,undefined,undefined,true);
           GAME_INSIGHTS = await insights(GAME_OBJECT);
           TO_SAVE_ON_SUCCESS_FLAG = true;
@@ -15451,10 +15672,10 @@ var language = {
           
           GAME_INSIGHTS = GAMEPAGE_INSIGHTS_CACHE;
           if(GAME_INSIGHTS == undefined){
-            GAME_INSIGHTS = insights(GAME_OBJECT); // first loads and uncommits, etc.
+            GAME_INSIGHTS = await insights(GAME_OBJECT); // first loads and uncommits, etc.
             TO_SAVE_ON_SUCCESS_FLAG = true;
           } else if(GAME_INSIGHTS.madeWithVersion < VERSION){
-            GAME_INSIGHTS = insights(GAME_OBJECT); // update insights if new app version
+            GAME_INSIGHTS = await insights(GAME_OBJECT); // update insights if new app version
             TO_SAVE_ON_SUCCESS_FLAG = true;
           }
           
@@ -15474,9 +15695,9 @@ var language = {
           }
 
           //  browser building
+          buildInsightList(GAME_INSIGHTS);
           L_REF.innerHTML = '';
           S_REF.innerHTML = deEmojifiedPlayerName+'<br>'+(GAME_OBJECT.block.time+GAME_OBJECT.block.starting_time);
-          buildInsightList(GAME_INSIGHTS);
 
           //  set titles and widths
           document.getElementById('GAMES_SUBNAVIGATOR_TEXT').innerHTML = GAME_OBJECT.block.DDSTATS_GAME_ID;
@@ -15491,6 +15712,7 @@ var language = {
             INSIGHTS_GRAPH.resetZoom();
             saveSettings();
           }
+          splitGrid();
         } else {
           drapeLogError(GAME_INSIGHTS);
           TRAY_CALL(4,-1,'error');
@@ -16255,6 +16477,15 @@ var language = {
         return (yiq >= 110) ? 'black' : 'white';
     }
 
+    function getContrastBWDirectHex(hexcolor){
+      var BW = getContrastBW(hexcolor);
+      if(BW == 'white'){
+        return '#FFFFFF';
+      } else {
+        return '#000000';
+      }
+    }
+
     function hexToRgb(hex) {
       var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
       return result ? {
@@ -16262,6 +16493,33 @@ var language = {
         g: parseInt(result[2], 16),
         b: parseInt(result[3], 16)
       } : null;
+    }
+
+    function rgbToHex(r, g, b) {
+      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+
+    function blendColors(hexOne,hexTwo,Amount){ //  Amount is 0 to 1
+      try{  //  don't try to fucking... uhhhh.... give me stinky POOP parameters. kay? kay...
+        var COLOR_1 = hexOne;
+        var COLOR_2 = hexTwo;
+        //  param 1/2 can also be RGB arrays; but if this is not the case, parse hex to rgb
+        if(hexOne.b == undefined && hexTwo.b == undefined){
+          COLOR_1 = hexToRgb(hexOne);
+          COLOR_2 = hexToRgb(hexTwo);
+        }
+        //  create placeholder blendables
+        var diff1 = COLOR_1.r - COLOR_2.r;
+        var diff2 = COLOR_1.g - COLOR_2.g;
+        var diff3 = COLOR_1.b - COLOR_2.b;
+
+        var NC1 = Math.floor(COLOR_1.r - (diff1 * Amount));
+        var NC2 = Math.floor(COLOR_1.g - (diff2 * Amount));
+        var NC3 = Math.floor(COLOR_1.b - (diff3 * Amount));
+        
+        return rgbToHex(NC1, NC2, NC3);
+
+      }catch(e){drapeLogError(e)}
     }
 
     function properCaps(thisString){
@@ -21010,7 +21268,9 @@ function getActiveComparisonToggle(){
 
 
 
+function getColorFromCategory(){
 
+}
 
 function getIndexFromToggle(){
 
@@ -22778,6 +23038,248 @@ var GLOBAL_STAT_CHART = new Chart(ctx3, {
   },
 });
 
+function makeSplitGridCell(Split, vsGivenGame, Min, Max, minIsMax, noItems, Color1, Color2){
+  var DEGREE;
+  var CELL_COLOR;
+  var BG_COLOR_FOR_CONTRAST;
+  var COMPARISON_INFORMATION = '';
+  var splitToString;
+  if(isNaN(Split[0])){ //  if this is a fake item, don't do math on it
+    splitToString = 'N/A';
+    CELL_COLOR = 'background-color:' + ui_bg_fill;
+    BG_COLOR_FOR_CONTRAST = ui_bg_fill;
+  } else {  //  this is a real split; do math on it
+    splitToString = signer(Split[0]);
+    if(Split[1] == true){ // if this split is in progress, give it the hashed pattern
+      CELL_COLOR = 'background:repeating-linear-gradient(45deg,var(--BGFill),var(--BGFill) 0.5vh,var(--UI-inactive) 0.5vh,var(--UI-inactive) 1vh);'
+      BG_COLOR_FOR_CONTRAST = ui_inactive;
+    } else {
+      DEGREE = (Split[0] - Min) / (Max - Min);
+      if(minIsMax == true){ // if sole item, 100% good color
+        DEGREE = 1;
+      }
+      BG_COLOR_FOR_CONTRAST = blendColors(ui_badsplit, ui_goodsplit, DEGREE);
+      CELL_COLOR = 'background-color:' + BG_COLOR_FOR_CONTRAST;
+    }
+    if(vsGivenGame != undefined){
+      COMPARISON_INFORMATION = '<br>('+signer(vsGivenGame)+')';
+    }
+  } //  commit the final split and return the Cell HTML for this item
+  return '<div class="splitGridCell" style="'+CELL_COLOR+';color:'+getContrastBWDirectHex(BG_COLOR_FOR_CONTRAST)+'"><span class="splitGridCellText">'+splitToString+COMPARISON_INFORMATION+'</span></div>';
+}
+
+//  Split gamepage generator
+function splitGrid(){
+  var GRID_CONSTRUCTOR = ''; 
+  var GAME_TITLES = ['THIS', 'L', 'R', 'BEST'];
+  var GAMES = [DD_GAMEPAGE_GAME, DD_LEFT_GAME, DD_RIGHT_GAME]; // sum of best is uniquely added last
+  var HIGHEST_GAMETIME = Math.max(Math.floor(DD_GAMEPAGE_GAME.block.time), Math.floor(DD_LEFT_GAME.block.time), Math.floor(DD_RIGHT_GAME.block.time));
+  //  determine the maximum split time to render for the grid's Y
+  var HIGHEST_SPLITBEARING_SPLIT = []; //  first from the V3_SPLITS / sum of best list. [split, index]
+  for(var i=0;i<V3_SPLITS.length;i++){
+    if(V3_SPLITS[i][2] != undefined){
+      HIGHEST_SPLITBEARING_SPLIT = [V3_SPLITS[i+1], i+1];
+    }
+  }
+  //  then if this game exceeds it, push it further by that much
+  if(HIGHEST_GAMETIME > HIGHEST_SPLITBEARING_SPLIT[0][1]){
+    //  the highest gametime is in fact higher than the highest split-bearing split; re-decide
+
+    //  actually..... it might be a good idea to just ignore the sum of best split if it's higher
+    //  because it doesn't really do us any good anyway and we don't assume that it exists
+    //    so, only limit to the highest actual game time and just allow sum of best to exist passively
+
+  }
+  //  Prebuild the game split array and fill with game array's splits programmatically;
+  //  Then add the Sum Of Best Splits to the end of it
+  var GAMES_SPLITS = [];
+  for(var Game of GAMES){
+    GAMES_SPLITS.push(getSplits(Game));
+  } 
+  
+  if(SPLITGRID_OMIT_BEST != true){
+    var sumOfBestArray = [];
+    for(var Split of V3_SPLITS){
+      //  sum of best inherently lacks Total Homing, collection, use, etc. so only push Split and Time
+      sumOfBestArray.push([undefined, Split[2], undefined, undefined, false, Split[1]]);
+    }
+    GAMES_SPLITS.push(sumOfBestArray);
+  }
+
+  //  create the grid's data, and construct the grid
+  //      GRID DATA IS REPRESENTED AS THIS ARRAY:
+  //      [ [splits, for, this, row],  [min, max, no_items, min_is_max],  [split name, split time]  ]
+  //   THE 'SPLITS' ARE EACH AN ARRAY OF THEIR OWN, CONTAINING:
+  //   [  split,  is_in_progress  ]
+
+  var GRID_DATA = [];
+
+
+  for(var r=0; r<HIGHEST_SPLITBEARING_SPLIT[1]; r++){  //  COLUMNS, one per game (and sum-of-best """game""");
+    var COLWORTH_ARRAY = [[], [], []];
+    var COLWORTH_SPLIT_MINMAX_BUFFER = [];
+    for(var c=0; c<GAMES_SPLITS.length; c++){ //  ROWS (max split index = number of rows)
+      if(GAMES_SPLITS[c][r] != undefined){  //  if this row exists whatsoever,
+        if(GAMES_SPLITS[c][r][1] != undefined){ // and if its split exists,
+          COLWORTH_ARRAY[0].push([GAMES_SPLITS[c][r][1], GAMES_SPLITS[c][r][4]]);
+          if(GAMES_SPLITS[c][r][4] == false){ //  if not in progress, can be compared to others
+            COLWORTH_SPLIT_MINMAX_BUFFER.push(GAMES_SPLITS[c][r][1]);
+          }
+        } else {
+          COLWORTH_ARRAY[0].push(['N/A','N/A']); // preserve grid by inserting real item
+        }
+      } else {
+        COLWORTH_ARRAY[0].push(['N/A','N/A']);
+      }
+    }
+    var COL_MIN = Math.min(...COLWORTH_SPLIT_MINMAX_BUFFER);
+    var COL_MAX = Math.max(...COLWORTH_SPLIT_MINMAX_BUFFER);
+    var MIN_IS_MAX = false;
+    var NO_ITEMS = false;
+    if(COLWORTH_SPLIT_MINMAX_BUFFER[0] == undefined){
+      NO_ITEMS = true;
+    }
+    if(COLWORTH_SPLIT_MINMAX_BUFFER[0] != undefined && COLWORTH_SPLIT_MINMAX_BUFFER[1] == undefined){
+      MIN_IS_MAX = true;
+    }
+    COLWORTH_ARRAY[1] = [COL_MIN, COL_MAX, NO_ITEMS, MIN_IS_MAX];
+    COLWORTH_ARRAY[2] = [V3_SPLITS[c][0], V3_SPLITS[c][1]];
+    GRID_DATA.push(COLWORTH_ARRAY);
+  }
+
+
+  //  OOPS!!!!!!!!!! this iterates by columns into rows. we need to loop through rows into columns
+  /*
+  for(var c=0; c<GAMES_SPLITS.length; c++){  //  COLUMNS, one per game (and sum-of-best """game""");
+    var COLWORTH_ARRAY = [[], [], []];
+    var COLWORTH_SPLIT_MINMAX_BUFFER = [];
+    for(var r=0; r<HIGHEST_SPLITBEARING_SPLIT[1]; r++){ //  ROWS (max split index = number of rows)
+      if(GAMES_SPLITS[c][r] != undefined){  //  if this row exists whatsoever,
+        if(GAMES_SPLITS[c][r][1] != undefined){ // and if its split exists,
+          COLWORTH_ARRAY[0].push([GAMES_SPLITS[c][r][1], GAMES_SPLITS[c][r][4]]);
+          if(GAMES_SPLITS[c][r][4] == false){ //  if not in progress, can be compared to others
+            COLWORTH_SPLIT_MINMAX_BUFFER.push(GAMES_SPLITS[c][r][1]);
+          }
+        } else {
+          COLWORTH_ARRAY[0].push('N/A'); // preserve grid by inserting real item
+        }
+      } else {
+        COLWORTH_ARRAY[0].push('N/A');
+      }
+    }
+    var COL_MIN = Math.min(...COLWORTH_SPLIT_MINMAX_BUFFER);
+    var COL_MAX = Math.max(...COLWORTH_SPLIT_MINMAX_BUFFER);
+    var MIN_IS_MAX = false;
+    var NO_ITEMS = false;
+    if(COLWORTH_SPLIT_MINMAX_BUFFER[0] == undefined){
+      NO_ITEMS = true;
+    }
+    if(COLWORTH_SPLIT_MINMAX_BUFFER[0] != undefined && COLWORTH_SPLIT_MINMAX_BUFFER[1] == undefined){
+      MIN_IS_MAX = true;
+    }
+    COLWORTH_ARRAY[1] = [COL_MIN, COL_MAX, NO_ITEMS, MIN_IS_MAX];
+    COLWORTH_ARRAY[2] = [V3_SPLITS[c][0], V3_SPLITS[c][1]];
+    GRID_DATA.push(COLWORTH_ARRAY);
+  }
+  */
+
+  // console.log('GRID_DATA:', GRID_DATA);
+
+  //  construct the actual grid. REMEMBER: GRID_DATA is accessed by [ROW][TYPE][COLUMN], not vice-versa
+  for(var c=0; c<GAMES_SPLITS.length; c++){  //  COLUMNS (+1 for the Sum Of Best column)
+    if(c==0){
+      GRID_CONSTRUCTOR += '<div class="splitGridColumn"><div class="splitGridCell" style="background-color:rgba(0,0,0,0)" style=""><span class="splitGridCellText" style="color:var(--UI-foretext);">splits</span></div>';
+      for(var rS=0; rS<HIGHEST_SPLITBEARING_SPLIT[1]; rS++){
+        GRID_CONSTRUCTOR += '<div class="splitGridCell" style="justify-content:flex-start;padding-left:0.8vh"><span class="splitGridCellText">'+V3_SPLITS[rS][0]+'</span></div>'
+      }
+      GRID_CONSTRUCTOR += '</div>';
+    }
+    GRID_CONSTRUCTOR += '<div class="splitGridColumn">';
+    for(var r=0; r<HIGHEST_SPLITBEARING_SPLIT[1]; r++){ //  ROWS (max split index = number of rows)
+      //  if first item in row, label this
+      if(r==0){
+        GRID_CONSTRUCTOR += '<div class="splitGridCell"><span class="splitGridCellText">'+GAME_TITLES[c]+'</span></div>'
+      }
+      // makeSplitGridCell(Split, vsGivenGame, Min, Max, minIsMax, noItems, Color1, Color2)
+      GRID_CONSTRUCTOR += makeSplitGridCell(GRID_DATA[r][0][c], undefined, GRID_DATA[r][1][0], GRID_DATA[r][1][1], GRID_DATA[r][1][3], GRID_DATA[r][1][2], ui_badsplit, ui_goodsplit);
+    }
+    GRID_CONSTRUCTOR += '</div>';
+  }
+
+
+  //  set the grid
+  document.getElementById('SPLIT_GRID').innerHTML = GRID_CONSTRUCTOR;
+}
+
+
+
+//  Gamepage paginators
+function nextGameInfoPage(){
+  GAMEPAGE_INFO_SUBPAGE++;
+  if(GAMEPAGE_INFO_SUBPAGE > GAMEPAGE_INFO_LAST_PAGE){
+    GAMEPAGE_INFO_SUBPAGE = 0;
+  }
+  setGameInfoPage(undefined,true);
+  saveSettings();
+}
+function prevGameInfoPage(){
+  GAMEPAGE_INFO_SUBPAGE--;
+  if(GAMEPAGE_INFO_SUBPAGE < 0){
+    GAMEPAGE_INFO_SUBPAGE = GAMEPAGE_INFO_LAST_PAGE;
+  }
+  setGameInfoPage(undefined,true);
+  saveSettings();
+}
+function setGameInfoPage(PAGE,INIT){
+  if(INIT != undefined){
+    document.getElementById('GAMEPAGE_INFO_PAGE_WRAPPER').style.transform = 'translate(calc('+GAMEPAGE_INFO_SUBPAGE+' * -100%))';
+  } else {
+    if(PAGE > -1 && PAGE < GAMEPAGE_INFO_LAST_PAGE){
+      GAMEPAGE_INFO_SUBPAGE = PAGE;
+      document.getElementById('GAMEPAGE_INFO_PAGE_WRAPPER').style.transform = 'translate(calc('+GAMEPAGE_INFO_SUBPAGE+' * -100%))';
+      saveSettings();
+    }
+  }
+}
+
+//  Gamepage insights show/hide
+function showInsights(){
+  if(INSIGHTS_ON_GAME_GRAPH_HOVER){
+    if(INSIGHTS_TRAY_OPEN == false){
+      INSIGHTS_TRAY_OPEN = true;
+      INSIGHT_TRANSITIONING_FLAG = true;
+      document.getElementById('INSIGHT_DETAILS_WRAPPER').style.right = '0%';
+      setTimeout(function(){
+        INSIGHT_TRANSITIONING_FLAG = false;
+      },300);
+    }
+  }
+}
+function hideInsights(conditional){
+  if(SHOW_INSIGHTS_BUTTON_ON == false){
+    if(INSIGHTS_TRAY_OPEN == true){
+      INSIGHTS_TRAY_OPEN = false;
+      INSIGHT_TRANSITIONING_FLAG = true;
+      document.getElementById('INSIGHT_DETAILS_WRAPPER').style.right = '110%';
+    }
+  }
+}
+function enableInsightsButton(){
+  SHOW_INSIGHTS_BUTTON_ON = true;
+  showInsights();
+}
+function disableInsightsButton(){
+  SHOW_INSIGHTS_BUTTON_ON = false;
+  hideInsights();
+}
+function toggleInsightsButton(){
+  if(SHOW_INSIGHTS_BUTTON_ON){
+    disableInsightsButton();
+  } else {
+    enableInsightsButton();
+  }
+}
+
 function returnInsightsFromChartIndex(IND){
   return GAMEPAGE_INSIGHTS_CACHE.insights_organized[IND];
 }
@@ -22903,11 +23405,13 @@ var INSIGHTS_GRAPH = new Chart(ctx4, {
     },
     options: {
       onHover: function(event, elements){
-        if(elements[0] != undefined && elements[0] != null){
-          if(elements[0].index != DD_INS_GRP_CACHE){
-            var insightsForThisIndex = returnInsightsFromChartIndex_NEAREST_NEIGHBOR(elements[0].index);
-            gotoInsights(insightsForThisIndex);
-            DD_INS_GRP_CACHE = elements[0].index;
+        if(INSIGHT_TRANSITIONING_FLAG == false){  //  ONLY WORKS WHEN TRANSITION COMPLETE, FOR SMOOTHNESS
+          if(elements[0] != undefined && elements[0] != null){
+            if(elements[0].index != DD_INS_GRP_CACHE){
+              var insightsForThisIndex = returnInsightsFromChartIndex_NEAREST_NEIGHBOR(elements[0].index);
+              gotoInsights(insightsForThisIndex);
+              DD_INS_GRP_CACHE = elements[0].index;
+            }
           }
         }
       },
