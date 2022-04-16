@@ -6813,17 +6813,17 @@ void main() {
 
     var V3_SPLITS =  [  // Standard split model, which does not change. 
                         //  Third index is best splits-- This DOES NOT include In-Progress splits!
-        ['350',  366,  214],
-        ['700',  709,  550], // bullshit
-        ['800',  800,  170], // bullshit
-        ['880',  875,  130], // bullshit
-        ['930',  942,  100], // bullshit
-        ['1000', 996,  20], // bullshit
-        ['1040', 1047, -20], // bullshit
-        ['1080', 1091, -90], // bullshit
-        ['1130', 1133, -120], // bullshit
-        ['1160', 1170, -180], // bullshit
-        ['1200', 1203, -250], // bullshit
+        ['350',  366,   214],
+        ['700',  709,   500], // bullshit
+        ['800',  800,   153], // bullshit
+        ['880',  875,   111], // bullshit
+        ['930',  942,   65 ], // bullshit
+        ['1000', 996,   10 ], // bullshit
+        ['1040', 1047, -90 ], // bullshit
+        ['1080', 1091, -150], // bullshit
+        ['1130', 1133, -228], // bullshit
+        ['1160', 1170, -267], // bullshit
+        ['1200', 1203, undefined], // bullshit
         ['1230', 1231, undefined], // bullshit
         ['1260', 1260, undefined], // bullshit
         ['1290', 1290, undefined], // bullshit
@@ -7808,9 +7808,10 @@ function toggleCredits(){ // don't use this...?
                  ███████████████████████████████████   
                   ██████████████████████████████████  ` + 'v' + VERSION + `  
                    █████████████████████████████████ ` + document.getElementById('CREDITS').innerHTML;
-      document.getElementById('CREDITS').innerHTML = document.getElementById('CREDITS').innerHTML + document.getElementById('CREDITS').innerHTML;
       document.getElementById('CREDITSBODY_YEAR').innerHTML = thisYear;
       document.getElementById('CREDITS_CHICKEN_YEAR').innerHTML = thisYear;
+      //  pad credits with dupe
+      document.getElementById('CREDITS').innerHTML = document.getElementById('CREDITS').innerHTML + document.getElementById('CREDITS').innerHTML;
     }
 
 
@@ -12479,6 +12480,7 @@ var language = {
           }
         }
       }
+      splitGrid();
     }
 
     function toggleFavoriteIcon(favoriteButtonElement){
@@ -15282,6 +15284,10 @@ var language = {
       var splitNums = [];
       for(i=0;i<SPLITS_TARGET.length;i++){
           splitNums.push(SPLITS_TARGET[i][1]);
+          if(GAME_OBJECT.block.starting_time > SPLITS_TARGET[i][1]){
+            console.log('AA');
+            SPLITCOMP.push([undefined,undefined,undefined,undefined,false,SPLITS_TARGET[i][1]]);
+          }
       }
 
       for(i=0; i<SPLITS_TARGET.length; i++){
@@ -15347,10 +15353,9 @@ var language = {
             [Ltotal,homingCalc,gemCalc,LSPLIT_leftHomingUsed,liveSplitFlag,SPLITS_TARGET[i][1]]
           );
           //  [ homing total, homing split, gems collected, homing used , live split flag, time]
-        } else {
-          //  this is not a comparator model, so apply the live split as well
+        }
 
-          if(LIVE_SPLIT_DONE == false){
+          if(LIVE_SPLIT_DONE == false && PUSHED_LIVE_SPLIT == true){ // make sure this is the final split when applying this!
 
           var L_LastFrame; // = DD_LEFT_GAME.frames.at(-1);
           if(L_LastFrame == undefined){
@@ -15410,12 +15415,11 @@ var language = {
                   splitCalc = Ltotal.toString().padEnd(5,' ') + '(' + signer(homingCalc,true).padEnd(4,' ') + ') [' + gemCalc.toString().padEnd(3,' ') + '-' + useCalc.padEnd(3,' ') + ']  ';
               }
 
-              SPLITCOMP.push([Ltotal,homingCalc,gemCalc,LSPLIT_leftHomingUsed,true,GAME_OBJECT.block.time]);
+              SPLITCOMP.push([Ltotal,homingCalc,gemCalc,LSPLIT_leftHomingUsed,true,(GAME_OBJECT.block.time + GAME_OBJECT.block.starting_time)]);
               //  [ homing total, homing split, gems collected, homing used , ALWAYS LIVE SPLIT, frame]
               LIVE_SPLIT_DONE = true;
 
           }
-        }
       }
       if(COMPARATOR != undefined){
         return [SPLITCOMP, SPLITSTRINGS, CACHED_HOMING_USED, HOMING_USED_LAST, LIVE_IND]
@@ -16424,6 +16428,12 @@ var language = {
         default: return "th";
       }
     }
+
+    const insert = (arr, index, newItem) => [
+      ...arr.slice(0, index),
+      newItem,
+      ...arr.slice(index)
+    ]
 
     function cleanString(UNSAFE_STRING){
       var NEW_STRING = UNSAFE_STRING;
@@ -17702,6 +17712,9 @@ var language = {
             DDRUST_SESSION_VERIFIED = true;
             DDRUST_SESSION_PROCESSED = true;
             alert('ddstats-rust connected!',undefined,undefined,'link');
+            setTimeout(function(){
+              splitGrid();
+            },1500);
           } else {
             DDRUST_SESSION_PROCESSED = true;
             alert('This version of ddstats-rust is not supported! Refresh the page, and if this error persists, update ddstats-rust.','ddrust',undefined,'link_off');
@@ -21726,8 +21739,10 @@ function pushDeltaComparisonMode(Delta){
           placePeakMarker();
           placeCurrentMarker();
           GLOBAL_GRAPH.update();
+          conditionalSplitGrid();
       } else {
           updateGraph();
+          conditionalSplitGrid();
       }
     } else {
       drapeLog(arguments.callee.name,'pushDeltaComparisonMode called on NON-LIVE GRAPH-- BIG FART!!! BIG FUCKING SMELLY YUCKY FART....');
@@ -21799,8 +21814,10 @@ function pushDelta(Delta){
           placePeakMarker();
           placeCurrentMarker();
           GLOBAL_GRAPH.update();
+          conditionalSplitGrid();
       } else {
           updateGraph();
+          conditionalSplitGrid();
       }
     } else {
       drapeLog(arguments.callee.name,'pushDelta called on NON-LIVE GRAPH-- BIG FART!!! BIG FUCKING SMELLY YUCKY FART....');
@@ -23043,6 +23060,7 @@ function makeSplitGridCell(Split, vsGivenGame, Min, Max, minIsMax, noItems, Colo
   var CELL_COLOR;
   var BG_COLOR_FOR_CONTRAST;
   var COMPARISON_INFORMATION = '';
+  var TEXTCOLOR = 'var(--UI-foretext)';
   var splitToString;
   if(isNaN(Split[0])){ //  if this is a fake item, don't do math on it
     splitToString = 'N/A';
@@ -23051,7 +23069,7 @@ function makeSplitGridCell(Split, vsGivenGame, Min, Max, minIsMax, noItems, Colo
   } else {  //  this is a real split; do math on it
     splitToString = signer(Split[0]);
     if(Split[1] == true){ // if this split is in progress, give it the hashed pattern
-      CELL_COLOR = 'background:repeating-linear-gradient(45deg,var(--BGFill),var(--BGFill) 0.5vh,var(--UI-inactive) 0.5vh,var(--UI-inactive) 1vh);'
+      CELL_COLOR = 'background:repeating-linear-gradient(45deg,var(--UI-inactive),var(--UI-inactive) 0.5vh,var(--BGFill) 0.5vh,var(--BGFill) 1vh);text-shadow:-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill);';
       BG_COLOR_FOR_CONTRAST = ui_inactive;
     } else {
       DEGREE = (Split[0] - Min) / (Max - Min);
@@ -23060,51 +23078,60 @@ function makeSplitGridCell(Split, vsGivenGame, Min, Max, minIsMax, noItems, Colo
       }
       BG_COLOR_FOR_CONTRAST = blendColors(ui_badsplit, ui_goodsplit, DEGREE);
       CELL_COLOR = 'background-color:' + BG_COLOR_FOR_CONTRAST;
+      TEXTCOLOR = getContrastBWDirectHex(BG_COLOR_FOR_CONTRAST);
     }
     if(vsGivenGame != undefined){
       COMPARISON_INFORMATION = '<br>('+signer(vsGivenGame)+')';
     }
   } //  commit the final split and return the Cell HTML for this item
-  return '<div class="splitGridCell" style="'+CELL_COLOR+';color:'+getContrastBWDirectHex(BG_COLOR_FOR_CONTRAST)+'"><span class="splitGridCellText">'+splitToString+COMPARISON_INFORMATION+'</span></div>';
+  return '<div class="splitGridCell" style="'+CELL_COLOR+';color:'+TEXTCOLOR+'"><span class="splitGridCellText">'+splitToString+COMPARISON_INFORMATION+'</span></div>';
 }
 
 //  Split gamepage generator
 function splitGrid(){
+
   var GRID_CONSTRUCTOR = ''; 
   var GAME_TITLES = ['THIS', 'L', 'R', 'BEST'];
   var GAMES = [DD_GAMEPAGE_GAME, DD_LEFT_GAME, DD_RIGHT_GAME]; // sum of best is uniquely added last
-  var HIGHEST_GAMETIME = Math.max(Math.floor(DD_GAMEPAGE_GAME.block.time), Math.floor(DD_LEFT_GAME.block.time), Math.floor(DD_RIGHT_GAME.block.time));
-  //  determine the maximum split time to render for the grid's Y
-  var HIGHEST_SPLITBEARING_SPLIT = []; //  first from the V3_SPLITS / sum of best list. [split, index]
-  for(var i=0;i<V3_SPLITS.length;i++){
-    if(V3_SPLITS[i][2] != undefined){
-      HIGHEST_SPLITBEARING_SPLIT = [V3_SPLITS[i+1], i+1];
+
+  //  Add the live game to grid but only if it is not undefined
+  if(DD != undefined){
+    if(DD.frames != undefined){
+      if(DD.frames[0] != undefined){ // add to the second column
+        GAMES = insert(GAMES, 1, DD);
+        GAME_TITLES = insert(GAME_TITLES, 1, 'LIVE');
+      }
     }
   }
-  //  then if this game exceeds it, push it further by that much
-  if(HIGHEST_GAMETIME > HIGHEST_SPLITBEARING_SPLIT[0][1]){
-    //  the highest gametime is in fact higher than the highest split-bearing split; re-decide
 
-    //  actually..... it might be a good idea to just ignore the sum of best split if it's higher
-    //  because it doesn't really do us any good anyway and we don't assume that it exists
-    //    so, only limit to the highest actual game time and just allow sum of best to exist passively
-
-  }
-  //  Prebuild the game split array and fill with game array's splits programmatically;
-  //  Then add the Sum Of Best Splits to the end of it
+  //  Prebuild the game split array and fill with game array's splits programmatically
   var GAMES_SPLITS = [];
+  var GAMES_SPLITS_LENGTHS = [];
+  var SUMOFBEST_LENGTH = 0;
   for(var Game of GAMES){
-    GAMES_SPLITS.push(getSplits(Game));
+    var TSPL = getSplits(Game);
+    GAMES_SPLITS.push(TSPL);
+    GAMES_SPLITS_LENGTHS.push(TSPL.length)
   } 
-  
+
+  //  Add the Sum Of Best Splits to the end of the prebuild splits array
   if(SPLITGRID_OMIT_BEST != true){
     var sumOfBestArray = [];
     for(var Split of V3_SPLITS){
       //  sum of best inherently lacks Total Homing, collection, use, etc. so only push Split and Time
       sumOfBestArray.push([undefined, Split[2], undefined, undefined, false, Split[1]]);
+      if(Split[2] != undefined){
+        SUMOFBEST_LENGTH++; //  Only count this split as a real index if it is non-undefined
+      }
     }
     GAMES_SPLITS.push(sumOfBestArray);
+    GAMES_SPLITS_LENGTHS.push(SUMOFBEST_LENGTH);
   }
+
+  console.log('GAMES_SPLITS: ', GAMES_SPLITS); // Log the GAMES_SPLITS array for development
+
+  //  Determine how high the grid needs to be based on which game has the most splits
+  var HIGHEST_SPLIT_CELL = Math.max(...GAMES_SPLITS_LENGTHS);
 
   //  create the grid's data, and construct the grid
   //      GRID DATA IS REPRESENTED AS THIS ARRAY:
@@ -23114,8 +23141,7 @@ function splitGrid(){
 
   var GRID_DATA = [];
 
-
-  for(var r=0; r<HIGHEST_SPLITBEARING_SPLIT[1]; r++){  //  COLUMNS, one per game (and sum-of-best """game""");
+  for(var r=0; r<HIGHEST_SPLIT_CELL; r++){  //  COLUMNS, one per game (and sum-of-best """game""");
     var COLWORTH_ARRAY = [[], [], []];
     var COLWORTH_SPLIT_MINMAX_BUFFER = [];
     for(var c=0; c<GAMES_SPLITS.length; c++){ //  ROWS (max split index = number of rows)
@@ -23147,55 +23173,19 @@ function splitGrid(){
     GRID_DATA.push(COLWORTH_ARRAY);
   }
 
-
-  //  OOPS!!!!!!!!!! this iterates by columns into rows. we need to loop through rows into columns
-  /*
-  for(var c=0; c<GAMES_SPLITS.length; c++){  //  COLUMNS, one per game (and sum-of-best """game""");
-    var COLWORTH_ARRAY = [[], [], []];
-    var COLWORTH_SPLIT_MINMAX_BUFFER = [];
-    for(var r=0; r<HIGHEST_SPLITBEARING_SPLIT[1]; r++){ //  ROWS (max split index = number of rows)
-      if(GAMES_SPLITS[c][r] != undefined){  //  if this row exists whatsoever,
-        if(GAMES_SPLITS[c][r][1] != undefined){ // and if its split exists,
-          COLWORTH_ARRAY[0].push([GAMES_SPLITS[c][r][1], GAMES_SPLITS[c][r][4]]);
-          if(GAMES_SPLITS[c][r][4] == false){ //  if not in progress, can be compared to others
-            COLWORTH_SPLIT_MINMAX_BUFFER.push(GAMES_SPLITS[c][r][1]);
-          }
-        } else {
-          COLWORTH_ARRAY[0].push('N/A'); // preserve grid by inserting real item
-        }
-      } else {
-        COLWORTH_ARRAY[0].push('N/A');
-      }
-    }
-    var COL_MIN = Math.min(...COLWORTH_SPLIT_MINMAX_BUFFER);
-    var COL_MAX = Math.max(...COLWORTH_SPLIT_MINMAX_BUFFER);
-    var MIN_IS_MAX = false;
-    var NO_ITEMS = false;
-    if(COLWORTH_SPLIT_MINMAX_BUFFER[0] == undefined){
-      NO_ITEMS = true;
-    }
-    if(COLWORTH_SPLIT_MINMAX_BUFFER[0] != undefined && COLWORTH_SPLIT_MINMAX_BUFFER[1] == undefined){
-      MIN_IS_MAX = true;
-    }
-    COLWORTH_ARRAY[1] = [COL_MIN, COL_MAX, NO_ITEMS, MIN_IS_MAX];
-    COLWORTH_ARRAY[2] = [V3_SPLITS[c][0], V3_SPLITS[c][1]];
-    GRID_DATA.push(COLWORTH_ARRAY);
-  }
-  */
-
-  // console.log('GRID_DATA:', GRID_DATA);
+  console.log('GRID_DATA: ', GRID_DATA);
 
   //  construct the actual grid. REMEMBER: GRID_DATA is accessed by [ROW][TYPE][COLUMN], not vice-versa
   for(var c=0; c<GAMES_SPLITS.length; c++){  //  COLUMNS (+1 for the Sum Of Best column)
     if(c==0){
-      GRID_CONSTRUCTOR += '<div class="splitGridColumn"><div class="splitGridCell" style="background-color:rgba(0,0,0,0)" style=""><span class="splitGridCellText" style="color:var(--UI-foretext);">splits</span></div>';
-      for(var rS=0; rS<HIGHEST_SPLITBEARING_SPLIT[1]; rS++){
+      GRID_CONSTRUCTOR += '<div class="splitGridColumn"><div class="splitGridCell" style="background-color:var(--BGFill)" style=""><span class="splitGridCellText" style="color:var(--UI-foretext);top:-0.3vh;font-family:mainFont;left:-0.075vh;font-size:1.75vh;">splits</span></div>';
+      for(var rS=0; rS<HIGHEST_SPLIT_CELL; rS++){
         GRID_CONSTRUCTOR += '<div class="splitGridCell" style="justify-content:flex-start;padding-left:0.8vh"><span class="splitGridCellText">'+V3_SPLITS[rS][0]+'</span></div>'
       }
       GRID_CONSTRUCTOR += '</div>';
     }
     GRID_CONSTRUCTOR += '<div class="splitGridColumn">';
-    for(var r=0; r<HIGHEST_SPLITBEARING_SPLIT[1]; r++){ //  ROWS (max split index = number of rows)
+    for(var r=0; r<HIGHEST_SPLIT_CELL; r++){ //  ROWS (max split index = number of rows)
       //  if first item in row, label this
       if(r==0){
         GRID_CONSTRUCTOR += '<div class="splitGridCell"><span class="splitGridCellText">'+GAME_TITLES[c]+'</span></div>'
@@ -23206,9 +23196,15 @@ function splitGrid(){
     GRID_CONSTRUCTOR += '</div>';
   }
 
-
   //  set the grid
   document.getElementById('SPLIT_GRID').innerHTML = GRID_CONSTRUCTOR;
+
+}
+
+function conditionalSplitGrid(){  //  Create the Splitgrid only if the page is focused
+  if(GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == -1 && GAMEPAGE_INFO_SUBPAGE == 1){
+    splitGrid();
+  }
 }
 
 
