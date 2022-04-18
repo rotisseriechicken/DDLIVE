@@ -6813,20 +6813,21 @@ void main() {
 
     var V3_SPLITS =  [  // Standard split model, which does not change. 
                         //  Third index is best splits-- This DOES NOT include In-Progress splits!
-        ['350',  366,   214],
-        ['700',  709,   500], // bullshit
-        ['800',  800,   153], // bullshit
-        ['880',  875,   111], // bullshit
-        ['930',  942,   65 ], // bullshit
-        ['1000', 996,   10 ], // bullshit
-        ['1040', 1047, -90 ], // bullshit
-        ['1080', 1091, -150], // bullshit
-        ['1130', 1133, -228], // bullshit
-        ['1160', 1170, -267], // bullshit
-        ['1200', 1203, undefined], // bullshit
-        ['1230', 1231, undefined], // bullshit
-        ['1260', 1260, undefined], // bullshit
-        ['1290', 1290, undefined], // bullshit
+
+        ['350',  366,   214], //  Pocket's Farm
+        ['700',  709,   515], //  331109  
+        ['800',  800,   165], //  331062
+        ['880',  875,   123], //  330992
+        ['930',  942,   65 ], //  bullshit
+        ['1000', 996,   0  ], //  bullshit
+        ['1040', 1047, -54 ], //  331070
+        ['1080', 1091, -150], //  bullshit
+        ['1130', 1133, -228], //  bullshit
+        ['1160', 1170, -267], //  bullshit
+        ['1200', 1203, undefined],
+        ['1230', 1231, undefined],
+        ['1260', 1260, undefined],
+        ['1290', 1290, undefined],
     ];
 
     var BASELINE_GEMS_AT_LEVI = 105; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -23069,7 +23070,8 @@ function makeSplitGridCell(Split, vsGivenGame, Min, Max, minIsMax, noItems, Colo
   } else {  //  this is a real split; do math on it
     splitToString = signer(Split[0]);
     if(Split[1] == true){ // if this split is in progress, give it the hashed pattern
-      CELL_COLOR = 'background:repeating-linear-gradient(45deg,var(--UI-inactive),var(--UI-inactive) 0.5vh,var(--BGFill) 0.5vh,var(--BGFill) 1vh);text-shadow:-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill);';
+      CELL_COLOR = 'background:repeating-linear-gradient(45deg,var(--UI-inactive),var(--UI-inactive) 0.5vh,var(--BGFill) 0.5vh,var(--BGFill) 1vh);text-shadow:-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill),-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill),-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill);';
+      TEXTCOLOR = 'var(--UI-active)';
       BG_COLOR_FOR_CONTRAST = ui_inactive;
     } else {
       DEGREE = (Split[0] - Min) / (Max - Min);
@@ -23178,7 +23180,7 @@ function splitGrid(){
   //  construct the actual grid. REMEMBER: GRID_DATA is accessed by [ROW][TYPE][COLUMN], not vice-versa
   for(var c=0; c<GAMES_SPLITS.length; c++){  //  COLUMNS (+1 for the Sum Of Best column)
     if(c==0){
-      GRID_CONSTRUCTOR += '<div class="splitGridColumn"><div class="splitGridCell" style="background-color:var(--BGFill)" style=""><span class="splitGridCellText" style="color:var(--UI-foretext);top:-0.3vh;font-family:mainFont;left:-0.075vh;font-size:1.75vh;">splits</span></div>';
+      GRID_CONSTRUCTOR += '<div class="splitGridColumn"><div class="splitGridCell" style="background-color:var(--BGFill)" style=""><span class="splitGridCellText" style="color:var(--UI-foretext);top:-0.295vh;font-family:mainFont;left:-0.075vh;font-size:1.75vh;">splits</span></div>';
       for(var rS=0; rS<HIGHEST_SPLIT_CELL; rS++){
         GRID_CONSTRUCTOR += '<div class="splitGridCell" style="justify-content:flex-start;padding-left:0.8vh"><span class="splitGridCellText">'+V3_SPLITS[rS][0]+'</span></div>'
       }
