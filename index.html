@@ -1681,12 +1681,26 @@ canvas{
   flex: 1.5;
   flex-shrink: 1;
   image-rendering: pixelated;
+  position: relative;
+}
+#PLAYER_CHART_NO_HISTORY_CONTAINER{
+  z-index: 999999;
+  position: absolute;
+  height: 100.5%;
+  width: 100%;
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(.01,.81,.55,1.01) !important;
+
+  background-color: var(--BGFill);
 }
 #PLAYER_CHART{
   position: relative;
   height: 100%;
   width: 100%;
 }
+
 
 
 
@@ -1884,6 +1898,15 @@ canvas{
   display: flex;
   width: 100%;
   background-color: var(--BGFill);
+  cursor: pointer;
+}
+
+.insightLightbarPadding{
+  width: 0vh;
+  height: auto;
+  flex-shrink: 0;
+  background-color: var(--BGFill);
+  transition: width 0.3s cubic-bezier(.01,.81,.55,1.01) !important;
 }
 
 .insightLeftSection{
@@ -1891,11 +1914,12 @@ canvas{
   flex-shrink: 0;
   flex-direction: column;
 
+  padding-left: 0.7vh;
+
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding-left: 0.5vh;
 }
 .insightLeftTime{
   font-family: 'OPM3';
@@ -1906,7 +1930,8 @@ canvas{
   padding: 0.75vh;
   padding-left: 0.7vh;
   padding-bottom: 1vh;
-  padding-right: 1.5vh;
+  padding-right: 1.6vh;
+  transition: padding 0.3s cubic-bezier(.01,.81,.55,1.01) !important;
 }
 
 .insightTitle{
@@ -1963,8 +1988,21 @@ canvas{
   background-color: var(--UI-foretext) !important;
   color: var(--BGFill);
 }
+.insightActive .insightLeftSection{
+  color: var(--BGFill) !important;
+}
+.insightActive .insightLightbarPadding{
+  background-color: var(--UI-active) !important;
+}
 .insightActive .insightDescription{
   color: var(--BGFill) !important;
+}
+
+.insight:hover .insightLightbarPadding{
+  width: 0.5vh !important;
+}
+.insight:hover .insightBodyWrapper{
+  padding-right: 1.3vh;
 }
 
 
@@ -1974,8 +2012,8 @@ canvas{
 }
 #GAMEPAGE_INFO_INNER_WRAPPER{
   /* top: calc(0.5vh + 3.66vh); */
-  width: 100%;
-  height: 31vh;
+  width: calc(100% + 1px);
+  height: calc(31vh + 1px);
   position: relative;
   overflow: hidden;
 }
@@ -1989,13 +2027,16 @@ canvas{
   display: inline-block;
 }
 #INSIGHT_DETAILS_WRAPPER{
-  height: 100%;
+  height: calc(100% + 1px);
   overflow: hidden;
-  overflow-y: scroll;
+  overflow-y: overlay;
   position: absolute;
-  right: 110%;
-  width: 100%;
-  transition: right 0.2s cubic-bezier(.01,.81,.55,1.01) !important; 
+  right: 0%; /* 110%; */
+  width: calc(100% + 2px);
+  opacity: 0;
+  transition: opacity 0.25s cubic-bezier(.01,.81,.55,1.01) !important; 
+
+  pointer-events: none;
 
   z-index: 500;
   background-color: var(--BGFill);
@@ -2944,7 +2985,7 @@ canvas{
   z-index: -1;
 }
 
-#NONE_LIVE_CONTENT{
+.ghostContent{
   font-size: 2vh;
   color: var(--UI-inactive);
   margin: 0;
@@ -2953,7 +2994,7 @@ canvas{
   left: 50%;
   transform: translate(-50%, -50%);
 }
-#NONE_LIVE_GHOST_CONTAINER{
+.ghostContainer{
   height: 25vh;
   width: 25vh;
   position: relative;
@@ -4375,8 +4416,8 @@ Material Icons   ┅┅┅   <a href="https://fonts.google.com/icons" target="_b
               Copyright <span id="CREDITSBODY_YEAR">2022</span> ROTISSERIE CHICKEN
 
 
-       TWITCH, the TWITCH Logo, and/or Glitch Logo are 
-  trademarks of Twitch Interactive, Inc. or its affiliates.
+        TWITCH, the TWITCH Logo, and/or Glitch Logo are 
+   trademarks of Twitch Interactive, Inc. or its affiliates.
 
 
 
@@ -4817,8 +4858,8 @@ Material Icons   ┅┅┅   <a href="https://fonts.google.com/icons" target="_b
                   <div id="LIVE_HEADER">Loading... <span class="LIVE_HEADER_VIEWERS"></span></div> <!-- becomes "Live on DDStats" once loaded -->
                   <div id="TWITCH_LIVE_LIST"></div>
                   <div id="LIVE_LIST"></div>
-                  <div id="NONE_LIVE"><div id="NONE_LIVE_CONTENT">
-                    <div id="NONE_LIVE_GHOST_CONTAINER">
+                  <div id="NONE_LIVE"><div class="ghostContent">
+                    <div class="ghostContainer">
 
 
 
@@ -4830,7 +4871,7 @@ Material Icons   ┅┅┅   <a href="https://fonts.google.com/icons" target="_b
                             maskunits="userSpaceOnUse"
                             maskcontentunits="userSpaceOnUse">
                             <image 
-                              xlink:href="media/ghost-mascot-assets/ghost_sleep_bg.svg"
+                              xlink:href="media/ghost-mascot-assets/ghost_sleeping/ghost_sleep_bg.svg"
                               width="100%"
                               height="100%" />
                           </mask>
@@ -4856,7 +4897,7 @@ Material Icons   ┅┅┅   <a href="https://fonts.google.com/icons" target="_b
                             maskunits="userSpaceOnUse"
                             maskcontentunits="userSpaceOnUse">
                             <image 
-                              xlink:href="media/ghost-mascot-assets/ghost_sleep_fg.svg"
+                              xlink:href="media/ghost-mascot-assets/ghost_sleeping/ghost_sleep_fg.svg"
                               width="100%"
                               height="100%" />
                           </mask>
@@ -4882,7 +4923,7 @@ Material Icons   ┅┅┅   <a href="https://fonts.google.com/icons" target="_b
                             maskunits="userSpaceOnUse"
                             maskcontentunits="userSpaceOnUse">
                             <image 
-                              xlink:href="media/ghost-mascot-assets/ghost_sleep_ALT_NEW_ANTI.svg"
+                              xlink:href="media/ghost-mascot-assets/ghost_sleeping/ghost_sleep_ALT_NEW_ANTI.svg"
                               width="100%"
                               height="100%" />
                           </mask>
@@ -4908,7 +4949,7 @@ Material Icons   ┅┅┅   <a href="https://fonts.google.com/icons" target="_b
                             maskunits="userSpaceOnUse"
                             maskcontentunits="userSpaceOnUse">
                             <image 
-                              xlink:href="media/ghost-mascot-assets/ghost_sleep_ALT_HL.svg"
+                              xlink:href="media/ghost-mascot-assets/ghost_sleeping/ghost_sleep_ALT_HL.svg"
                               width="100%"
                               height="100%" />
                           </mask>
@@ -4943,7 +4984,234 @@ Material Icons   ┅┅┅   <a href="https://fonts.google.com/icons" target="_b
             <div id="TL_LEADERBOARD"class="TL_PAGE" page="2">
                 
               <div id="PLAYER_WRAPPER" class="pageWrapper">
-                <div player_page_player_id="-1" style="width:100%;height:100%"><div class="gameItem" game_id="-1" player_game_item style="cursor:default;width:calc(100% - 3px);background-color:var(--UI-foretext);color:var(--BGFill) !important;"><div class="gamerName" style="margin-left:5.15vh;z-index:9999;color:var(--BGFill) !important;top:0.11vh;"><span style="font-weight:800;"></span>Loading...</div><div class="gamerStats" style="color:var(--BGFill) !important;"> <br> </div><div class="gameButtonWrapper" style="right:calc(1px + 0.025vh) !important;width:calc(100% - 0.15vh - 21px);justify-content:right;"><div class="gameButton" onmouseenter="tooltip('returnToLeaderboard')" onmouseleave="tooltip('close')" onmousedown="page(3,0);" style="position:absolute;left:0;overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_backward</i></div></div><div class="gameButton gameButtonUnclickable gameButtonLoading"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.275vh;line-height:0px;">autorenew</i></div></div></div></div><div id="PLAYER_PAGE_LIVE_ELEMENT" class="playerPageWrapper"><div id="PLAYER_CHART_CONTAINER" onmouseenter="tooltip('playerHistory')" onmouseleave="tooltip('close')"><canvas id="PLAYER_CHART" width="400" height="400" style="font-family: Overpass Mono"></canvas></div><div class="playerInfoGrid" onmouseenter="tooltip('playerInfo')" onmouseleave="tooltip('close')"></div><div class="liveGrid" onmouseenter="tooltip('playerLiveGame')" onmouseleave="tooltip('close')"></div></div></div>
+                <div player_page_player_id="-1" style="width:100%;height:100%"><div class="gameItem" game_id="-1" player_game_item style="cursor:default;width:calc(100% - 3px);background-color:var(--UI-foretext);color:var(--BGFill) !important;"><div class="gamerName" style="margin-left:5.15vh;z-index:9999;color:var(--BGFill) !important;top:0.11vh;"><span style="font-weight:800;"></span>Loading...</div><div class="gamerStats" style="color:var(--BGFill) !important;"> <br> </div><div class="gameButtonWrapper" style="right:calc(1px + 0.025vh) !important;width:calc(100% - 0.15vh - 21px);justify-content:right;"><div class="gameButton" onmouseenter="tooltip('returnToLeaderboard')" onmouseleave="tooltip('close')" onmousedown="page(3,0);" style="position:absolute;left:0;overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_backward</i></div></div><div class="gameButton gameButtonUnclickable gameButtonLoading"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.275vh;line-height:0px;">autorenew</i></div></div></div></div><div id="PLAYER_PAGE_LIVE_ELEMENT" class="playerPageWrapper">
+                  <div id="PLAYER_CHART_CONTAINER" onmouseenter="tooltip('playerHistory')" onmouseleave="tooltip('close')"><div id="PLAYER_CHART_NO_HISTORY_CONTAINER">
+                    <div class="ghostContent">
+                      <div class="ghostContainer">
+
+
+                        
+
+                      <svg id="ghost_eating_anti" style="left:2vh;z-index:25;animation: metronomeHL 7s ease-in-out infinite;" class="svg ghost_none_live" viewBox="0 0 500 500">
+                        <defs>
+                          <mask 
+                            id="ghost_eating_anti_mask" 
+                            maskunits="userSpaceOnUse"
+                            maskcontentunits="userSpaceOnUse">
+                            <image 
+                              xlink:href="media/ghost-mascot-assets/ghost_eating/ghost_eating_face.svg"
+                              width="100%"
+                              height="100%" />
+                          </mask>
+                              
+                          <pattern
+                            id="ghost_eating_anti_checker"
+                            width="20" 
+                            height="20"
+                            patternUnits="userSpaceOnUse" 
+                            viewBox="0 0 20 20"> 
+                              <rect id="SVGColorCore" x="0" y="0" width="50" height="50" fill="var(--BGFill)" style="transition: fill 1s cubic-bezier(.01,.81,.55,1.01)"/>
+                          </pattern>
+                        </defs>
+                          
+                        <rect width="100%" height="100%" fill="url(#ghost_eating_anti_checker)" mask="url(#ghost_eating_anti_mask)" />
+                      </svg>
+
+
+                      <svg id="ghost_eating_anti_mouth" style="left:2vh;z-index:26;animation: metronomeHL 7s ease-in-out infinite;" class="svg ghost_none_live" viewBox="0 0 500 500">
+                        <defs>
+                          <mask 
+                            id="ghost_eating_anti_mouth_mask" 
+                            maskunits="userSpaceOnUse"
+                            maskcontentunits="userSpaceOnUse">
+                            <image 
+                              xlink:href="media/ghost-mascot-assets/ghost_eating/ghost_eating_mouth.svg"
+                              width="100%"
+                              height="100%" />
+                          </mask>
+                              
+                          <pattern
+                            id="ghost_eating_anti_mouth_checker"
+                            width="20" 
+                            height="20"
+                            patternUnits="userSpaceOnUse" 
+                            viewBox="0 0 20 20"> 
+                              <rect id="SVGColorCore" x="0" y="0" width="50" height="50" fill="var(--BGFill)" style="transition: fill 1s cubic-bezier(.01,.81,.55,1.01)"/>
+                          </pattern>
+                        </defs>
+                          
+                        <rect width="100%" height="100%" fill="url(#ghost_eating_anti_mouth_checker)" mask="url(#ghost_eating_anti_mouth_mask)" />
+                      </svg>
+
+
+                      <svg id="ghost_eating_fg" style="left:2vh;z-index:15;animation: metronomeHL 7s ease-in-out infinite;" class="svg ghost_none_live" viewBox="0 0 500 500">
+                        <defs>
+                          <mask 
+                            id="ghost_eating_fg_mask" 
+                            maskunits="userSpaceOnUse"
+                            maskcontentunits="userSpaceOnUse">
+                            <image 
+                              xlink:href="media/ghost-mascot-assets/ghost_eating/ghost_eating_fg.svg"
+                              width="100%"
+                              height="100%" />
+                          </mask>
+                              
+                          <pattern
+                            id="ghost_eating_fg_checker"
+                            width="20" 
+                            height="20"
+                            patternUnits="userSpaceOnUse" 
+                            viewBox="0 0 20 20"> 
+                              <rect id="SVGColorCore" x="0" y="0" width="50" height="50" fill="var(--UI-active)" style="transition: fill 1s cubic-bezier(.01,.81,.55,1.01)"/>
+                          </pattern>
+                        </defs>
+                          
+                        <rect width="100%" height="100%" fill="url(#ghost_eating_fg_checker)" mask="url(#ghost_eating_fg_mask)" />
+                      </svg>
+
+
+                      <svg id="ghost_eating_dagger_1" style="left:2vh;top:1vh;z-index:30;animation: metronomeBG 8s ease-in-out infinite;" class="svg ghost_none_live" viewBox="0 0 500 500">
+                        <defs>
+                          <mask 
+                            id="ghost_eating_dagger_1_mask" 
+                            maskunits="userSpaceOnUse"
+                            maskcontentunits="userSpaceOnUse">
+                            <image 
+                              xlink:href="media/ghost-mascot-assets/ghost_eating/ghost_eating_dagger_1.svg"
+                              width="100%"
+                              height="100%" />
+                          </mask>
+                              
+                          <pattern
+                            id="ghost_eating_dagger_1_checker"
+                            width="20" 
+                            height="20"
+                            patternUnits="userSpaceOnUse" 
+                            viewBox="0 0 20 20"> 
+                              <rect id="SVGColorCore" x="0" y="0" width="50" height="50" fill="var(--UI-level4)" style="transition: fill 1s cubic-bezier(.01,.81,.55,1.01)"/>
+                          </pattern>
+                        </defs>
+                          
+                        <rect width="100%" height="100%" fill="url(#ghost_eating_dagger_1_checker)" mask="url(#ghost_eating_dagger_1_mask)" />
+                      </svg>
+
+                      <svg id="ghost_eating_dagger_2" style="left:2vh;top:1vh;z-index:31;animation: metronomeBG 7s ease-in-out infinite;" class="svg ghost_none_live" viewBox="0 0 500 500">
+                        <defs>
+                          <mask 
+                            id="ghost_eating_dagger_2_mask" 
+                            maskunits="userSpaceOnUse"
+                            maskcontentunits="userSpaceOnUse">
+                            <image 
+                              xlink:href="media/ghost-mascot-assets/ghost_eating/ghost_eating_dagger_2.svg"
+                              width="100%"
+                              height="100%" />
+                          </mask>
+                              
+                          <pattern
+                            id="ghost_eating_dagger_2_checker"
+                            width="20" 
+                            height="20"
+                            patternUnits="userSpaceOnUse" 
+                            viewBox="0 0 20 20"> 
+                              <rect id="SVGColorCore" x="0" y="0" width="50" height="50" fill="var(--UI-level4)" style="transition: fill 1s cubic-bezier(.01,.81,.55,1.01)"/>
+                          </pattern>
+                        </defs>
+                          
+                        <rect width="100%" height="100%" fill="url(#ghost_eating_dagger_2_checker)" mask="url(#ghost_eating_dagger_2_mask)" />
+                      </svg>
+
+                      <svg id="ghost_eating_dagger_3" style="left:2vh;top:1vh;z-index:32;animation: metronomeBG 5s ease-in-out infinite;" class="svg ghost_none_live" viewBox="0 0 500 500">
+                        <defs>
+                          <mask 
+                            id="ghost_eating_dagger_3_mask" 
+                            maskunits="userSpaceOnUse"
+                            maskcontentunits="userSpaceOnUse">
+                            <image 
+                              xlink:href="media/ghost-mascot-assets/ghost_eating/ghost_eating_dagger_3.svg"
+                              width="100%"
+                              height="100%" />
+                          </mask>
+                              
+                          <pattern
+                            id="ghost_eating_dagger_3_checker"
+                            width="20" 
+                            height="20"
+                            patternUnits="userSpaceOnUse" 
+                            viewBox="0 0 20 20"> 
+                              <rect id="SVGColorCore" x="0" y="0" width="50" height="50" fill="var(--UI-level4)" style="transition: fill 1s cubic-bezier(.01,.81,.55,1.01)"/>
+                          </pattern>
+                        </defs>
+                          
+                        <rect width="100%" height="100%" fill="url(#ghost_eating_dagger_3_checker)" mask="url(#ghost_eating_dagger_3_mask)" />
+                      </svg>
+
+
+
+                      <svg id="ghost_eating_dagger_bg" style="top:0.75vh;left:3.5vh;z-index:-1;animation: metronomeBG 12s ease-in-out infinite;" class="svg ghost_none_live" viewBox="0 0 500 500">
+                        <defs>
+                          <mask 
+                            id="ghost_eating_dagger_bg_mask" 
+                            maskunits="userSpaceOnUse"
+                            maskcontentunits="userSpaceOnUse">
+                            <image 
+                              xlink:href="media/ghost-mascot-assets/ghost_eating/ghost_eating_dagger_bg.svg"
+                              width="100%"
+                              height="100%" />
+                          </mask>
+                              
+                          <pattern
+                            id="ghost_eating_dagger_bg_checker"
+                            width="20" 
+                            height="20"
+                            patternUnits="userSpaceOnUse" 
+                            viewBox="0 0 20 20"> 
+                              <rect id="SVGColorCore" x="0" y="0" width="50" height="50" fill="var(--UI-inactive)" style="transition: fill 1s cubic-bezier(.01,.81,.55,1.01)"/>
+                          </pattern>
+                        </defs>
+                          
+                        <rect width="100%" height="100%" fill="url(#ghost_eating_dagger_bg_checker)" mask="url(#ghost_eating_dagger_bg_mask)" />
+                      </svg>
+
+
+
+                      <!-- top:-0.25vh;left:-0.33vh; -->
+                      <svg id="ghost_eating_bg" style="left:2vh;z-index:1;animation: metronome 7s ease-in-out infinite;" class="svg ghost_none_live" viewBox="0 0 500 500">
+                        <defs>
+                          <mask 
+                            id="ghost_eating_bg_mask" 
+                            maskunits="userSpaceOnUse"
+                            maskcontentunits="userSpaceOnUse">
+                            <image 
+                              xlink:href="media/ghost-mascot-assets/ghost_eating/ghost_eating_bg.svg"
+                              width="100%"
+                              height="100%" />
+                          </mask>
+                              
+                          <pattern
+                            id="ghost_eating_bg_checker"
+                            width="20" 
+                            height="20"
+                            patternUnits="userSpaceOnUse" 
+                            viewBox="0 0 20 20"> 
+                              <rect id="SVGColorCore" x="0" y="0" width="50" height="50" fill="var(--UI-inactive)" style="transition: fill 1s cubic-bezier(.01,.81,.55,1.01)"/>
+                          </pattern>
+                        </defs>
+                          
+                        <rect width="100%" height="100%" fill="url(#ghost_eating_bg_checker)" mask="url(#ghost_eating_bg_mask)" />
+                      </svg>
+
+
+
+
+
+                            
+                          <rect width="100%" height="100%" fill="url(#ghost_no_history_bg_checker)" mask="url(#ghost_no_history_bg_mask)" />
+                        </svg>
+                      </div>
+                      <div style="text-align:center;position:relative;top:-2vh">this player has not yet<br>qualified for progression history</div>
+                    </div>
+
+                  </div><canvas id="PLAYER_CHART" width="400" height="400" style="font-family: Overpass Mono"></canvas></div><div class="playerInfoGrid" onmouseenter="tooltip('playerInfo')" onmouseleave="tooltip('close')"></div><div class="liveGrid" onmouseenter="tooltip('playerLiveGame')" onmouseleave="tooltip('close')"></div></div></div>
               </div>
               <div id="LEADERBOARD_WRAPPER" class="pageWrapper"></div>
                 <div id="LEADERBOARD_NAVIGATOR" class="ddstats-navigator"><i tabindex="-1" onmouseenter="tooltip('navigatorFirst')" onmouseleave="tooltip('close')" class="material-icons" style="font-size:3.5vh;position:relative;top:0.3vh;right:0vh;line-height:3.5vh;" onmousedown="
@@ -4988,7 +5256,7 @@ paginateLeaderboard(PAGE_LEADERBOARD_MAX);">last_page</i><div id="LEADERBOARD_MI
                   </div>
                   <div id="GAMEPAGE_INFO" style="min-width:35vh;  display:block;margin-left:1.75vh;width:50vh;">
 
-                    <div class="gameItem" onmouseenter="hideInsights();" game_id="-1" game_page_game_item style="margin-top:0.5vh;position:relative;cursor:default;width:calc(100% - 3px);border-radius:2vh 2vh 0 0;background-color:var(--UI-foretext);color:var(--BGFill) !important;"><div class="gamerName" style="font-size:3.25vh;margin-left:2.725vh;z-index:9999;color:var(--BGFill) !important;top:0.0575vh;"><span style="font-weight:800;"></span>Loading...</div><div class="gamerStats" style="padding-left:0px;color:var(--BGFill) !important;"> <br> </div><div id="GAMEPAGE_BUTTON_WRAPPER" class="gameButtonWrapper" style="left:calc(1px + 0vh + 0.275vh) !important;width:calc(100% - 0.3vh);justify-content:right;">
+                    <div class="gameItem" onmouseenter="hideInsights();" game_id="-1" game_page_game_item style="margin-top:0.5vh;position:relative;cursor:default;width:calc(100% - 2px);border-radius:2vh 2vh 0 0;background-color:var(--UI-foretext);color:var(--BGFill) !important;"><div class="gamerName" style="font-size:3.25vh;margin-left:2.3vh;z-index:9999;color:var(--BGFill) !important;top:0.0575vh;"><span style="font-weight:800;"></span>Loading...</div><div class="gamerStats" style="padding-left:0px;color:var(--BGFill) !important;"> <br> </div><div id="GAMEPAGE_BUTTON_WRAPPER" class="gameButtonWrapper" style="left:calc(1px + 0vh + 0.275vh) !important;width:calc(100% - 0.3vh);justify-content:right;">
 
                       <div class="gameButton" onmouseenter="tooltip('prevGameInfoPage')" onmouseleave="tooltip('close')" onmousedown="prevGameInfoPage();" style="position:absolute;left:0;overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_backward</i></div></div>
 
@@ -5005,6 +5273,9 @@ paginateLeaderboard(PAGE_LEADERBOARD_MAX);">last_page</i><div id="LEADERBOARD_MI
                       <div id="GAMEPAGE_INFO_PAGE_WRAPPER">
                         <div class="gamepageInfoPage">
                           <div class="gamepageInfoHeader">overview</div>
+                          <div class="gamepageInfoBody" id="GAME_OVERVIEW" style="">
+                            Speej
+                          </div>
                         </div><!--  THIS SPACE IS REQUIRED TO PREVENT PAGE MARGINS
                      --><div class="gamepageInfoPage">
                           <div class="gamepageInfoHeader"></div>
@@ -6609,6 +6880,7 @@ void main() {
     var GAMEPAGE_INFO_LAST_PAGE = 1; // which is the last page +index that exists in Gamepage Info viewer
     var GAMEPAGE_INFO_SUBPAGE = 0; // which page +index the user was last on in the Gamepage Info viewer
     var INSIGHT_TRANSITIONING_FLAG = false; // when true, graph hover activity is paused
+    var INSIGHT_TRANSITION_TIME = 50; // amount of time before insight transitioning completes
     var INSIGHTS_TRAY_OPEN = false; // if true, insights tray is currently open
     var SPLITGRID_OMIT_BEST = false; // if true, omits Sum Of Best from the Splitgrid
     var SPLITGRID_OMIT_GAMES = []; // any indecies here ([0, 2, 5]) will be omitted from the Splitgrid
@@ -6818,11 +7090,11 @@ void main() {
         ['700',  709,   515], //  331109  
         ['800',  800,   165], //  331062
         ['880',  875,   123], //  330992
-        ['930',  942,   65 ], //  bullshit
-        ['1000', 996,   0  ], //  bullshit
+        ['930',  942,   81 ], //  320810
+        ['1000', 996,   29 ], //  320810
         ['1040', 1047, -54 ], //  331070
         ['1080', 1091, -150], //  bullshit
-        ['1130', 1133, -228], //  bullshit
+        ['1130', 1133, -189], //  320810
         ['1160', 1170, -267], //  bullshit
         ['1200', 1203, undefined],
         ['1230', 1231, undefined],
@@ -13730,6 +14002,7 @@ var language = {
 
           //  clean before loading in a new player or the same if forced
           if(FORCE != true){
+            document.getElementById('PLAYER_CHART_NO_HISTORY_CONTAINER').style.opacity = 0;
             wrapperElement.querySelector('[player_page_player_id]').attributes.player_page_player_id.nodeValue = -1;
             wrapperElement.querySelector('[player_game_item]').attributes.game_id.nodeValue = -1;
             wrapperElement.querySelector('.playerInfoGrid').innerHTML = '';
@@ -14295,8 +14568,8 @@ var language = {
 
             } else {
 
-              //  User does not have PB or Activity history; do something else with the space instead
-              //  (perhaps nothing????)
+              //  User does not have PB or Activity history; Show no history screen in this case
+              document.getElementById('PLAYER_CHART_NO_HISTORY_CONTAINER').style.opacity = 1;
 
             }
    
@@ -14396,7 +14669,7 @@ var language = {
     async function paginateDDCL(PAGE,FORCE){ // paginates the given DDCL leaderboard
       if(LAST_DDCL_DATA == undefined || FORCE){
         TRAY_CALL(5,1,'loading');
-        LAST_DDCL_DATA = await ajaxRequest('https://devildaggers.info/api/custom-leaderboards/' + DDCL_LAST_ID,true);
+        LAST_DDCL_DATA = await ajaxRequest('https://devildaggers.info/api/custom-leaderboards/' + DDCL_LAST_ID + '/ddlive',true);
       }
 
       var NPAGE = PAGE;
@@ -15630,7 +15903,7 @@ var language = {
     }
 
     function setGamePageInfoWidth(){
-      var OFSW_GNAV = document.getElementById('GAMES_SUBNAVIGATOR').offsetWidth; 
+      var OFSW_GNAV = Math.floor(document.getElementById('GAMES_SUBNAVIGATOR').offsetWidth); 
                       document.getElementById('GAMEPAGE_INFO').style.width = OFSW_GNAV + 'px';
     }
 
@@ -15804,6 +16077,9 @@ var language = {
           var Excessive_800_Plus_Homing_Use = 68;
           var Excessive_915_Plus_Homing_Use = 90;
           var Excessive_980_Plus_Homing_Use = 165;
+
+          var Long_Homing_Use_Time = 9; // homing over this time and under below is "Long Use"
+          var Long_Homing_Use_Unique_Threshhold = 15; // homing past this time is a "Unique Use"
 
           //  cache flags
           var resolvedLength = GAME_OBJECT.frames.length;
@@ -23100,8 +23376,8 @@ function splitGrid(){
   if(DD != undefined){
     if(DD.frames != undefined){
       if(DD.frames[0] != undefined){ // add to the second column
-        GAMES = insert(GAMES, 1, DD);
-        GAME_TITLES = insert(GAME_TITLES, 1, 'LIVE');
+        GAMES = insert(GAMES, 0, DD);
+        GAME_TITLES = insert(GAME_TITLES, 0, 'LIVE');
       }
     }
   }
@@ -23246,10 +23522,12 @@ function showInsights(){
     if(INSIGHTS_TRAY_OPEN == false){
       INSIGHTS_TRAY_OPEN = true;
       INSIGHT_TRANSITIONING_FLAG = true;
-      document.getElementById('INSIGHT_DETAILS_WRAPPER').style.right = '0%';
+      // document.getElementById('INSIGHT_DETAILS_WRAPPER').style.right = '0%';
+      document.getElementById('INSIGHT_DETAILS_WRAPPER').style.opacity = '1';
+      document.getElementById('INSIGHT_DETAILS_WRAPPER').style.pointerEvents = 'all';
       setTimeout(function(){
         INSIGHT_TRANSITIONING_FLAG = false;
-      },300);
+      },INSIGHT_TRANSITION_TIME);
     }
   }
 }
@@ -23258,7 +23536,9 @@ function hideInsights(conditional){
     if(INSIGHTS_TRAY_OPEN == true){
       INSIGHTS_TRAY_OPEN = false;
       INSIGHT_TRANSITIONING_FLAG = true;
-      document.getElementById('INSIGHT_DETAILS_WRAPPER').style.right = '110%';
+      // document.getElementById('INSIGHT_DETAILS_WRAPPER').style.right = '0%';
+      document.getElementById('INSIGHT_DETAILS_WRAPPER').style.opacity = '0';
+      document.getElementById('INSIGHT_DETAILS_WRAPPER').style.pointerEvents = 'none';
     }
   }
 }
@@ -23316,7 +23596,7 @@ function buildInsightList(INSIGHTS_OBJECT){
       PAD_BUFFER = '';
     }
     document.getElementById('INSIGHT_DETAILS_WRAPPER').innerHTML += 
-      '<div class="insight" insight_index="'+INSIGHT.index+'"><div class="insightLeftSection"><div class="insightLeftIcon"><i tabindex="-1" class="material-icons" style="font-size:2.5vh;position:relative;top:-0.75vh;line-height:3vh;">'+INSIGHT.icon+'</i></div><span class="insightLeftTime">'+INSIGHT.time+'</span></div><div class="insightBodyWrapper"><div class="insightTitle">'+INSIGHT.insightTitle+'</div><div class="insightDescription">'+INSIGHT.insightDescription+'</div><div class="insightDetails" style="'+PAD_BUFFER+'">'+INS_DETAILS+'</div></div></div>';
+      '<div class="insight" onmousedown="setActiveInsight(this)" insight_index="'+INSIGHT.index+'"><div class="insightLightbarPadding" style="background-color:'+window[INSIGHT.colorType]+'"></div><div class="insightLeftSection" style="color:'+window[INSIGHT.colorType]+'"><div class="insightLeftIcon"><i tabindex="-1" class="material-icons" style="font-size:2.5vh;position:relative;top:-0.75vh;line-height:3vh;">'+INSIGHT.icon+'</i></div><span class="insightLeftTime">'+INSIGHT.time+'</span></div><div class="insightBodyWrapper"><div class="insightTitle">'+INSIGHT.insightTitle+'</div><div class="insightDescription">'+INSIGHT.insightDescription+'</div><div class="insightDetails" style="'+PAD_BUFFER+'">'+INS_DETAILS+'</div></div></div>';
   }
 }
 
@@ -23365,11 +23645,27 @@ function gotoInsights(INSIGHT_OR_ARRAY){
   } // no insights
 }
 
+function setActiveInsight(INSIGHT_ELEMENT){
+  var deselectAllTargs = document.querySelectorAll('.insight');
+  for(var TARGET of deselectAllTargs){
+    TARGET.classList.remove('insightActive');
+  }
+  INSIGHT_ELEMENT.classList.add('insightActive');
+  var insightIndex = INSIGHT_ELEMENT.attributes.insight_index.nodeValue;
+  var THIS_INSIGHT = GAMEPAGE_INSIGHTS_CACHE.insights[insightIndex];
+  zoomToInsight(THIS_INSIGHT);
+}
+
 function activateInsight(INSIGHT){
   //  Perform the functions embedded within an insight, if any. If the function fails, assume missing
   if(INSIGHT.hoverFunctionName != undefined && INSIGHT.hoverFunctionName != null){
     try{ window[INSIGHT.hoverFunctionName](INSIGHT); } catch(e){ }
   }
+}
+
+function zoomToInsight(INSIGHT){
+  var SCALE_OBJECT = {min: (Math.floor(INSIGHT.time) - 50), max: (Math.floor(INSIGHT.time) + 50)};
+  INSIGHTS_GRAPH.zoomScale('x', SCALE_OBJECT, mode = 'none');
 }
 
 // GAME PAGE INSIGHTS CHART
