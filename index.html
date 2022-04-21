@@ -472,6 +472,17 @@ h6{
   white-space: pre;
 }
 
+.donationLeaderboard{
+  white-space: pre;
+}
+.donationLeaderboard span{
+  text-decoration: underline;
+  color: var(--UI-live);
+  cursor: pointer;
+}
+.donationLeaderboard span:hover{
+  color: var(--UI-active) !important;
+}
 
 #CREDITS_BG{
   position: absolute;
@@ -4413,15 +4424,15 @@ Material Icons   ┅┅┅   <a href="https://fonts.google.com/icons" target="_b
                          generic iconography
 
 
+<div class="donationLeaderboard"></div>
+
+
+
               Copyright <span id="CREDITSBODY_YEAR">2022</span> ROTISSERIE CHICKEN
 
 
         TWITCH, the TWITCH Logo, and/or Glitch Logo are 
    trademarks of Twitch Interactive, Inc. or its affiliates.
-
-
-
-
 
 
                DDLIVE is a weightless service.
@@ -8052,6 +8063,43 @@ function toggleCredits(){ // don't use this...?
     closeCredits();
   } else {
     openCredits();
+  }
+}
+
+function makeDonationLeaderboard(){
+  var ALL_LB_TARGETS = document.querySelectorAll('.donationLeaderboard');
+  var DONATION_LB_TEXT = `         DDLIVE is supported by these generous donors: 
+
+`;
+  var SORTED_DONATION_ARRAY = [];
+  for(var DONATION_ID in LAST_DONORS_DATA){
+    SORTED_DONATION_ARRAY.push([LAST_DONORS_DATA[DONATION_ID][0], LAST_DONORS_DATA[DONATION_ID][1], parseInt(DONATION_ID)]);
+  }
+  SORTED_DONATION_ARRAY = SORTED_DONATION_ARRAY.sort(function(a,b){
+    return parseInt(b[1]) - parseInt(a[1]);
+  });
+
+  for(var DONATION of SORTED_DONATION_ARRAY){
+    var LINKABLE = Number.isInteger(DONATION[2]);
+    var DONO_NAME = DONATION[0].replace(/\W/g, '');
+    var DONO_PAD = DONO_NAME.padStart(29, ' ');
+    var PAD_AMT = parseInt(DONO_PAD.search(/\S/));
+    var PRE_PAD = '';
+    if(LINKABLE){
+      DONO_NAME = '<span onmouseenter="pauseCredits()" onmouseleave="resumeCredits()" onmousedown="paginatePlayer(' + DONATION[2] + ');closeCredits();">' + DONO_NAME + '</span>';
+    }
+    for(var i=0; i<PAD_AMT; i++){ // this is sooooooo fucking stuuuuuupiiiidddddddddddd
+      PRE_PAD += ' ';
+    }
+    var DONO_LINE = PRE_PAD + DONO_NAME + ' • $' + DONATION[1];
+    DONATION_LB_TEXT = DONATION_LB_TEXT + DONO_LINE + `
+`;
+  }
+  DONATION_LB_TEXT = `
+
+` + DONATION_LB_TEXT; // pad lb with plain breaks
+  for(var LB_TARG of ALL_LB_TARGETS){
+    LB_TARG.innerHTML = DONATION_LB_TEXT;
   }
 }
 
@@ -13733,6 +13781,7 @@ var language = {
       var data_donors = await ajaxProxy('ddstats.live/donors.json');
       if(data_donors != 'ERR'){
         LAST_DONORS_DATA = data_donors;
+        makeDonationLeaderboard();
       }
     }
 
@@ -14096,6 +14145,14 @@ var language = {
             var peakRankString = '';
             var gammaString = '';
 
+            var edpiString = '';
+            var dpiString = '';
+            var sensString = '';
+            var fovString = '';
+            var handCompString = '';
+            var flashHandCompString = '';
+            var legacyCompString = '';
+
             var hrtfString = '';
             var invYString = '';
             var vsyncString = ''; 
@@ -14112,9 +14169,34 @@ var language = {
 
                 playerStatStyleModeFlag = 0; // normal
 
+                if(data_ddinfo.settings.edpi != null){
+                  edpiString = '<span style="white-space:pre;">eDPI: </span><span style="text-align:right;">' + truncateDecimals(data_ddinfo.settings.edpi,3) + '</span>';
+                }
+                if(data_ddinfo.settings.dpi != null){
+                  dpiString = '<span>DPI: </span><span style="text-align:right;">' + data_ddinfo.settings.dpi + '</span>';
+                }
+                if(data_ddinfo.settings.inGameSens != null){
+                  sensString = '<span>Sens:</span><span style="text-align:right;">' + data_ddinfo.settings.inGameSens + '</span>';
+                }
+                if(data_ddinfo.settings.inGameSens != null){
+                  sensString = '<span>Sens:</span><span style="text-align:right;">' + data_ddinfo.settings.inGameSens + '</span>';
+                }
+                if(data_ddinfo.settings.fov != null){
+                  fovString = '<span>FOV: </span><span style="text-align:right;">' + data_ddinfo.settings.fov + '</span>';
+                }
+                if(data_ddinfo.settings.usesFlashHand != null){
+                  flashHandCompString = '<span style="white-space:pre;">Flashing: </span><span style="text-align:right;">' + boolOnOff(data_ddinfo.settings.usesFlashHand) + '</span>';
+                }
+                if(data_ddinfo.settings.usesLegacyAudio != null){
+                  legacyCompString = '<span>Legacy: </span><span style="text-align:right;">' + boolOnOff(data_ddinfo.settings.usesLegacyAudio) + '</span>';
+                }
+
                 var hand_used = 'Right';
-                if(data_ddinfo.settings.isRightHanded == false){
-                  hand_used = 'Left';
+                if(data_ddinfo.settings.isRightHanded != null){
+                  if(data_ddinfo.settings.isRightHanded == false){
+                    hand_used = 'Left';
+                  }
+                  handCompString = '<span style="white-space:pre;">Hand: </span><span style="text-align:right;">' + hand_used + '</span>';
                 }
                 if(data_ddinfo.countryCode != null){
                   countryString = '<span>Country: </span><span style="text-align:right;">'+ getCountryName(data_ddinfo.countryCode) + '</span>';
@@ -14143,14 +14225,8 @@ var language = {
                   playerStatStyleModeFlag = 2; // condensed
                 }
 
-                settingsString = '<span style="white-space:pre;">eDPI: </span><span style="text-align:right;">' + truncateDecimals(data_ddinfo.settings.edpi,3) + '</span>' +
-                '<span>DPI: </span><span style="text-align:right;">' + data_ddinfo.settings.dpi + '</span>' +
-                '<span>Sens:</span><span style="text-align:right;">' + data_ddinfo.settings.inGameSens + '</span>' +
-                '<span>FOV: </span><span style="text-align:right;">' + data_ddinfo.settings.fov + '</span>' +
-                gammaString +
-                '<span style="white-space:pre;">Hand: </span><span style="text-align:right;">' + hand_used + '</span>' +
-                '<span style="white-space:pre;">Flashing: </span><span style="text-align:right;">' + boolOnOff(data_ddinfo.settings.usesFlashHand) + '</span>' +
-                '<span>Legacy: </span><span style="text-align:right;">' + boolOnOff(data_ddinfo.settings.usesLegacyAudio) + '</span>' + hrtfString + invYString + vsyncString;
+                settingsString = edpiString + dpiString + sensString + fovString +
+                gammaString + handCompString + flashHandCompString + legacyCompString + hrtfString + invYString + vsyncString;
               }
 
             }
@@ -16063,6 +16139,8 @@ var language = {
           //  if above conditions are met, then insights are available for this game
           ARE_AVAILABLE_CONDITIONS = true;
 
+          L_REF.innerHTML = 'Analyzing...'; await sleep(0.0001);
+
           //  GENERATE INSIGHTS
           //  an insight object should have a:
           //    - NAME (focus of criticism),
@@ -16097,7 +16175,7 @@ var language = {
 
           //  first pass
           for await(i of ind_arr){ //  All primary checking occurs in this iterator
-            if(i%50==0 || i == resolvedLength-2){ L_REF.innerHTML = i.toString(); await sleep(0.0001); } // update loader
+            // if(i%50==0 || i == resolvedLength-2){ L_REF.innerHTML = i.toString(); await sleep(0.0001); } // update loader - This lags the insights process slightly
             ORGANIZED_INSIGHTS.push([]); // fill organized array with empty spaces
             var waveData = getV3Wave(i);  //  get wave data for every wave, and make available to insights
 
