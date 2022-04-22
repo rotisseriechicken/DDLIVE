@@ -12729,19 +12729,26 @@ var language = {
     function setLeftGame(GAME_OBJECT, data){
       var dataCleaner = data;
       if(data == undefined){
-        if(GAME_OBJECT.block.DDSTATS_GAME_ID == undefined);
-        dataCleaner = {
-          game_info: {
-            id: GAME_OBJECT.block.DDSTATS_GAME_ID
-          }
+        if(GAME_OBJECT.block.DDSTATS_GAME_ID != undefined){
+          dataCleaner = {
+            game_info: {
+              id: GAME_OBJECT.block.DDSTATS_GAME_ID
+            }
+          }; 
+        } else {
+          dataCleaner = {
+            game_info: {
+              id: undefined
+            }
+          }; 
         }
       }
       if(dataCleaner.game_info.id == undefined){
         alert('Error in game data cleaner - Game not loaded (see console).','error');
       } else {
-        document.getElementById('LEFTGAME_ID').value = data.game_info.id;
+        document.getElementById('LEFTGAME_ID').value = dataCleaner.game_info.id;
         updateGraph(undefined,true);
-        alert(data.game_info.id + ' loaded as left game in the statistics comparator.',undefined,undefined,'check');
+        alert(dataCleaner.game_info.id + ' loaded as left game in the statistics comparator.',undefined,undefined,'check');
         saveSettings();
       }
     }
@@ -12749,11 +12756,18 @@ var language = {
     function setRightGame(GAME_OBJECT, NO_R_FORCE, data){
       var dataCleaner = data;
       if(data == undefined){
-        if(GAME_OBJECT.block.DDSTATS_GAME_ID == undefined);
-        dataCleaner = {
-          game_info: {
-            id: GAME_OBJECT.block.DDSTATS_GAME_ID
-          }
+        if(GAME_OBJECT.block.DDSTATS_GAME_ID != undefined){
+          dataCleaner = {
+            game_info: {
+              id: GAME_OBJECT.block.DDSTATS_GAME_ID
+            }
+          };
+        } else {
+          dataCleaner = {
+            game_info: {
+              id: undefined
+            }
+          }; 
         }
       }
       if(dataCleaner.game_info.id == undefined){
@@ -12776,10 +12790,13 @@ var language = {
     async function loadGame(ID,LR,NO_R_FORCE,JUST_RETURN,GAME_OBJECT_INSTEAD){
       if(GAME_OBJECT_INSTEAD != undefined){
         if(LR == 'R'){
+          DD_RIGHT_GAME = GAME_OBJECT_INSTEAD;
           setRightGame(GAME_OBJECT_INSTEAD, NO_R_FORCE);
         } else {
+          DD_LEFT_GAME = GAME_OBJECT_INSTEAD;
           setLeftGame(GAME_OBJECT_INSTEAD);
         }
+        FORCE_STAT_DRAW = true;
       } else {
         if(ID != -1 && ID != undefined){
           var data = await ajaxRequest('https://ddstats.com/api/v2/game/full?id=' + ID,true);
@@ -12953,12 +12970,12 @@ var language = {
       //  and SEND THAT to ddstats-rust in THE WEBSOCKET COMMAND for the CUSTOM REPLAY
 
       // no replay 
-      var REPLAY_BUTTON_DATA = '<div REPLAY_BUTTON onmouseenter="tooltip(\'replayButton\')" onmouseleave="tooltip(\'close\')" class="gameButton gameButtonUnclickable" onclick="alert(\'This game entry does not have an associated watchable replay.\',\'warning\')"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.275vh;line-height:0px;">visibility_off</i></div></div>'; 
+      var REPLAY_BUTTON_DATA = '<div REPLAY_BUTTON resolved="0" onmouseenter="tooltip(\'replayButton\')" onmouseleave="tooltip(\'close\')" class="gameButton gameButtonUnclickable" onclick="alert(\'This game entry does not have an associated watchable replay.\',\'warning\')"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.275vh;line-height:0px;">visibility_off</i></div></div>'; 
 
       if(DATA.hasReplay){ 
         //  replace replay button with a working one
             // var DDCL_REPLAY_LINK = 'https://devildaggers.info/api/custom-entries/' + DATA.id + '/replay';
-        REPLAY_BUTTON_DATA = '<div REPLAY_BUTTON onmouseenter="tooltip(\'replayButton\')" onmouseleave="tooltip(\'close\')" class="gameButton" oncontextmenu="copyReplayLink(\'' + CUSTOM_DDREPLAY_ENDPOINT_STATIC + DATA.id + '\');return false;" onclick="openCustomReplayInDD(' + DATA.id + ',\'' + deEmojifiedPlayerName + '\',\''+ CL_NAME.replace(/'/g, "\\\'") + '\')"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.275vh;line-height:0px;">visibility</i></div></div>'; 
+        REPLAY_BUTTON_DATA = '<div REPLAY_BUTTON resolved="0" onmouseenter="tooltip(\'replayButton\')" onmouseleave="tooltip(\'close\')" class="gameButton" oncontextmenu="copyReplayLink(\'' + CUSTOM_DDREPLAY_ENDPOINT_STATIC + DATA.id + '\');return false;" onclick="openCustomReplayInDD(' + DATA.id + ',\'' + deEmojifiedPlayerName + '\',\''+ CL_NAME.replace(/'/g, "\\\'") + '\')"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.275vh;line-height:0px;">visibility</i></div></div>'; 
       }
 
       var ifLiveClass = '';
@@ -13136,7 +13153,7 @@ var language = {
         ifLiveClass = ' currentlyLive';
       }
 
-      return '<div class="gameItem" GAME_ID="' + DATA.id + '" PLAYER_ID="' + DATA.player_id + '"><div class="gamerName"><span class="gamerActualName' + ifLiveClass + '">' + deEmojifiedPlayerName + '</span></div><div class="gamerStats">' + DATA.game_time + 's  ‣  ' + DATA.spawnset + ', <span timestamp_item="' + (new Date(DATA.time_stamp).getTime()) + '">' + timeSince(new Date(DATA.time_stamp)) + '</span>' + homingParser + '<br>' + DATA.gems + ' gems, ' + DATA.accuracy + '% acc, ' + DATA.enemies_alive + ' alive, ' + DATA.enemies_killed + ' kills</div><div class="gameButtonWrapper">' + /*<div class="gameButton" onmouseenter="tooltip(\'favoriteButton\')" onmouseleave="tooltip(\'close\')" onmousedown="alert(this.parentElement.parentElement.attributes.game_id.nodeValue + \' can be favorited (UNIMPLEMENTED TO-DO)\'); toggleFavoriteIcon(this);"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.9955vh;position:relative;right:0.295vh;line-height:0px;top:0.125vh;">favorite_border</i></div></div>*/ '<div class="gameButton" onmouseenter="tooltip(\'loadLeft\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue)"><div class="gameButtonInside" style="left: 0.95vh;">L</div></div><div class="gameButton" onmouseenter="tooltip(\'loadRight\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue,\'R\')"><div class="gameButtonInside" style="left: 0.89vh;">R</div></div><div REPLAY_BUTTON onmouseenter="tooltip(\'replayButton\')" onmouseleave="tooltip(\'close\')" class="gameButton gameButtonUnclickable gameButtonLoading" onclick="alert(\'Replay presence is still resolving! Please wait...\',\'warning\')"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.275vh;line-height:0px;">autorenew</i></div></div></div><div class="gameItemBackgroundClickbox" onmouseenter="tooltip(\'viewDDStatsGame\')" onmouseleave="tooltip(\'close\')" onmousedown="paginateGame(' + DATA.id + ')"></div></div>';
+      return '<div class="gameItem" GAME_ID="' + DATA.id + '" PLAYER_ID="' + DATA.player_id + '"><div class="gamerName"><span class="gamerActualName' + ifLiveClass + '">' + deEmojifiedPlayerName + '</span></div><div class="gamerStats">' + DATA.game_time + 's  ‣  ' + DATA.spawnset + ', <span timestamp_item="' + (new Date(DATA.time_stamp).getTime()) + '">' + timeSince(new Date(DATA.time_stamp)) + '</span>' + homingParser + '<br>' + DATA.gems + ' gems, ' + DATA.accuracy + '% acc, ' + DATA.enemies_alive + ' alive, ' + DATA.enemies_killed + ' kills</div><div class="gameButtonWrapper">' + /*<div class="gameButton" onmouseenter="tooltip(\'favoriteButton\')" onmouseleave="tooltip(\'close\')" onmousedown="alert(this.parentElement.parentElement.attributes.game_id.nodeValue + \' can be favorited (UNIMPLEMENTED TO-DO)\'); toggleFavoriteIcon(this);"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.9955vh;position:relative;right:0.295vh;line-height:0px;top:0.125vh;">favorite_border</i></div></div>*/ '<div class="gameButton" onmouseenter="tooltip(\'loadLeft\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue)"><div class="gameButtonInside" style="left: 0.95vh;">L</div></div><div class="gameButton" onmouseenter="tooltip(\'loadRight\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue,\'R\')"><div class="gameButtonInside" style="left: 0.89vh;">R</div></div><div REPLAY_BUTTON resolved="0" onmouseenter="tooltip(\'replayButton\')" onmouseleave="tooltip(\'close\')" class="gameButton gameButtonUnclickable gameButtonLoading" onclick="alert(\'Replay presence is still resolving! Please wait...\',\'warning\')"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.275vh;line-height:0px;">autorenew</i></div></div></div><div class="gameItemBackgroundClickbox" onmouseenter="tooltip(\'viewDDStatsGame\')" onmouseleave="tooltip(\'close\')" onmousedown="paginateGame(' + DATA.id + ')"></div></div>';
         //  "VISIBILITY" should be LOADING, and then ANOTHER FUNCTION should take care of
         //    CHECKING if REPLAY is present for GIVEN GAME IDs in THIS PAGE based on the IDS in elements
 
@@ -14369,7 +14386,7 @@ var language = {
                 }
 
                 wrapperElement.querySelector('[player_game_item]').attributes.game_id.nodeValue = data_ddstats.high_score_game_id;
-                buttonsForLinkedPB = '<div class="gameButton" onmouseenter="tooltip(\'loadLeft\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue)"><div class="gameButtonInside" style="left: 0.9vh;">L</div></div><div class="gameButton"  onmouseenter="tooltip(\'loadRight\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue,\'R\')"><div class="gameButtonInside" style="left: 0.85vh;">R</div></div><div REPLAY_BUTTON onmouseenter="tooltip(\'replayButton\')" onmouseleave="tooltip(\'close\')" class="gameButton gameButtonUnclickable gameButtonLoading"><div class="gameButtonInside" style="left: 0.85vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.325vh;line-height:0px;">autorenew</i></div></div>';
+                buttonsForLinkedPB = '<div class="gameButton" onmouseenter="tooltip(\'loadLeft\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue)"><div class="gameButtonInside" style="left: 0.9vh;">L</div></div><div class="gameButton"  onmouseenter="tooltip(\'loadRight\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue,\'R\')"><div class="gameButtonInside" style="left: 0.85vh;">R</div></div><div REPLAY_BUTTON resolved="0" onmouseenter="tooltip(\'replayButton\')" onmouseleave="tooltip(\'close\')" class="gameButton gameButtonUnclickable gameButtonLoading"><div class="gameButtonInside" style="left: 0.85vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.325vh;line-height:0px;">autorenew</i></div></div>';
 
                 buttonForGamesList = '<div class="gameButton" onmouseenter="tooltip(\'viewPlayerGames\')" onmouseleave="tooltip(\'close\')" onmousedown="paginatePlayerGames(1,undefined,' + data_ddstats.player_id + ')"><div class="gameButtonInside" style="left: 0.9vh;"><i class="material-icons" style="font-size:2.25vh;position:relative;right:0.52vh;line-height:0px;top:0.06vh">toc</i></div></div>';
 
@@ -15222,12 +15239,16 @@ var language = {
       alert('Copied replay link to clipboard.');
     }
 
-    async function DDSTATS_RESOLVE_REPLAYS(IDArray){
+    async function DDSTATS_RESOLVE_REPLAYS(IDArray, customVH){
 
+      var VH_FINAL = '0.125vh';
       var FAILED_ITEMS = IDArray;
       var bleme = { id: [], ddstats: IDArray, ddcl: [] };
       var replayResults = await postRequest('https://ddreplay.herokuapp.com/search',
           bleme);
+      if(customVH != undefined){
+        VH_FINAL = customVH;
+      }
       // console.log('ddstats search replay results:',replayResults);
       if(replayResults == 'ERR'){
         alert('Error resolving DDStats replay availability - Try again in a moment?','errorNoReport');
@@ -15236,19 +15257,22 @@ var language = {
         if(G_RESULT != null){ // result is a returned game; update buttons associated with it
           var associatedGameButton = document.querySelectorAll('[game_id="' + G_RESULT.ddstats_id[0] + '"]');
           for(var LINKED_GAME_ITEM of associatedGameButton){ // iterate through buttons
-            var entry_replayButton = LINKED_GAME_ITEM.querySelector('[replay_button]');
-            entry_replayButton.classList.remove('gameButtonLoading');
-            entry_replayButton.classList.remove('gameButtonUnclickable');
-            entry_replayButton.querySelector('i').innerHTML = 'visibility';
-            entry_replayButton.querySelector('i').style.top = '0.125vh';
-            entry_replayButton.setAttribute('replay_md5', G_RESULT.replay_md5);
-            entry_replayButton.setAttribute('onclick','openReplayInDD("' + G_RESULT.link + '","DDStats game replay #' + G_RESULT.ddstats_id[0] + '")');
+            var entry_replayButton = LINKED_GAME_ITEM.querySelector('[replay_button][resolved="0"]');
+            if(entry_replayButton != null){ //  only if this item isn't already resolved!
+              entry_replayButton.classList.remove('gameButtonLoading');
+              entry_replayButton.classList.remove('gameButtonUnclickable');
+              entry_replayButton.querySelector('i').innerHTML = 'visibility';
+              entry_replayButton.querySelector('i').style.top = VH_FINAL;
+              entry_replayButton.setAttribute('replay_md5', G_RESULT.replay_md5);
+              entry_replayButton.setAttribute('onclick','openReplayInDD("' + G_RESULT.link + '","DDStats game replay #' + G_RESULT.ddstats_id[0] + '")');
 
-            var REPLAY_URL_LCL = new URL(G_RESULT.replay_link);
-            var NEW_URL = SUPPORTED_DNS_ORIGIN + REPLAY_URL_LCL.pathname;
+              var REPLAY_URL_LCL = new URL(G_RESULT.replay_link);
+              var NEW_URL = SUPPORTED_DNS_ORIGIN + REPLAY_URL_LCL.pathname;
+              entry_replayButton.setAttribute('oncontextmenu','copyReplayLink("' + NEW_URL + '");return false;');
 
-            entry_replayButton.setAttribute('oncontextmenu','copyReplayLink("' + NEW_URL + '");return false;');
-            // entry_replayButton.addEventListener("click", displayDate);
+              //  make it impossible for this item to be retargeted by the resolver
+              entry_replayButton.setAttribute('resolved', 1);
+            }
           }
 
           //  remove item from the failed items array
@@ -15263,12 +15287,15 @@ var language = {
       for(var FAILED_REPLAY of FAILED_ITEMS){
         var associatedGameButton = document.querySelectorAll('[game_id="' + FAILED_REPLAY + '"]');
         for(var LINKED_GAME_ITEM of associatedGameButton){ // iterate through buttons
-          var entry_replayButton = LINKED_GAME_ITEM.querySelector('[replay_button]');
+          var entry_replayButton = LINKED_GAME_ITEM.querySelector('[replay_button][resolved="0"]');
           entry_replayButton.classList.remove('gameButtonLoading');
           entry_replayButton.querySelector('i').innerHTML = 'visibility_off';
-          entry_replayButton.querySelector('i').style.top = '0.125vh';
+          entry_replayButton.querySelector('i').style.top = VH_FINAL;
           entry_replayButton.setAttribute('onclick','writeLED(1,1)');
           entry_replayButton.setAttribute('onclick','alert("This game entry does not have an associated watchable replay.","warning")');
+
+          //  We could set "resolved" to 1 here, but in case the replay propagates late,
+          //  allow it to be retargeted
         }
       }
 
@@ -16017,10 +16044,11 @@ var language = {
           TRAY_CALL(4,-1,'loading');
           L_REF.innerHTML = 'Loading...'; await sleep(0.0001);
           S_REF.innerHTML = ' <br> '; await sleep(0.0001);
-          INSIGHTS_GRAPH.data = [];
-          INSIGHTS_GRAPH.update();
+          document.querySelector('[game_page_game_item]').attributes.game_id.nodeValue = -1;
           document.getElementById('INSIGHT_DETAILS_WRAPPER').innerHTML = '';
           BUTTON_WRAPPER.innerHTML = '<div class="gameButton" onmouseenter="tooltip(\'prevGameInfoPage\')" onmouseleave="tooltip(\'close\')" onmousedown="prevGameInfoPage();" style="position:absolute;left:0;overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_backward</i></div></div><div class="gameButton gameButtonUnclickable gameButtonLoading"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.275vh;line-height:0px;">autorenew</i></div></div><div class="gameButton" onmouseenter="tooltip(\'nextGameInfoPage\')" onmouseleave="tooltip(\'close\')" onmousedown="nextGameInfoPage();" style="overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_forward</i></div></div>';
+          INSIGHTS_GRAPH.data = [];
+          INSIGHTS_GRAPH.update();
 
           //  Paginate a new DDStats game
           GAME_OBJECT = await loadGame(GAME_ID,undefined,undefined,true);
@@ -16054,6 +16082,15 @@ var language = {
           var CLEANED_PLAYER_NAME = cleanString(GAME_OBJECT.block.replay_player_name);
           for(i=0;i<CLEANED_PLAYER_NAME.length;i++){
             deEmojifiedPlayerName += CLEANED_PLAYER_NAME[i] += '&#xFE0E;';
+          }
+
+          //  set buttons and resolve replay
+          BUTTON_WRAPPER.innerHTML = '<div class="gameButton" onmouseenter="tooltip(\'prevGameInfoPage\')" onmouseleave="tooltip(\'close\')" onmousedown="prevGameInfoPage();" style="position:absolute;left:0;overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_backward</i></div></div>'+'<div class="gameButton" onmouseenter="tooltip(\'viewPlayerGames\')" onmouseleave="tooltip(\'close\')" onmousedown="paginatePlayerGames(1,undefined,'+GAME_OBJECT.block.player_id+')"><div class="gameButtonInside" style="left: 0.9vh;"><i class="material-icons" style="font-size:2.25vh;position:relative;right:0.52vh;line-height:0px;top:0.06vh">toc</i></div></div>'+'<div class="gameButton" onmouseenter="tooltip(\'loadLeft\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(undefined,\'L\',undefined,undefined,window[\'DD_GAMEPAGE_GAME\'])"><div class="gameButtonInside" style="left: 0.925vh;padding-top:0.05vh;">L</div></div><div class="gameButton"  onmouseenter="tooltip(\'loadRight\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(undefined,\'R\',undefined,undefined,window[\'DD_GAMEPAGE_GAME\'])"><div class="gameButtonInside" style="left: 0.85vh;padding-top:0.05vh;">R</div></div><div REPLAY_BUTTON resolved="0" onmouseenter="tooltip(\'replayButton\')" onmouseleave="tooltip(\'close\')" class="gameButton gameButtonUnclickable gameButtonLoading"><div class="gameButtonInside" style="left: 0.85vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.325vh;line-height:0px;">autorenew</i></div></div>'+'<div class="gameButton" onmouseenter="tooltip(\'nextGameInfoPage\')" onmouseleave="tooltip(\'close\')" onmousedown="nextGameInfoPage();" style="overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_forward</i></div></div>';
+          if(GAME_OBJECT.block.DDSTATS_GAME_ID != undefined){
+            document.querySelector('[game_page_game_item]').attributes.game_id.nodeValue = GAME_OBJECT.block.DDSTATS_GAME_ID;
+            DDSTATS_RESOLVE_REPLAYS([GAME_OBJECT.block.DDSTATS_GAME_ID], '0.09vh');
+          } else {
+            document.querySelector('[game_page_game_item] [replay_button]').outerHTML = '<div replay_button="" resolved="0" onmouseenter="tooltip(\'replayButton\')" onmouseleave="tooltip(\'close\')" class="gameButton gameButtonUnclickable" onclick="alert(\'This game entry does not have an associated watchable replay.\',\'warning\')"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size: 2vh; position: relative; right: 0.275vh; line-height: 0px; top: 0.09vh;">visibility_off</i></div></div>'; 
           }
 
           //  browser building
@@ -16212,7 +16249,6 @@ var language = {
 
             if(leviKillTimeTaken != undefined && i == 358){
               var minEnemiesLevi = V3WaveClarityMinMax(GAME_OBJECT,358,Math.floor(GAME_OBJECT.block.levi_down_time));
-              alert(minEnemiesLevi);
               if(leviKillTimeTaken > Levi_Good_Kill_Threshhold){
                 if(minEnemiesLevi[0][0] > 1){ //  messy levi kill; levi was never the only enemy on the board
                   insight('Messy Leviathan Kill','ui_levi',358,INSIGHTS,ORGANIZED_INSIGHTS,'ML','kills',-1,'Leviathan was never the only enemy up during the kill; This is permissible for large farm recovery, but led here to a long Levi kill time.',[['var(--UI-goodsplit)','Average Good Levi Kill Duration: '+Levi_Good_Kill_Threshhold+'s'],['var(--UI-badsplit)',"Levi Kill Duration: "+leviKillTimeTaken+"s"]],'hourglass_bottom');
@@ -16244,7 +16280,6 @@ var language = {
                     var acc_loss_here = truncateDecimals(((GAME_OBJECT.frames[i].daggers_hit / GAME_OBJECT.frames[i].daggers_fired) * 100) - (((GAME_OBJECT.frames[i+5].daggers_hit / GAME_OBJECT.frames[i+5].daggers_fired) * 100)),2);
                     insight('Late Loop Accuracy Loss','ui_accuracy',i,INSIGHTS,ORGANIZED_INSIGHTS,'A','accuracy',waveData,'Missing shots from 800 onward directly correlates to needing more homing to stay on pace.',[['var(--UI-goodsplit)','Expected Accuracy Loss: < 0.2%'],['var(--UI-badsplit)',"Accuracy Loss: "+acc_loss_here+"%"]],'location_disabled');
                     accuracyFramesSince = 0;
-                    // alert('Spuggy');
                     //  Accuracy loss after 800 is abnormal, and is a serious problem; Teching air here should be dealt with.
                   }
                   if(i >= 998){ //  1000 and above
@@ -16266,7 +16301,6 @@ var language = {
                         TEMP_THRESH = Gem_Loss_Clarity_Threshhold_Pre_1000;
                       }
                       if(waveClarity[0][0] > Minimum_Enemies_Pre_1000_Cleanliness && gems_lost_this_wave > TEMP_THRESH){
-                        alert('FROJ');
                         insight('Poor Wave Clarity','ui_enemies_alive',i,INSIGHTS,ORGANIZED_INSIGHTS,'W','enemies_alive',waveData,'Messy waves allow for more gems with low loss counts, but missing gems with unorthodox, long clears points to priority problems.',[['var(--UI-goodsplit)','Expected Minimum Enemies Alive: < ' + Minimum_Enemies_Pre_1000_Cleanliness],['var(--UI-badsplit)',"Minimum Enemies Alive: "+waveClarity[0][0]+" @ "+waveClarity[0][1]+"s ("+PercentIntoWave+"% into wave)"],['var(--UI-inactive)',"Gems Lost This Wave: "+gems_lost_this_wave]],'running_with_errors');
                       }
                     }
