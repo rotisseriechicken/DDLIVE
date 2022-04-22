@@ -2020,7 +2020,11 @@ canvas{
 
 
 #GAMEPAGE_INFO{
+  min-width:37vh;
+  width:50vh;
 
+  display:block;
+  margin-left:1.75vh;
 }
 #GAMEPAGE_INFO_INNER_WRAPPER{
   /* top: calc(0.5vh + 3.66vh); */
@@ -5266,7 +5270,7 @@ paginateLeaderboard(PAGE_LEADERBOARD_MAX);">last_page</i><div id="LEADERBOARD_MI
                   <div id="INSIGHTS_GRAPH_WRAPPER" onmouseenter="showInsights();" style="flex:1;flex-shrink:1;width:calc((100vw - 49.75vh - 23px - 0.3vw - 8px) / 2.5)">
                     <canvas id="INSIGHTS_GRAPH" width="400" height="400" style="font-family: Overpass Mono"></canvas>
                   </div>
-                  <div id="GAMEPAGE_INFO" style="min-width:35vh;  display:block;margin-left:1.75vh;width:50vh;">
+                  <div id="GAMEPAGE_INFO">
 
                     <div class="gameItem" onmouseenter="hideInsights();" game_id="-1" game_page_game_item style="margin-top:0.5vh;position:relative;cursor:default;width:calc(100% - 2px);border-radius:2vh 2vh 0 0;background-color:var(--UI-foretext);color:var(--BGFill) !important;"><div class="gamerName" style="font-size:3.25vh;margin-left:2.5vh;z-index:9999;color:var(--BGFill) !important;top:0.0575vh;"><span style="font-weight:800;"></span>Loading...</div><div class="gamerStats" style="padding-left:0px;color:var(--BGFill) !important;"> <br> </div><div id="GAMEPAGE_BUTTON_WRAPPER" class="gameButtonWrapper" style="left:calc(1px + 0vh + 0.275vh) !important;width:calc(100% - 0.3vh);justify-content:right;">
 
@@ -18116,11 +18120,28 @@ var language = {
       } else if(ThisData.func == 'game_submitted'){
         var formattedBody = JSON.parse(ThisData.body);
         if(AUTO_UPDATE_DDSTATS_GAMES_ON_SUBMIT && Date.now() - LAST_ON_DEATH_AUTOREFRESH > ON_DEATH_AUTOREFRESH_THRESHOLD){
+          //  Paginate recent
           var PAGINATION_TARGET = PAGE_RECENT;
           if(AUTO_UPDATE_DDSTATS_GAMES_ON_SUBMIT_PAGE_1 == true){
             PAGINATION_TARGET = 1;
           }
-          paginateRecent(PAGINATION_TARGET,true);
+          paginateRecent(PAGINATION_TARGET, true);
+          //  Paginate myGames
+          if(formattedBody.player_id == GLOBAL_THIS_USER_ID){
+            var PAGINATION_TARGET_MG = PAGE_MYGAMES;
+            if(AUTO_UPDATE_DDSTATS_GAMES_ON_SUBMIT_PAGE_1 == true){
+              PAGINATION_TARGET_MG = 1;
+            }
+            paginateMyGames(PAGINATION_TARGET_MG, true);
+          }
+          //  Paginate Player Games
+          if(formattedBody.player_id == PLAYERGAMES_ID){
+            var PAGINATION_TARGET_PG = PAGE_PLAYERGAMES;
+            if(AUTO_UPDATE_DDSTATS_GAMES_ON_SUBMIT_PAGE_1 == true){
+              PAGINATION_TARGET_PG = 1;
+            }
+            paginatePlayerGames(PAGINATION_TARGET_PG, true);
+          }
           //paginateMyGames(1,true);
           LAST_ON_DEATH_AUTOREFRESH = Date.now();
         } else if(AUTO_UPDATE_DDSTATS_GAMES_ON_SUBMIT == true && (Date.now() - LAST_ON_DEATH_AUTOREFRESH <= ON_DEATH_AUTOREFRESH_THRESHOLD)){
