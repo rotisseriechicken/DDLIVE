@@ -1965,6 +1965,7 @@ canvas{
 }
 
 .insightDetails{
+  line-height: 1.275vh;
 }
 .insightDetail{
   padding-top: 0.1vh;
@@ -5267,7 +5268,7 @@ paginateLeaderboard(PAGE_LEADERBOARD_MAX);">last_page</i><div id="LEADERBOARD_MI
                   </div>
                   <div id="GAMEPAGE_INFO" style="min-width:35vh;  display:block;margin-left:1.75vh;width:50vh;">
 
-                    <div class="gameItem" onmouseenter="hideInsights();" game_id="-1" game_page_game_item style="margin-top:0.5vh;position:relative;cursor:default;width:calc(100% - 2px);border-radius:2vh 2vh 0 0;background-color:var(--UI-foretext);color:var(--BGFill) !important;"><div class="gamerName" style="font-size:3.25vh;margin-left:2.3vh;z-index:9999;color:var(--BGFill) !important;top:0.0575vh;"><span style="font-weight:800;"></span>Loading...</div><div class="gamerStats" style="padding-left:0px;color:var(--BGFill) !important;"> <br> </div><div id="GAMEPAGE_BUTTON_WRAPPER" class="gameButtonWrapper" style="left:calc(1px + 0vh + 0.275vh) !important;width:calc(100% - 0.3vh);justify-content:right;">
+                    <div class="gameItem" onmouseenter="hideInsights();" game_id="-1" game_page_game_item style="margin-top:0.5vh;position:relative;cursor:default;width:calc(100% - 2px);border-radius:2vh 2vh 0 0;background-color:var(--UI-foretext);color:var(--BGFill) !important;"><div class="gamerName" style="font-size:3.25vh;margin-left:2.5vh;z-index:9999;color:var(--BGFill) !important;top:0.0575vh;"><span style="font-weight:800;"></span>Loading...</div><div class="gamerStats" style="padding-left:0px;color:var(--BGFill) !important;"> <br> </div><div id="GAMEPAGE_BUTTON_WRAPPER" class="gameButtonWrapper" style="left:calc(1px + 0vh + 0.275vh) !important;width:calc(100% - 0.3vh);justify-content:right;">
 
                       <div class="gameButton" onmouseenter="tooltip('prevGameInfoPage')" onmouseleave="tooltip('close')" onmousedown="prevGameInfoPage();" style="position:absolute;left:0;overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_backward</i></div></div>
 
@@ -6456,6 +6457,11 @@ void main() {
       
     }
 
+    function setLRIDs(){
+      document.getElementById('LEFTGAME_ID').value = DD_LEFT_GAME.block.DDSTATS_GAME_ID;
+      document.getElementById('RIGHTGAME_ID').value = DD_RIGHT_GAME.block.DDSTATS_GAME_ID;
+    }
+
     function updateGlobeStyle(){
 
       if(WORLD != undefined){
@@ -6815,6 +6821,8 @@ void main() {
               refreshStatStyles();
                 setInitState('  setting button states'); await sleep(INIT_MSG_WAIT);
               setButtonStates();
+                setInitState('  setting game IDs'); await sleep(INIT_MSG_WAIT);
+              setLRIDs();
                 setInitState('  setting graph'); await sleep(INIT_MSG_WAIT);
               setGraph(SELECTED_GRAPH,true);
                 setInitState('  updating graph'); await sleep(INIT_MSG_WAIT);
@@ -8076,7 +8084,7 @@ function makeDonationLeaderboard(){
     SORTED_DONATION_ARRAY.push([LAST_DONORS_DATA[DONATION_ID][0], LAST_DONORS_DATA[DONATION_ID][1], parseInt(DONATION_ID)]);
   }
   SORTED_DONATION_ARRAY = SORTED_DONATION_ARRAY.sort(function(a,b){
-    return parseInt(b[1]) - parseInt(a[1]);
+    return parseFloat(b[1]) - parseFloat(a[1]);
   });
 
   for(var DONATION of SORTED_DONATION_ARRAY){
@@ -12719,7 +12727,7 @@ var language = {
     }
 
     function setLeftGame(GAME_OBJECT, data){
-      var dataCleaner;
+      var dataCleaner = data;
       if(data == undefined){
         if(GAME_OBJECT.block.DDSTATS_GAME_ID == undefined);
         dataCleaner = {
@@ -12739,7 +12747,7 @@ var language = {
     }
 
     function setRightGame(GAME_OBJECT, NO_R_FORCE, data){
-      var dataCleaner;
+      var dataCleaner = data;
       if(data == undefined){
         if(GAME_OBJECT.block.DDSTATS_GAME_ID == undefined);
         dataCleaner = {
@@ -15587,7 +15595,7 @@ var language = {
       //    [[Minimum enemies, Time of minimum], [Maximum enemies, Time of maximum]]
 
       var min_cache = [99999999, 0];
-      var max_cache = [0, 0];
+      var max_cache = [-1, 0];
       if(GAME_OBJECT.frames.length > 450){
         for(var i=START; i<END; i++){
           if(GAME_OBJECT.frames[i] != undefined){
@@ -16135,7 +16143,9 @@ var language = {
         var L_REF = document.querySelector('#GAMEPAGE_INFO .gameItem .gamerName');
 
         var ARE_AVAILABLE_CONDITIONS = false;
-        if(GAME_OBJECT.block.time + GAME_OBJECT.block.starting_time > 450){
+        var homingUseAmountsWithTimes = []; // item: [used, at time]
+
+        if(GAME_OBJECT.block.time + GAME_OBJECT.block.starting_time > 260){
           //  if above conditions are met, then insights are available for this game
           ARE_AVAILABLE_CONDITIONS = true;
 
@@ -16159,13 +16169,22 @@ var language = {
           var Long_Homing_Use_Time = 9; // homing over this time and under below is "Long Use"
           var Long_Homing_Use_Unique_Threshhold = 15; // homing past this time is a "Unique Use"
 
+          var Minimum_Enemies_Pre_1000_Cleanliness = 6;
+
+          var Gem_Loss_Clarity_Threshhold_Pre_700 = 3;
+          var Gem_Loss_Clarity_Threshhold_Pre_880 = 6;
+          var Gem_Loss_Clarity_Threshhold_Pre_1000 = 10;
+
+          var Levi_Good_Kill_Threshhold = 17;
+          var Orb_Good_Kill_Threshhold = 19;
+
           //  cache flags
           var resolvedLength = GAME_OBJECT.frames.length;
           var accuracyFramesSince = 0;
           var homingFramesSince = 0;
-
-          //  second-pass memory
-          var homingUseAmountsWithTimes = []; // item: [used, at time]
+          var longHomingFramesSince = 0;
+          var despawnFramesSince = 0;
+          var eatenFramesSince = 0;
 
           //  ind arr and loader reference
           var ind_arr = [];
@@ -16173,11 +16192,40 @@ var language = {
             ind_arr.push(i);
           }
 
-          //  first pass
+          //  conditional stats
+          var leviKillTimeTaken;
+          var orbKillTimeTaken;
+          if(GAME_OBJECT.block.levi_down_time != undefined){
+            leviKillTimeTaken = truncateDecimals((GAME_OBJECT.block.levi_down_time - 358.5065),4); // exact spawn time;
+          }
+          if(GAME_OBJECT.block.orb_down_time != undefined){
+            orbKillTimeTaken = truncateDecimals((GAME_OBJECT.block.orb_down_time - (GAME_OBJECT.block.levi_down_time + 10)),4);
+          }
+
+
+          //  first pass - iteration-based insights
           for await(i of ind_arr){ //  All primary checking occurs in this iterator
             // if(i%50==0 || i == resolvedLength-2){ L_REF.innerHTML = i.toString(); await sleep(0.0001); } // update loader - This lags the insights process slightly
             ORGANIZED_INSIGHTS.push([]); // fill organized array with empty spaces
             var waveData = getV3Wave(i);  //  get wave data for every wave, and make available to insights
+            var waveClarity = V3WaveClarityMinMax(GAME_OBJECT,Math.floor(waveData[1]),Math.floor(waveData[2])); // min/max enemies
+
+            if(leviKillTimeTaken != undefined && i == 358){
+              var minEnemiesLevi = V3WaveClarityMinMax(GAME_OBJECT,358,Math.floor(GAME_OBJECT.block.levi_down_time));
+              alert(minEnemiesLevi);
+              if(leviKillTimeTaken > Levi_Good_Kill_Threshhold){
+                if(minEnemiesLevi[0][0] > 1){ //  messy levi kill; levi was never the only enemy on the board
+                  insight('Messy Leviathan Kill','ui_levi',358,INSIGHTS,ORGANIZED_INSIGHTS,'ML','kills',-1,'Leviathan was never the only enemy up during the kill; This is permissible for large farm recovery, but led here to a long Levi kill time.',[['var(--UI-goodsplit)','Average Good Levi Kill Duration: '+Levi_Good_Kill_Threshhold+'s'],['var(--UI-badsplit)',"Levi Kill Duration: "+leviKillTimeTaken+"s"]],'hourglass_bottom');
+                } else {  //  simply slow levi kill
+                  insight('Slow Leviathan Kill','ui_levi',358,INSIGHTS,ORGANIZED_INSIGHTS,'SL','kills',-1,'A faster Leviathan kill directly correlates to a cleaner Orb kill.',[['var(--UI-goodsplit)','Average Good Levi Kill Duration: '+Levi_Good_Kill_Threshhold+'s'],['var(--UI-badsplit)',"Levi Kill Duration: "+leviKillTimeTaken+"s"]],'hourglass_bottom');
+                }
+              }
+            }
+            if(orbKillTimeTaken != undefined){
+              if(orbKillTimeTaken > Orb_Good_Kill_Threshhold && i == Math.floor(GAME_OBJECT.block.orb_down_time - orbKillTimeTaken)){
+                insight('Slow Orb Kill','ui_orb',(Math.floor(GAME_OBJECT.block.orb_down_time - orbKillTimeTaken)),INSIGHTS,ORGANIZED_INSIGHTS,'SO','kills',-1,'A faster Orb kill directly correlates to a cleaner Postorb with better collection.',[['var(--UI-goodsplit)','Average Good Orb Kill Duration: '+Orb_Good_Kill_Threshhold+'s'],['var(--UI-badsplit)',"Orb Kill Duration: "+orbKillTimeTaken+"s"]],'hourglass_bottom');
+              }
+            }
 
             if(GAME_OBJECT.frames[i+5] != undefined){ // 5-second look-ahead insights buffer area
 
@@ -16199,6 +16247,30 @@ var language = {
                     // alert('Spuggy');
                     //  Accuracy loss after 800 is abnormal, and is a serious problem; Teching air here should be dealt with.
                   }
+                  if(i >= 998){ //  1000 and above
+
+                  }
+                }
+
+                if(i < 998){ // 1000 and below
+                  // console.log(Math.floor(waveData[1]), '-', i,' WC: ',waveClarity[0][0],' WC10: ',waveClarity[1][0]);
+                  if(i == Math.floor(waveData[1])+1 && waveClarity[0][0] != 99999999 && waveClarity[1][0] != -1){ //  Wave clarity
+                    if(GAME_OBJECT.frames[Math.floor(waveData[2])] != undefined){
+                      var gems_lost_this_wave = (GAME_OBJECT.frames[Math.floor(waveData[2])].gems_despawned + GAME_OBJECT.frames[Math.floor(waveData[2])].gems_eaten) - (GAME_OBJECT.frames[Math.floor(waveData[1])].gems_despawned + GAME_OBJECT.frames[Math.floor(waveData[1])].gems_eaten);
+                      var MinimumIntoWave = getV3Wave(waveClarity[0][1]);
+                      var PercentIntoWave = truncateDecimals((MinimumIntoWave[5]*100),2);
+                      var TEMP_THRESH = Gem_Loss_Clarity_Threshhold_Pre_700;
+                      if(i >= 700 && i < 860){
+                        TEMP_THRESH = Gem_Loss_Clarity_Threshhold_Pre_880;
+                      } else if(i >= 860 && i < 998){
+                        TEMP_THRESH = Gem_Loss_Clarity_Threshhold_Pre_1000;
+                      }
+                      if(waveClarity[0][0] > Minimum_Enemies_Pre_1000_Cleanliness && gems_lost_this_wave > TEMP_THRESH){
+                        alert('FROJ');
+                        insight('Poor Wave Clarity','ui_enemies_alive',i,INSIGHTS,ORGANIZED_INSIGHTS,'W','enemies_alive',waveData,'Messy waves allow for more gems with low loss counts, but missing gems with unorthodox, long clears points to priority problems.',[['var(--UI-goodsplit)','Expected Minimum Enemies Alive: < ' + Minimum_Enemies_Pre_1000_Cleanliness],['var(--UI-badsplit)',"Minimum Enemies Alive: "+waveClarity[0][0]+" @ "+waveClarity[0][1]+"s ("+PercentIntoWave+"% into wave)"],['var(--UI-inactive)',"Gems Lost This Wave: "+gems_lost_this_wave]],'running_with_errors');
+                      }
+                    }
+                  }
                 }
 
                 //  NOFARM, LOOP-ONLY STATS (below)
@@ -16212,6 +16284,26 @@ var language = {
                 homingFramesSince = 0;
                 //  Homing use times; Push to use in second pass. Adjacent items will be considered an undesirable "long use" insight, given certain conditions
                 homingUseAmountsWithTimes.push([homingUsedNow, i]);
+                //  if homing was just used within the "Long Use" threshhold, attribute it to the
+                //    previous homing use and create Long Use insight
+                //    Long Use insight has its own longer cooldown.
+                //      ONLY CREATE LONG USE INSIGHT before 1080 !!!
+                if(homingUseAmountsWithTimes.length >= 2 && longHomingFramesSince > 13 && i < 1040){
+                  if(homingUseAmountsWithTimes[homingUseAmountsWithTimes.length-2][1] > i-10 && homingUsedNow > 6){
+                    //  get difference in initial homing to the long homing time,
+                    var homingUsedDiff = getHomingUsed(GAME_OBJECT,i) - getHomingUsed(GAME_OBJECT,homingUseAmountsWithTimes[homingUseAmountsWithTimes.length-2][1]);
+                    //  then find when the long homing time ends
+                    var longHomingAdditionalTime = 0; 
+                    for(var b=i; b<(i+25); b++){
+                      var LHU_DIFF = getHomingUsed(GAME_OBJECT,b+3) - getHomingUsed(GAME_OBJECT,b);
+                      if(LHU_DIFF == 0){
+                        break;
+                      }
+                      longHomingAdditionalTime++;
+                    }
+                    insight('Long Homing Use','ui_homing_used',homingUseAmountsWithTimes[homingUseAmountsWithTimes.length-2][1],INSIGHTS,ORGANIZED_INSIGHTS,'L','homing_used',waveData,'Homing used after an initial large use may be necessary to clean up an undying gigapede, or situationally clean up imminent threats. Review that this is not indecisive homing, which is generally less effective than homing used at once.',[['var(--UI-goodsplit)','Expected Homing Use Duration: < 5s'],['var(--UI-badsplit)',"Homing Use Duration: "+((i - homingUseAmountsWithTimes[homingUseAmountsWithTimes.length-2][1]) + longHomingAdditionalTime)+"s"],['var(--UI-inactive)',"Homing used: "+homingUsedDiff+" initial, "+homingUsedNow+" long"]],'more_time');
+                  }
+                }
                 //  if the homing use was excessive in 1K+, push insight about this
                 if(i <= 350 && homingUsedNow > Excessive_Early_Homing_Use){
                   //  DETECT MORE SPECIFICS ABOUT THIS RUN, AND SERVE DIFFERENT BASED ON:
@@ -16243,6 +16335,7 @@ var language = {
             //  update caches
             homingFramesSince++;
             accuracyFramesSince++;
+            longHomingFramesSince++;
 
           } // end iterator
         }
@@ -16267,16 +16360,20 @@ var language = {
           }
         }
 
-
         var INSIGHTS_OBJECT = {   //  Finalize and generate the final insights object
         //  DIAGNOSTIC 
           madeWithVersion: VERSION,
           forGameID: GAME_OBJECT.block.DDSTATS_GAME_ID,
+
         //  DETAILS
           splits: GAME_SPLITS,
-          nofarm: true,
+          nofarm: undefined,
+          levi_kill_time_taken: leviKillTimeTaken,
+          orb_kill_time_taken: orbKillTimeTaken,
+
         //  HOMING DATA
-          homing_points_of_deviation: [],
+          homing_uses: homingUseAmountsWithTimes,
+          
 
           insights_available: ARE_AVAILABLE_CONDITIONS,
           insights_organized: ORGANIZED_INSIGHTS,
@@ -23484,7 +23581,7 @@ function splitGrid(){
     GAMES_SPLITS_LENGTHS.push(SUMOFBEST_LENGTH);
   }
 
-  console.log('GAMES_SPLITS: ', GAMES_SPLITS); // Log the GAMES_SPLITS array for development
+  // console.log('GAMES_SPLITS: ', GAMES_SPLITS); // Log the GAMES_SPLITS array for development
 
   //  Determine how high the grid needs to be based on which game has the most splits
   var HIGHEST_SPLIT_CELL = Math.max(...GAMES_SPLITS_LENGTHS);
@@ -23529,7 +23626,7 @@ function splitGrid(){
     GRID_DATA.push(COLWORTH_ARRAY);
   }
 
-  console.log('GRID_DATA: ', GRID_DATA);
+  // console.log('GRID_DATA: ', GRID_DATA);
 
   //  construct the actual grid. REMEMBER: GRID_DATA is accessed by [ROW][TYPE][COLUMN], not vice-versa
   for(var c=0; c<GAMES_SPLITS.length; c++){  //  COLUMNS (+1 for the Sum Of Best column)
@@ -23667,7 +23764,11 @@ function buildInsightDetails(INSIGHT){
 
 function buildInsightList(INSIGHTS_OBJECT){
   document.getElementById('INSIGHT_DETAILS_WRAPPER').innerHTML = '';
-  for(var INSIGHT of INSIGHTS_OBJECT.insights){
+  var INSIGHTS_TIME_SORTED = new Array(...INSIGHTS_OBJECT.insights); // make new array to unpointer this
+  INSIGHTS_TIME_SORTED.sort(function(a,b){
+    return parseFloat(a.time) - parseFloat(b.time);
+  });
+  for(var INSIGHT of INSIGHTS_TIME_SORTED){
     var PAD_BUFFER = 'padding-top:0.2vh';
     var INS_DETAILS = buildInsightDetails(INSIGHT);
     if(INS_DETAILS == '' || INS_DETAILS == null || INS_DETAILS == undefined){
