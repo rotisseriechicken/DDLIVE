@@ -136,11 +136,8 @@ Use with ddstats-rust to use DDLIVE's features with Devil Daggers." property="og
 
     --CREDITS_DELAY: -400000s;
 
-    --INSIGHT-COLLAPSED-DISPLAY: block;
-
-    --SPLITGRID-DETAILED-DISPLAY: block; /* CONDENSDED: none; */
-    --SPLITGRID-DETAILED-FONT-SIZE: 1.35vh; /* CONDENSED: font-size: 1.5vh; */
-    --SPLITGRID-DETAILED-PADDING: 0.575vh; /* CONDENSED: padding-top: 0.4vh; */
+    --INSIGHT-COLLAPSED-DISPLAY: block; /* CONDENSED: none; */
+    --SPLITGRID-DETAILED-DISPLAY: none; /* DETAILED: block; */
 
 }
 ::-webkit-scrollbar{
@@ -2097,12 +2094,35 @@ canvas{
 .splitGridColumn > .splitGridCell{
   flex: 1;
 }
+
+#SPLITS_EXPAND_BUTTON{
+  height: 1.6vh;
+  width: 1.6vh;
+  display: inline-flex;
+  background-color: var(--UI-inactive);
+  color: var(--BGFill);
+
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+
+  border-radius: 100vw;
+  margin-left: 0.4vh;
+
+  cursor: pointer;
+
+  transition: background-color 0.3s cubic-bezier(.01,.81,.55,1.01) !important; 
+}
+#SPLITS_EXPAND_BUTTON:hover{
+  background-color: var(--UI-active) !important;
+}
+
 .splitGridCellText{
   position: relative;
   /* left: -0.125vh; */
 
 
-  left: -0.05vh;
+  left: -0.125vh;
 
   display: flex;
   line-height: 0.9vh;
@@ -2116,6 +2136,9 @@ canvas{
   font-family: monospace;
   padding-left: 0.2vh;
   padding-right: 0.2vh;
+
+  position: relative;
+  left: 0.075vh;
 
   display: var(--SPLITGRID-DETAILED-DISPLAY);
 
@@ -2135,8 +2158,8 @@ canvas{
   /* font-size: 1.5vh; */
   /* padding-top: 0.4vh; */
 
-  font-size: var(--SPLITGRID-DETAILED-FONT-SIZE);
-  padding-top: var(--SPLITGRID-DETAILED-PADDING);
+  font-size: 1.5vh;
+  padding-top: 0.55vh;
 
   /*               we're just gonna use the anticolor detector instead i think
   text-shadow:
@@ -6125,7 +6148,7 @@ void main() {
 <script id="SCRIPTBODY" type="text/javascript">
 
     //  VERSION CONTROL AND AUTO-UPDATING
-    var VERSION = 85 // DDLIVE Version
+    var VERSION = 86 // DDLIVE Version
     var SUPPORTED_VERSIONS = [4,5]; // Acceptable ddrust versions; If not on this list, link will be rejected
 
     var CUSTOM_DDREPLAY_ENDPOINT_STATIC = 'https://ddstats.live/ddcl/';
@@ -6853,6 +6876,9 @@ void main() {
               setButtonStates();
                 setInitState('  setting game IDs'); await sleep(INIT_MSG_WAIT);
               setLRIDs();
+                setInitState('  setting splitgrid view'); await sleep(INIT_MSG_WAIT);
+              setSplitCondensed(true);
+
                 setInitState('  setting graph'); await sleep(INIT_MSG_WAIT);
               setGraph(SELECTED_GRAPH,true);
                 setInitState('  updating graph'); await sleep(INIT_MSG_WAIT);
@@ -6931,8 +6957,10 @@ void main() {
     var INSIGHT_TRANSITIONING_FLAG = false; // when true, graph hover activity is paused
     var INSIGHT_TRANSITION_TIME = 50; // amount of time before insight transitioning completes
     var INSIGHTS_TRAY_OPEN = false; // if true, insights tray is currently open
+    var INSIGHTS_CONDENSED = false; // if true, hides insight descriptions - persists
     var SPLITGRID_OMIT_BEST = false; // if true, omits Sum Of Best from the Splitgrid
     var SPLITGRID_OMIT_GAMES = []; // any indecies here ([0, 2, 5]) will be omitted from the Splitgrid
+    var SPLITGRID_CONDENSED = true; // if true, only shows split number - persists
 
     var CURRENT_HEIGHT = document.getElementById('WRAPPER').offsetHeight; // current page height
     var CURRENT_WIDTH = document.getElementById('WRAPPER').offsetWidth; // current page width
@@ -8201,86 +8229,88 @@ function makeDonationLeaderboard(){
         Settings: {
 
           //  GENERAL
-          GlobalNotifs:     GLOBAL_STATUS_ALERTS_ENABLED, // v71
-          GlobalNotifAll:   GLOBAL_STATUS_ALERT_ALL_NOTIF, // v72
+          GlobalNotifs:       GLOBAL_STATUS_ALERTS_ENABLED, // v71
+          GlobalNotifAll:     GLOBAL_STATUS_ALERT_ALL_NOTIF, // v72
 
           //  PERFORMANCE
-          BlockFps:         FULL_BLOCK_FPS,
-          StatFps:          FULL_STAT_FPS,
-          Interpolator:     INTERPOLATOR_ON,
-          AnimThresh:       ANIMATION_THRESHOLD,
-          AnimForce:        ANIMATION_FORCE,
-          AnimDisable:      ANIMATION_DISABLE,
+          BlockFps:           FULL_BLOCK_FPS,
+          StatFps:            FULL_STAT_FPS,
+          Interpolator:       INTERPOLATOR_ON,
+          AnimThresh:         ANIMATION_THRESHOLD,
+          AnimForce:          ANIMATION_FORCE,
+          AnimDisable:        ANIMATION_DISABLE,
 
           //  USER
-          UserID:           GLOBAL_THIS_USER_ID, // v25
-          UserName:         GLOBAL_THIS_USER_NAME, // v63
-          UserLanguage:     USER_LANGUAGE, // v53
+          UserID:             GLOBAL_THIS_USER_ID, // v25
+          UserName:           GLOBAL_THIS_USER_NAME, // v63
+          UserLanguage:       USER_LANGUAGE, // v53
 
           //  CACHES
-          LastClubberUsers: LAST_CLUBBER_USERS, // v45
-          LastGlobalDeaths: LAST_GLOBAL_DEATHS, // v46
-          LastRegionDeaths: LAST_GLOBAL_REGIONED_DEATHS, // v46
-          InsightsCache:    GAMEPAGE_INSIGHTS_CACHE, // v80
+          LastClubberUsers:   LAST_CLUBBER_USERS, // v45
+          LastGlobalDeaths:   LAST_GLOBAL_DEATHS, // v46
+          LastRegionDeaths:   LAST_GLOBAL_REGIONED_DEATHS, // v46
+          InsightsCache:      GAMEPAGE_INSIGHTS_CACHE, // v80
 
           //  GAMES
-          LeftGame:         DD_LEFT_GAME,
-          RightGame:        DD_RIGHT_GAME,
-          GamepageGame:     DD_GAMEPAGE_GAME, // v80
+          LeftGame:           DD_LEFT_GAME,
+          RightGame:          DD_RIGHT_GAME,
+          GamepageGame:       DD_GAMEPAGE_GAME, // v80
 
           //  STATS
-          StatCompare:      STAT_COMPARISON_MODE,
-          GraphCompare:     GRAPH_COMPARISON_MODE,
-          RightGameCurrent: STAT_is_RIGHT_GAME_CURRENT,
-          SplitNeutral:     SPLIT_NEUTRAL_RANGE,
-          SplitString:      EMPTY_SPLIT_STRING,
-          InnerHeaders:     INNER_HEADERS_OFF,
-          DeathType:        SHOW_DEATH_TYPE,
-          SplitLabels:      SHOW_SPLIT_NAME_LABELS, // v69
+          StatCompare:        STAT_COMPARISON_MODE,
+          GraphCompare:       GRAPH_COMPARISON_MODE,
+          RightGameCurrent:   STAT_is_RIGHT_GAME_CURRENT,
+          SplitNeutral:       SPLIT_NEUTRAL_RANGE,
+          SplitString:        EMPTY_SPLIT_STRING,
+          InnerHeaders:       INNER_HEADERS_OFF,
+          DeathType:          SHOW_DEATH_TYPE,
+          SplitLabels:        SHOW_SPLIT_NAME_LABELS, // v69
 
           //  GRAPHS
-          GraphToggles:     graphToggles,
-          AliveToggles:     enemyAliveToggles,
-          KilledToggles:    enemyKilledToggles,
-          CompareToggles:   graphComparisonToggles,
-          GamePageToggles:  gamePageGraphToggles, // v81
-          ShowYGrid:        GRAPH_SHOW_Y_GRID,
-          SelectedGraph:    SELECTED_GRAPH, // v7
-          GraphToggleMode:  GRAPH_COMPARISON_TOGGLE_MODE, // v8
-          EqualizeMode:     GRAPH_EQUALIZE_MODE, // v13
+          GraphToggles:       graphToggles,
+          AliveToggles:       enemyAliveToggles,
+          KilledToggles:      enemyKilledToggles,
+          CompareToggles:     graphComparisonToggles,
+          GamePageToggles:    gamePageGraphToggles, // v81
+          ShowYGrid:          GRAPH_SHOW_Y_GRID,
+          SelectedGraph:      SELECTED_GRAPH, // v7
+          GraphToggleMode:    GRAPH_COMPARISON_TOGGLE_MODE, // v8
+          EqualizeMode:       GRAPH_EQUALIZE_MODE, // v13
 
           //  THEMES
-          Themes:           THEMES,
-          CurrentStyle:     CURRENT_STYLE,
-          OBSTransparent:   OBS_TRANSPARENT_BACKGROUND, // v64
+          Themes:             THEMES,
+          CurrentStyle:       CURRENT_STYLE,
+          OBSTransparent:     OBS_TRANSPARENT_BACKGROUND, // v64
 
           //  PAGE STATES
-          PlayerPageId:     CURRENT_PLAYER_PAGE_ID, // v33
-          PageLeaderboard:  PAGE_LEADERBOARD,
-          TwitchSort:       TWITCH_SORT_BY, // v35
-          PageDdcl:         PAGE_DDCL,
-          PageCustom:       PAGE_CUSTOM, // v26
-          DdclLastId:       DDCL_LAST_ID, // v26
-          PageMyGames:      PAGE_MYGAMES,
-          PageRecent:       PAGE_RECENT,
-          PagePlayerGames:  PAGE_PLAYERGAMES, // v83
-          PlayerGamesId:    PLAYERGAMES_ID, // v83
-          NavPage:          GLOBAL_NAV_PAGE,
-          PageOffsets:      GLOBAL_NAV_PAGE_OFFSETS,
-          InsightsButton:   SHOW_INSIGHTS_BUTTON_ON, // v84
-          InsightsOnHover:  INSIGHTS_ON_GAME_GRAPH_HOVER, // v84
-          GameInfoPage:     GAMEPAGE_INFO_SUBPAGE, // v84
-          SplitOmitBest:    SPLITGRID_OMIT_BEST, // v85
-          SplitOmitGames:   SPLITGRID_OMIT_GAMES, // v85
+          PlayerPageId:       CURRENT_PLAYER_PAGE_ID, // v33
+          PageLeaderboard:    PAGE_LEADERBOARD,
+          TwitchSort:         TWITCH_SORT_BY, // v35
+          PageDdcl:           PAGE_DDCL,
+          PageCustom:         PAGE_CUSTOM, // v26
+          DdclLastId:         DDCL_LAST_ID, // v26
+          PageMyGames:        PAGE_MYGAMES,
+          PageRecent:         PAGE_RECENT,
+          PagePlayerGames:    PAGE_PLAYERGAMES, // v83
+          PlayerGamesId:      PLAYERGAMES_ID, // v83
+          NavPage:            GLOBAL_NAV_PAGE,
+          PageOffsets:        GLOBAL_NAV_PAGE_OFFSETS,
+          InsightsButton:     SHOW_INSIGHTS_BUTTON_ON, // v84
+          InsightsOnHover:    INSIGHTS_ON_GAME_GRAPH_HOVER, // v84
+          GameInfoPage:       GAMEPAGE_INFO_SUBPAGE, // v84
+          SplitOmitBest:      SPLITGRID_OMIT_BEST, // v85
+          SplitOmitGames:     SPLITGRID_OMIT_GAMES, // v85
+          SplitCondensed:     SPLITGRID_CONDENSED, // v86
+          InsightsCondensed:  INSIGHTS_CONDENSED, // v86
 
           //  COLLAPSABLES
-          LeviCollapsed:    LEVI_COLLAPSED, // v79
-          DevilCollapsed:   DEVIL_COLLAPSED, // v79
-          GoldenCollapsed:  GOLDEN_COLLAPSED, // v79
-          SilverCollapsed:  SILVER_COLLAPSED, // v79
-          BronzeCollapsed:  BRONZE_COLLAPSED, // v79
-          ActiveCollapsed:  ACTIVE_PLAYERS_COLLAPSED, // v79
-          NewCollapsed:     NEW_PLAYERS_COLLAPSED, // v79
+          LeviCollapsed:      LEVI_COLLAPSED, // v79
+          DevilCollapsed:     DEVIL_COLLAPSED, // v79
+          GoldenCollapsed:    GOLDEN_COLLAPSED, // v79
+          SilverCollapsed:    SILVER_COLLAPSED, // v79
+          BronzeCollapsed:    BRONZE_COLLAPSED, // v79
+          ActiveCollapsed:    ACTIVE_PLAYERS_COLLAPSED, // v79
+          NewCollapsed:       NEW_PLAYERS_COLLAPSED, // v79
 
         }
       }
@@ -8402,6 +8432,10 @@ function makeDonationLeaderboard(){
             CLEANED_SETTINGS.Settings.SplitOmitBest = SPLITGRID_OMIT_BEST;
             CLEANED_SETTINGS.Settings.SplitOmitGames = SPLITGRID_OMIT_GAMES;
           }
+          if(SETTINGS_OBJECT.Version < 86){ //  Clean for SPLITGRID CONDENSER and INSIGHTS CONDENSER
+            CLEANED_SETTINGS.Settings.SplitCondensed = SPLITGRID_CONDENSED;
+            CLEANED_SETTINGS.Settings.InsightsCondensed = INSIGHTS_CONDENSED;
+          }
 
 
           if(Lcompatible){ // Perform Upgrade depending on VERSION
@@ -8482,6 +8516,8 @@ function makeDonationLeaderboard(){
           GAMEPAGE_INFO_SUBPAGE =         CLEANED_SETTINGS.Settings.GameInfoPage; // v84
           SPLITGRID_OMIT_BEST =           CLEANED_SETTINGS.Settings.SplitOmitBest; // v85
           SPLITGRID_OMIT_GAMES =          CLEANED_SETTINGS.Settings.SplitOmitGames; // v85
+          SPLITGRID_CONDENSED =           CLEANED_SETTINGS.Settings.SplitCondensed; // v86
+          INSIGHTS_CONDENSED =            CLEANED_SETTINGS.Settings.InsightsCondensed; // v86
 
         //  COLLAPSABLES
           LEVI_COLLAPSED =                CLEANED_SETTINGS.Settings.LeviCollapsed; // v79
@@ -9948,7 +9984,9 @@ var language = {
                                 ['View DDStats Games', // Title
                                 'Browse all DDStats games submitted by this player.'], // Description
 
-            
+            toggleCondensedSplitgrid:
+                                ['Toggle Splitgrid Detailed View', // Title
+                                'Toggle whether to show "Total [Collection - Use]" under Split values, or show only Split values in the Splitgrid.'], // Description
 
             returnToSettings:   
                                 ['Return to Settings', // Title
@@ -16469,6 +16507,7 @@ var language = {
       var COMPARISON_INFORMATION = '';
       var TEXTCOLOR = 'var(--UI-foretext)';
       var ADDITIONAL_SPLIT_DATA = '';
+      var STYLE_OVERRIDE = '';
       var splitToString;
       if(isNaN(Split[0])){ //  if this is a fake item, don't do math on it
         splitToString = 'N/A';
@@ -16478,6 +16517,9 @@ var language = {
         splitToString = signer(Split[0]);
         if(Split[2][0] != undefined){
           ADDITIONAL_SPLIT_DATA = '<br><span class="subSplit">'+Split[2][0]+' ['+Split[2][1]+'-'+Split[2][2]+']</span>';
+          if(SPLITGRID_CONDENSED == false){
+            STYLE_OVERRIDE = 'font-size:var(--SPLITGRID-DETAILED-FONT-SIZE);padding-top:0vh;';
+          }
         }
         if(Split[1] == true){ // if this split is in progress, give it the hashed pattern
           CELL_COLOR = 'background:repeating-linear-gradient(45deg,var(--UI-inactive),var(--UI-inactive) 0.5vh,var(--BGFill) 0.5vh,var(--BGFill) 1vh);text-shadow:-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill),-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill),-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill);';
@@ -16496,7 +16538,7 @@ var language = {
           COMPARISON_INFORMATION = '<br>('+signer(vsGivenGame)+')';
         }
       } //  commit the final split and return the Cell HTML for this item
-      return '<div class="splitGridCell" style="'+CELL_COLOR+';color:'+TEXTCOLOR+'"><span class="splitGridCellText">'+splitToString+COMPARISON_INFORMATION+ADDITIONAL_SPLIT_DATA+'</span></div>';
+      return '<div class="splitGridCell" style="'+CELL_COLOR+';color:'+TEXTCOLOR+'"><span class="splitGridCellText" style="'+STYLE_OVERRIDE+'">'+splitToString+COMPARISON_INFORMATION+ADDITIONAL_SPLIT_DATA+'</span></div>';
     }
 
     //  Split gamepage generator
@@ -16595,7 +16637,11 @@ var language = {
       //  construct the actual grid. REMEMBER: GRID_DATA is accessed by [ROW][TYPE][COLUMN], not vice-versa
       for(var c=0; c<GAMES_SPLITS.length; c++){  //  COLUMNS (+1 for the Sum Of Best column)
         if(c==0){
-          GRID_CONSTRUCTOR += '<div class="splitGridColumn"><div class="splitGridCell" style="background-color:var(--BGFill)" style=""><span class="splitGridCellText" style="color:var(--UI-foretext);top:-0.295vh;font-family:mainFont;left:-0.075vh;font-size:1.75vh;">splits</span></div>';
+          var COLLAPSE_BUTTON = '<i tabindex="-1" class="material-icons" style="font-size:1.5vh;padding-top:0.15vh;position:relative;">close_fullscreen</i>';
+          if(SPLITGRID_CONDENSED == true){
+            COLLAPSE_BUTTON = '<i tabindex="-1" class="material-icons" style="font-size:1.25vh;padding-top:0.15vh;position:relative;">open_in_full</i>';
+          }
+          GRID_CONSTRUCTOR += '<div class="splitGridColumn"><div class="splitGridCell" style="background-color:var(--BGFill)" style=""><span class="splitGridCellText" style="display: inline-flex;flex-direction:row;justify-content:center;align-items:center;color:var(--UI-foretext);top:-0.295vh;font-family:mainFont;left:-0.075vh;font-size:1.75vh;">splits <div id="SPLITS_EXPAND_BUTTON" onmousedown="toggleSplitGridCondensed()" onmouseenter="tooltip(\'toggleCondensedSplitgrid\')" onmouseleave="tooltip(\'close\')">'+COLLAPSE_BUTTON+'</div></span></div>';
           for(var rS=0; rS<HIGHEST_SPLIT_CELL; rS++){
             GRID_CONSTRUCTOR += '<div class="splitGridCell" style="justify-content:flex-start;padding-left:0.8vh"><span class="splitGridCellText">'+V3_SPLITS[rS][0]+'</span></div>'
           }
@@ -16621,6 +16667,47 @@ var language = {
     function conditionalSplitGrid(){  //  Create the Splitgrid only if the page is focused
       if(GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == -1 && GAMEPAGE_INFO_SUBPAGE == 1){
         splitGrid();
+      }
+    }
+
+    function toggleSplitGridCondensed(){
+      if(SPLITGRID_CONDENSED){
+        SPLITGRID_CONDENSED = false;
+      } else {
+        SPLITGRID_CONDENSED = true;
+      }
+      setSplitCondensed();
+    }
+
+    function setSplitCondensed(FORCED){
+      if(SPLITGRID_CONDENSED){
+        document.documentElement.style.setProperty('--SPLITGRID-DETAILED-DISPLAY', 'none');
+      } else {
+        document.documentElement.style.setProperty('--SPLITGRID-DETAILED-DISPLAY', 'block');
+      }
+      splitGrid();
+      if(FORCED == undefined){
+        saveSettings();
+      }
+    }
+
+    function toggleInsightsCondensed(){
+      if(INSIGHTS_CONDENSED){
+        INSIGHTS_CONDENSED = false;
+      } else {
+        INSIGHTS_CONDENSED = true;
+      }
+      setInsightsCondensed();
+    }
+
+    function setInsightsCondensed(FORCED){
+      if(INSIGHTS_CONDENSED){
+        document.documentElement.style.setProperty('--INSIGHT-COLLAPSED-DISPLAY', 'none');
+      } else {
+        document.documentElement.style.setProperty('--INSIGHT-COLLAPSED-DISPLAY', 'block');
+      }
+      if(FORCED == undefined){
+        saveSettings();
       }
     }
 
