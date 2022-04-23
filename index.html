@@ -137,6 +137,11 @@ Use with ddstats-rust to use DDLIVE's features with Devil Daggers." property="og
     --CREDITS_DELAY: -400000s;
 
     --INSIGHT-COLLAPSED-DISPLAY: block;
+
+    --SPLITGRID-DETAILED-DISPLAY: block; /* CONDENSDED: none; */
+    --SPLITGRID-DETAILED-FONT-SIZE: 1.35vh; /* CONDENSED: font-size: 1.5vh; */
+    --SPLITGRID-DETAILED-PADDING: 0.575vh; /* CONDENSED: padding-top: 0.4vh; */
+
 }
 ::-webkit-scrollbar{
   width: 0.5vh;
@@ -2094,13 +2099,31 @@ canvas{
 }
 .splitGridCellText{
   position: relative;
-  left: -0.125vh;
+  /* left: -0.125vh; */
+
+
+  left: -0.05vh;
+
+  display: flex;
+  line-height: 0.9vh;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+}
+.subSplit{
+  font-size: 0.8vh;
+  font-family: monospace;
+  padding-left: 0.2vh;
+  padding-right: 0.2vh;
+
+  display: var(--SPLITGRID-DETAILED-DISPLAY);
+
 }
 
 .splitGridCell{
   background-color: var(--UI-inactive);
   color: var(--UI-active);
-  font-size: 1.5vh;
   font-weight: 800;
   font-family: 'OPM3';
 
@@ -2109,7 +2132,11 @@ canvas{
   justify-content: center;
   align-items: center;
 
-  padding-top: 0.4vh;
+  /* font-size: 1.5vh; */
+  /* padding-top: 0.4vh; */
+
+  font-size: var(--SPLITGRID-DETAILED-FONT-SIZE);
+  padding-top: var(--SPLITGRID-DETAILED-PADDING);
 
   /*               we're just gonna use the anticolor detector instead i think
   text-shadow:
@@ -5289,8 +5316,7 @@ paginateLeaderboard(PAGE_LEADERBOARD_MAX);">last_page</i><div id="LEADERBOARD_MI
                       <div id="GAMEPAGE_INFO_PAGE_WRAPPER">
                         <div class="gamepageInfoPage">
                           <div class="gamepageInfoHeader">overview</div>
-                          <div class="gamepageInfoBody" id="GAME_OVERVIEW" style="">
-                            Speej
+                          <div class="gamepageInfoBody" id="GAME_OVERVIEW" style="padding-left:0.5vh">
                           </div>
                         </div><!--  THIS SPACE IS REQUIRED TO PREVENT PAGE MARGINS
                      --><div class="gamepageInfoPage">
@@ -15663,6 +15689,8 @@ var language = {
         SPLITS_TARGET = V3_SPLITS;
       }
 
+      var LIVE_SPLIT = undefined;
+
       var LIVE_IND;
       var HOMING_USED_LAST = 0;
       var CACHED_HOMING_USED = 0;
@@ -15804,14 +15832,15 @@ var language = {
                   splitCalc = Ltotal.toString().padEnd(5,' ') + '(' + signer(homingCalc,true).padEnd(4,' ') + ') [' + gemCalc.toString().padEnd(3,' ') + '-' + useCalc.padEnd(3,' ') + ']  ';
               }
 
-              SPLITCOMP.push([Ltotal,homingCalc,gemCalc,LSPLIT_leftHomingUsed,true,(GAME_OBJECT.block.time + GAME_OBJECT.block.starting_time)]);
+              LIVE_SPLIT = [Ltotal,homingCalc,gemCalc,LSPLIT_leftHomingUsed,true,(GAME_OBJECT.block.time + GAME_OBJECT.block.starting_time)];
+              SPLITCOMP.push(LIVE_SPLIT);
               //  [ homing total, homing split, gems collected, homing used , ALWAYS LIVE SPLIT, frame]
               LIVE_SPLIT_DONE = true;
 
           }
       }
       if(COMPARATOR != undefined){
-        return [SPLITCOMP, SPLITSTRINGS, CACHED_HOMING_USED, HOMING_USED_LAST, LIVE_IND]
+        return [SPLITCOMP, SPLITSTRINGS, CACHED_HOMING_USED, HOMING_USED_LAST, LIVE_IND, LIVE_SPLIT]
       } else {
         return SPLITCOMP;
       }
@@ -16115,6 +16144,8 @@ var language = {
             INSIGHTS_GRAPH.resetZoom();
             saveSettings();
           }
+          //  set main page contents once succeeded
+          buildGameOverview(GAME_OBJECT);
           splitGrid();
         } else {
           drapeLogError(GAME_INSIGHTS);
@@ -16429,6 +16460,365 @@ var language = {
         return e;
       }
     }
+
+
+    function makeSplitGridCell(Split, vsGivenGame, Min, Max, minIsMax, noItems, Color1, Color2){
+      var DEGREE;
+      var CELL_COLOR;
+      var BG_COLOR_FOR_CONTRAST;
+      var COMPARISON_INFORMATION = '';
+      var TEXTCOLOR = 'var(--UI-foretext)';
+      var ADDITIONAL_SPLIT_DATA = '';
+      var splitToString;
+      if(isNaN(Split[0])){ //  if this is a fake item, don't do math on it
+        splitToString = 'N/A';
+        CELL_COLOR = 'background-color:' + ui_bg_fill;
+        BG_COLOR_FOR_CONTRAST = ui_bg_fill;
+      } else {  //  this is a real split; do math on it
+        splitToString = signer(Split[0]);
+        if(Split[2][0] != undefined){
+          ADDITIONAL_SPLIT_DATA = '<br><span class="subSplit">'+Split[2][0]+' ['+Split[2][1]+'-'+Split[2][2]+']</span>';
+        }
+        if(Split[1] == true){ // if this split is in progress, give it the hashed pattern
+          CELL_COLOR = 'background:repeating-linear-gradient(45deg,var(--UI-inactive),var(--UI-inactive) 0.5vh,var(--BGFill) 0.5vh,var(--BGFill) 1vh);text-shadow:-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill),-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill),-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill);';
+          TEXTCOLOR = 'var(--UI-active)';
+          BG_COLOR_FOR_CONTRAST = ui_inactive;
+        } else {
+          DEGREE = (Split[0] - Min) / (Max - Min);
+          if(minIsMax == true){ // if sole item, 100% good color
+            DEGREE = 1;
+          }
+          BG_COLOR_FOR_CONTRAST = blendColors(ui_badsplit, ui_goodsplit, DEGREE);
+          CELL_COLOR = 'background-color:' + BG_COLOR_FOR_CONTRAST;
+          TEXTCOLOR = getContrastBWDirectHex(BG_COLOR_FOR_CONTRAST);
+        }
+        if(vsGivenGame != undefined){
+          COMPARISON_INFORMATION = '<br>('+signer(vsGivenGame)+')';
+        }
+      } //  commit the final split and return the Cell HTML for this item
+      return '<div class="splitGridCell" style="'+CELL_COLOR+';color:'+TEXTCOLOR+'"><span class="splitGridCellText">'+splitToString+COMPARISON_INFORMATION+ADDITIONAL_SPLIT_DATA+'</span></div>';
+    }
+
+    //  Split gamepage generator
+    function splitGrid(){
+
+      var GRID_CONSTRUCTOR = ''; 
+      var GAME_TITLES = ['THIS', 'L', 'R', 'BEST'];
+      var GAMES = [DD_GAMEPAGE_GAME, DD_LEFT_GAME, DD_RIGHT_GAME]; // sum of best is uniquely added last
+
+      //  Add the live game to grid but only if it is not undefined
+      if(DD != undefined){
+        if(DD.frames != undefined){
+          if(DD.frames[0] != undefined && DD.additional_info.connection_state == 'Connected'){ // add to the second column, but only if defined and currently connected
+            GAMES = insert(GAMES, 0, DD);
+            GAME_TITLES = insert(GAME_TITLES, 0, 'LIVE');
+          }
+        }
+      }
+
+      //  Prebuild the game split array and fill with game array's splits programmatically
+      var GAMES_SPLITS = [];
+      var GAMES_SPLITS_LENGTHS = [];
+      var SUMOFBEST_LENGTH = 0;
+      for(var Game of GAMES){
+        var TSPL = getSplits(Game);
+        GAMES_SPLITS.push(TSPL);
+        GAMES_SPLITS_LENGTHS.push(TSPL.length)
+      } 
+
+      //  Add the Sum Of Best Splits to the end of the prebuild splits array
+      if(SPLITGRID_OMIT_BEST != true){
+        var sumOfBestArray = [];
+        for(var Split of V3_SPLITS){
+          //  sum of best inherently lacks Total Homing, collection, use, etc. so only push Split and Time
+          sumOfBestArray.push([undefined, Split[2], undefined, undefined, false, Split[1]]);
+          if(Split[2] != undefined){
+            SUMOFBEST_LENGTH++; //  Only count this split as a real index if it is non-undefined
+          }
+        }
+        GAMES_SPLITS.push(sumOfBestArray);
+        GAMES_SPLITS_LENGTHS.push(SUMOFBEST_LENGTH);
+      }
+
+      console.log('GAMES_SPLITS: ', GAMES_SPLITS); // Log the GAMES_SPLITS array for development
+
+      //  Determine how high the grid needs to be based on which game has the most splits
+      var HIGHEST_SPLIT_CELL = Math.max(...GAMES_SPLITS_LENGTHS);
+
+      //  create the grid's data, and construct the grid
+      //      GRID DATA IS REPRESENTED AS THIS ARRAY:
+      //      [ [splits, for, this, row],  [min, max, no_items, min_is_max],  [split name, split time]  ]
+      //   THE 'SPLITS' ARE EACH AN ARRAY OF THEIR OWN, CONTAINING:
+      //   [  split,  is_in_progress  ]
+
+      var GRID_DATA = [];
+
+      for(var r=0; r<HIGHEST_SPLIT_CELL; r++){  //  COLUMNS, one per game (and sum-of-best """game""");
+        var COLWORTH_ARRAY = [[], [], []];
+        var COLWORTH_SPLIT_MINMAX_BUFFER = [];
+        for(var c=0; c<GAMES_SPLITS.length; c++){ //  ROWS (max split index = number of rows)
+          if(GAMES_SPLITS[c][r] != undefined){  //  if this row exists whatsoever,
+            if(GAMES_SPLITS[c][r][1] != undefined){ // and if its split exists,
+              var ADDITIONAL_DATA = [];
+              if(GAMES_SPLITS[c][r][0] != undefined){
+                //  [ Total, Collection, Use ];
+                ADDITIONAL_DATA = [GAMES_SPLITS[c][r][0], GAMES_SPLITS[c][r][2], GAMES_SPLITS[c][r][3]];
+              }
+              COLWORTH_ARRAY[0].push([GAMES_SPLITS[c][r][1], GAMES_SPLITS[c][r][4], ADDITIONAL_DATA ]);
+              if(GAMES_SPLITS[c][r][4] == false){ //  if not in progress, can be compared to others
+                COLWORTH_SPLIT_MINMAX_BUFFER.push(GAMES_SPLITS[c][r][1]);
+              }
+            } else {
+              COLWORTH_ARRAY[0].push(['N/A','N/A']); // preserve grid by inserting real item
+            }
+          } else {
+            COLWORTH_ARRAY[0].push(['N/A','N/A']);
+          }
+        }
+        var COL_MIN = Math.min(...COLWORTH_SPLIT_MINMAX_BUFFER);
+        var COL_MAX = Math.max(...COLWORTH_SPLIT_MINMAX_BUFFER);
+        var MIN_IS_MAX = false;
+        var NO_ITEMS = false;
+        if(COLWORTH_SPLIT_MINMAX_BUFFER[0] == undefined){
+          NO_ITEMS = true;
+        }
+        if(COLWORTH_SPLIT_MINMAX_BUFFER[0] != undefined && COLWORTH_SPLIT_MINMAX_BUFFER[1] == undefined){
+          MIN_IS_MAX = true;
+        }
+        COLWORTH_ARRAY[1] = [COL_MIN, COL_MAX, NO_ITEMS, MIN_IS_MAX];
+        COLWORTH_ARRAY[2] = [V3_SPLITS[c][0], V3_SPLITS[c][1]];
+        GRID_DATA.push(COLWORTH_ARRAY);
+      }
+
+      console.log('GRID_DATA: ', GRID_DATA);
+
+      //  construct the actual grid. REMEMBER: GRID_DATA is accessed by [ROW][TYPE][COLUMN], not vice-versa
+      for(var c=0; c<GAMES_SPLITS.length; c++){  //  COLUMNS (+1 for the Sum Of Best column)
+        if(c==0){
+          GRID_CONSTRUCTOR += '<div class="splitGridColumn"><div class="splitGridCell" style="background-color:var(--BGFill)" style=""><span class="splitGridCellText" style="color:var(--UI-foretext);top:-0.295vh;font-family:mainFont;left:-0.075vh;font-size:1.75vh;">splits</span></div>';
+          for(var rS=0; rS<HIGHEST_SPLIT_CELL; rS++){
+            GRID_CONSTRUCTOR += '<div class="splitGridCell" style="justify-content:flex-start;padding-left:0.8vh"><span class="splitGridCellText">'+V3_SPLITS[rS][0]+'</span></div>'
+          }
+          GRID_CONSTRUCTOR += '</div>';
+        }
+        GRID_CONSTRUCTOR += '<div class="splitGridColumn">';
+        for(var r=0; r<HIGHEST_SPLIT_CELL; r++){ //  ROWS (max split index = number of rows)
+          //  if first item in row, label this
+          if(r==0){
+            GRID_CONSTRUCTOR += '<div class="splitGridCell"><span class="splitGridCellText">'+GAME_TITLES[c]+'</span></div>'
+          }
+          // makeSplitGridCell(Split, vsGivenGame, Min, Max, minIsMax, noItems, Color1, Color2)
+          GRID_CONSTRUCTOR += makeSplitGridCell(GRID_DATA[r][0][c], undefined, GRID_DATA[r][1][0], GRID_DATA[r][1][1], GRID_DATA[r][1][3], GRID_DATA[r][1][2], ui_badsplit, ui_goodsplit);
+        }
+        GRID_CONSTRUCTOR += '</div>';
+      }
+
+      //  set the grid
+      document.getElementById('SPLIT_GRID').innerHTML = GRID_CONSTRUCTOR;
+
+    }
+
+    function conditionalSplitGrid(){  //  Create the Splitgrid only if the page is focused
+      if(GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == -1 && GAMEPAGE_INFO_SUBPAGE == 1){
+        splitGrid();
+      }
+    }
+
+
+    function buildGameOverview(GAME_OBJECT){
+      var GAME_OVERVIEW_CONSTRUCTOR = '';
+
+
+
+      document.getElementById('GAME_OVERVIEW').innerHTML = GAME_OVERVIEW_CONSTRUCTOR;
+    }
+
+
+    //  Gamepage paginators
+    function nextGameInfoPage(){
+      GAMEPAGE_INFO_SUBPAGE++;
+      if(GAMEPAGE_INFO_SUBPAGE > GAMEPAGE_INFO_LAST_PAGE){
+        GAMEPAGE_INFO_SUBPAGE = 0;
+      }
+      setGameInfoPage(undefined,true);
+      saveSettings();
+    }
+    function prevGameInfoPage(){
+      GAMEPAGE_INFO_SUBPAGE--;
+      if(GAMEPAGE_INFO_SUBPAGE < 0){
+        GAMEPAGE_INFO_SUBPAGE = GAMEPAGE_INFO_LAST_PAGE;
+      }
+      setGameInfoPage(undefined,true);
+      saveSettings();
+    }
+    function setGameInfoPage(PAGE,INIT){
+      if(INIT != undefined){
+        document.getElementById('GAMEPAGE_INFO_PAGE_WRAPPER').style.transform = 'translate(calc('+GAMEPAGE_INFO_SUBPAGE+' * -100%))';
+      } else {
+        if(PAGE > -1 && PAGE < GAMEPAGE_INFO_LAST_PAGE){
+          GAMEPAGE_INFO_SUBPAGE = PAGE;
+          document.getElementById('GAMEPAGE_INFO_PAGE_WRAPPER').style.transform = 'translate(calc('+GAMEPAGE_INFO_SUBPAGE+' * -100%))';
+          saveSettings();
+        }
+      }
+    }
+
+    //  Gamepage insights show/hide
+    function showInsights(){
+      if(INSIGHTS_ON_GAME_GRAPH_HOVER){
+        if(INSIGHTS_TRAY_OPEN == false){
+          INSIGHTS_TRAY_OPEN = true;
+          INSIGHT_TRANSITIONING_FLAG = true;
+          // document.getElementById('INSIGHT_DETAILS_WRAPPER').style.right = '0%';
+          document.getElementById('INSIGHT_DETAILS_WRAPPER').style.opacity = '1';
+          document.getElementById('INSIGHT_DETAILS_WRAPPER').style.pointerEvents = 'all';
+          setTimeout(function(){
+            INSIGHT_TRANSITIONING_FLAG = false;
+          },INSIGHT_TRANSITION_TIME);
+        }
+      }
+    }
+    function hideInsights(conditional){
+      if(SHOW_INSIGHTS_BUTTON_ON == false){
+        if(INSIGHTS_TRAY_OPEN == true){
+          INSIGHTS_TRAY_OPEN = false;
+          INSIGHT_TRANSITIONING_FLAG = true;
+          // document.getElementById('INSIGHT_DETAILS_WRAPPER').style.right = '0%';
+          document.getElementById('INSIGHT_DETAILS_WRAPPER').style.opacity = '0';
+          document.getElementById('INSIGHT_DETAILS_WRAPPER').style.pointerEvents = 'none';
+        }
+      }
+    }
+    function enableInsightsButton(){
+      SHOW_INSIGHTS_BUTTON_ON = true;
+      showInsights();
+    }
+    function disableInsightsButton(){
+      SHOW_INSIGHTS_BUTTON_ON = false;
+      hideInsights();
+    }
+    function toggleInsightsButton(){
+      if(SHOW_INSIGHTS_BUTTON_ON){
+        disableInsightsButton();
+      } else {
+        enableInsightsButton();
+      }
+    }
+
+    function returnInsightsFromChartIndex(IND){
+      return GAMEPAGE_INSIGHTS_CACHE.insights_organized[IND];
+    }
+
+    function returnInsightsFromChartIndex_NEAREST_NEIGHBOR(IND){
+      return GAMEPAGE_INSIGHTS_CACHE.insights_organized_bleed[IND];
+    }
+
+    function buildInsightDetails(INSIGHT){
+      var insightDetailsString = '';
+      var first = true;
+      for(var INSIGHT_DETAIL of INSIGHT.insight_details){
+        var breakBuffer = '<br>';
+        var preBuffer = '<i tabindex="-1" class="material-icons" style="font-size:1.25vh;position:relative;">'+INSIGHT_DETAIL[0]+'</i>';
+        if(INSIGHT_DETAIL[0].startsWith('var(--')){
+          //  This is a color
+          preBuffer = '<div class="insightDetail"><div class="insightOuterCircle"><div class="insightInnerCircle" style="background-color:'+INSIGHT_DETAIL[0]+'"></div></div>';
+        } else {  //  this is an icon
+
+        }
+        if(first){
+          breakBuffer = '';
+        }
+        insightDetailsString += breakBuffer + preBuffer + '<div class="insightDetailText">'+INSIGHT_DETAIL[1]+'</div></div>';
+        first = false;
+      }
+      return insightDetailsString;
+    }
+
+    function buildInsightList(INSIGHTS_OBJECT){
+      document.getElementById('INSIGHT_DETAILS_WRAPPER').innerHTML = '';
+      var INSIGHTS_TIME_SORTED = new Array(...INSIGHTS_OBJECT.insights); // make new array to unpointer this
+      INSIGHTS_TIME_SORTED.sort(function(a,b){
+        return parseFloat(a.time) - parseFloat(b.time);
+      });
+      for(var INSIGHT of INSIGHTS_TIME_SORTED){
+        var PAD_BUFFER = 'padding-top:0.2vh';
+        var INS_DETAILS = buildInsightDetails(INSIGHT);
+        if(INS_DETAILS == '' || INS_DETAILS == null || INS_DETAILS == undefined){
+          PAD_BUFFER = '';
+        }
+        document.getElementById('INSIGHT_DETAILS_WRAPPER').innerHTML += 
+          '<div class="insight" onmousedown="setActiveInsight(this)" insight_index="'+INSIGHT.index+'"><div class="insightLightbarPadding" style="background-color:'+window[INSIGHT.colorType]+'"></div><div class="insightLeftSection" style="color:'+window[INSIGHT.colorType]+'"><div class="insightLeftIcon"><i tabindex="-1" class="material-icons" style="font-size:2.5vh;position:relative;top:-0.75vh;line-height:3vh;">'+INSIGHT.icon+'</i></div><span class="insightLeftTime">'+INSIGHT.time+'</span></div><div class="insightBodyWrapper"><div class="insightTitle">'+INSIGHT.insightTitle+'</div><div class="insightDescription">'+INSIGHT.insightDescription+'</div><div class="insightDetails" style="'+PAD_BUFFER+'">'+INS_DETAILS+'</div></div></div>';
+      }
+    }
+
+    function gotoInsights(INSIGHT_OR_ARRAY){
+      var insightArray = [].concat(INSIGHT_OR_ARRAY); // makes single elements into arrays
+      if(insightArray[0] != undefined && insightArray[0] != null){
+        var deselectAllTargs = document.querySelectorAll('.insight');
+        for(var TARGET of deselectAllTargs){
+          TARGET.classList.remove('insightActive');
+        }
+
+        var EL = 0; // scrollTop cacher
+        var summedHeights = 0;
+        var topEl;
+
+        for(var INSIGHT of insightArray){
+          activateInsight(INSIGHT);
+          var TH_EL = document.querySelector('.insight[insight_index="'+INSIGHT.index+'"]');
+          if(TH_EL != null && TH_EL != undefined){
+            TH_EL.classList.add('insightActive');
+            summedHeights += TH_EL.offsetHeight;
+          }
+          if(EL == 0){
+            topEl = TH_EL;
+          }
+          EL++;
+        }
+        if(EL > 0 && topEl != null && topEl != undefined){
+          //  scroll to the center of the summed height of all insights
+          var L_OFS_HEIGHT = document.getElementById('INSIGHT_DETAILS_WRAPPER').offsetHeight;
+          var TOTAL_SCROLL_OFFSET = (L_OFS_HEIGHT / 2) - (summedHeights / 2);
+          var TOTAL_SCROLL = topEl.offsetTop - TOTAL_SCROLL_OFFSET;
+          if(summedHeights > L_OFS_HEIGHT){ //  scroll to top element, don't center
+            document.getElementById('INSIGHT_DETAILS_WRAPPER').scroll({
+              top: topEl.offsetTop,
+              behavior: 'auto'
+            });
+          } else { // insights are smaller than container; center
+            // document.getElementById('INSIGHT_DETAILS_WRAPPER').scrollTop = TOTAL_SCROLL;
+            document.getElementById('INSIGHT_DETAILS_WRAPPER').scroll({
+              top: TOTAL_SCROLL,
+              behavior: 'auto'  // alternatively, 'smooth'
+            });
+          }
+        }
+      } // no insights
+    }
+
+    function setActiveInsight(INSIGHT_ELEMENT){
+      var deselectAllTargs = document.querySelectorAll('.insight');
+      for(var TARGET of deselectAllTargs){
+        TARGET.classList.remove('insightActive');
+      }
+      INSIGHT_ELEMENT.classList.add('insightActive');
+      var insightIndex = INSIGHT_ELEMENT.attributes.insight_index.nodeValue;
+      var THIS_INSIGHT = GAMEPAGE_INSIGHTS_CACHE.insights[insightIndex];
+      zoomToInsight(THIS_INSIGHT);
+    }
+
+    function activateInsight(INSIGHT){
+      //  Perform the functions embedded within an insight, if any. If the function fails, assume missing
+      if(INSIGHT.hoverFunctionName != undefined && INSIGHT.hoverFunctionName != null){
+        try{ window[INSIGHT.hoverFunctionName](INSIGHT); } catch(e){ }
+      }
+    }
+
+    function zoomToInsight(INSIGHT){
+      var SCALE_OBJECT = {min: (Math.floor(INSIGHT.time) - 50), max: (Math.floor(INSIGHT.time) + 50)};
+      INSIGHTS_GRAPH.zoomScale('x', SCALE_OBJECT, mode = 'none');
+    }
+
 
     function deathType(text){
       //  Death type cleaner
@@ -18298,6 +18688,7 @@ var language = {
               }
               paginateMyGames(PAGINATION_TARGET,true);
             }
+            splitGrid();
             /*   DEPRECATED IN FAVOR OF THE DDSTATS LIVE GAMES WEBSOCKET 'game_submitted' FUNCTION
             setTimeout(function(){
               if(AUTO_UPDATE_DDSTATS_GAMES_ON_SUBMIT){
@@ -18599,6 +18990,8 @@ try{
 
     var LIVE_SPLIT_DETERMINE_STRING = 'LIVE_SPLIT';
 
+    var LEFT_GETSPLITS;
+
     var splitNums = [];
     for(i=0;i<SPLITS.length;i++){
         splitNums.push(SPLITS[i][1]);
@@ -18827,10 +19220,10 @@ try{
         PRE_COMP_LINE13 = DAGEATEN.toString();
             PRE_COMP_LINE14 = 'total split  col use   split total';
 
-        var LEFT_GETSPLITS = getSplits(DD_LEFT_GAME,undefined,true);
+        LEFT_GETSPLITS = getSplits(DD_LEFT_GAME,undefined,true);
         LSplitsArr = LEFT_GETSPLITS[0];
         SPLITCOMP = LEFT_GETSPLITS[1];
-        var CACHED_HOMING_USED = LEFT_GETSPLITS[2];
+        // var CACHED_HOMING_USED = LEFT_GETSPLITS[2];
     }
 
 
@@ -18848,128 +19241,11 @@ try{
 
       //  LEFT - LAST / LIVE SPLIT
 
-      var L_LastFrame; // = DD_LEFT_GAME.frames.at(-1);
-      if(L_LastFrame == undefined){
-        L_LastFrame = DD_LEFT_GAME.frames.length-1;
-      }
-
-      var L_CLOSEST_FLOORED_SPLIT = closest(splitNums,(L_LastFrame + Math.floor(DD_LEFT_GAME.block.starting_time)),2);
-      var L_PREVIOUS_CLOSEST_SPLIT_INDEX = (splitNums.indexOf(L_CLOSEST_FLOORED_SPLIT))-1;
-      var L_DOES_AN_IN_PROGRESS_SPLIT_EXIST = (L_LastFrame > L_CLOSEST_FLOORED_SPLIT);
-      var L_PROGRESS_SPLIT_ALREADY_LOGGED = false;
-
-      //  PREVIOUS SPLIT FRAME (for homing determine, etc:)
-
-      // DD_LEFT_GAME.frames[SPLITS[L_PREVIOUS_CLOSEST_SPLIT_INDEX][1] - Math.floor(DD_LEFT_GAME.block.starting_time)] 
-
-      //  THIS SPLIT:
-
-      // DD_LEFT_GAME.frames[L_LastFrame]
-      //    BETTER:
-      //  DD_LEFT_GAME.block
-
-
-          var LSPLIT_leftHomingOffset = 0;
-          var LSPLIT_lvl3OffsetL = 0;
-          var LSPLIT_leftHomingUsed;
-          var Ltotal = 'BU';
-
-          var homingCalc;
-          var gemCalc;
-
-          var splitCalc;
-
-
-          if(DD_LEFT_GAME.frames[L_LastFrame] != undefined){
-              var prevHoming = 0;
-              var prevGems = 0;
-              var prevUse = 0;
-              if(i != 0 && DD_LEFT_GAME.frames[SPLITS[L_PREVIOUS_CLOSEST_SPLIT_INDEX+1][1] - Math.floor(DD_LEFT_GAME.block.starting_time)] != undefined){
-                  prevHoming = DD_LEFT_GAME.frames[SPLITS[L_PREVIOUS_CLOSEST_SPLIT_INDEX+1][1] - Math.floor(DD_LEFT_GAME.block.starting_time)].homing;
-                  prevGems = DD_LEFT_GAME.frames[SPLITS[L_PREVIOUS_CLOSEST_SPLIT_INDEX+1][1] - Math.floor(DD_LEFT_GAME.block.starting_time)].gems_collected;
-              } else if(DD_LEFT_GAME.block.starting_time < DD_LEFT_GAME.frames[SPLITS[0][1]]){
-                  prevHoming = BASELINE_GEMS_AT_LEVI;
-              } else if(i == 0){
-                  prevHoming = BASELINE_GEMS_AT_LEVI;
-              } else {
-                  prevHoming = DD_LEFT_GAME.block.starting_homing;
-              }
-              homingCalc = (DD_LEFT_GAME.frames.at(-1).homing - prevHoming);
-              gemCalc = Math.abs((DD_LEFT_GAME.frames.at(-1).gems_collected - prevGems));
-
-
-
-              //  PER SEGMENT USE CALCULATOR
-
-              if((DD_LEFT_GAME.block.time_lvl4 == 0 || DD_LEFT_GAME.block.time_lvl4 == undefined) && (DD_LEFT_GAME.block.time_lvl3 == 0 || DD_LEFT_GAME.block.time_lvl3 == undefined) && DD_LEFT_GAME.block.starting_hand != 3 && DD_LEFT_GAME.block.starting_hand != 4){
-                  LSPLIT_leftHomingUsed = 0;
-              } else { // it shouldn't be THAT easy
-
-              var startingOffset = 0;
-              if(DD_LEFT_GAME.block.time_lvl3 != 0){
-                  startingOffset = 70;
-              } 
-              if(DD_LEFT_GAME.block.time_lvl3 != 0 && DD_LEFT_GAME.block.time_lvl4 != 0){
-                  startingOffset = 220;
-              }
-
-
-              /* OLD METHOD
-
-                  if((DD_LEFT_GAME.block.time_lvl3 < L_CLOSEST_FLOORED_SPLIT) && DD_LEFT_GAME.block.time_lvl4 > L_CLOSEST_FLOORED_SPLIT){
-                      LSPLIT_leftHomingUsed = DD_LEFT_GAME.block.gems_collected - 70 + startingOffset - (DD_LEFT_GAME.block.homing - DD_LEFT_GAME.block.starting_homing) - CACHED_HOMING_USED;
-                      CACHED_HOMING_USED = CACHED_HOMING_USED + LSPLIT_leftHomingUsed;
-                  } else if(DD_LEFT_GAME.block.time_lvl4 < L_CLOSEST_FLOORED_SPLIT){
-                      LSPLIT_leftHomingUsed = DD_LEFT_GAME.block.gems_collected - 220 + startingOffset - (DD_LEFT_GAME.block.homing - DD_LEFT_GAME.block.starting_homing) - CACHED_HOMING_USED;
-                      CACHED_HOMING_USED = CACHED_HOMING_USED + LSPLIT_leftHomingUsed;
-                  }
-
-                  */
-
-                  // NEW METHOD
-
-                  LSPLIT_leftHomingUsed = DD_LEFT_GAME.frames.at(-1).gems_collected - startingOffset - (DD_LEFT_GAME.frames.at(-1).homing - DD_LEFT_GAME.block.starting_homing) - CACHED_HOMING_USED;
-                  CACHED_HOMING_USED = CACHED_HOMING_USED + LSPLIT_leftHomingUsed;
-
-              }
-
-
-              /*
-              if(DD_LEFT_GAME.block.time_lvl4 < SPLITS[i][1] && DD_LEFT_GAME.block.time_lvl4 != 0 && !isNaN(DD_LEFT_GAME.block.time_lvl4)){
-                  LSPLIT_leftHomingOffset = 150;
-              }
-
-              
-
-              if(DD_LEFT_GAME.block.time_lvl3 < SPLITS[i][1] && DD_LEFT_GAME.block.time_lvl3 != 0 && !isNaN(DD_LEFT_GAME.block.time_lvl3)){
-                  LSPLIT_lvl3OffsetL = 70;
-                  if(!RIGHT_OBJECT.block.is_player_alive){
-                      LSPLIT_leftHomingUsed = (DD_LEFT_GAME.block.gems_collected - (DD_LEFT_GAME.frames.at(-1).homing - DD_LEFT_GAME.block.starting_homing) - LSPLIT_leftHomingOffset - LSPLIT_lvl3OffsetL).toString();
-                  } else {
-                      LSPLIT_leftHomingUsed = (DD_LEFT_GAME.block.gems_collected - (DD_LEFT_GAME.block.homing - DD_LEFT_GAME.block.starting_homing) - LSPLIT_leftHomingOffset - LSPLIT_lvl3OffsetL).toString();
-                  }
-              } else {
-                  LSPLIT_leftHomingUsed = '0';
-              }
-              */
-
-              var useCalc = LSPLIT_leftHomingUsed.toString();
-
-              Ltotal = DD_LEFT_GAME.frames.at(-1).homing;
-              splitCalc = Ltotal.toString().padEnd(5,' ') + '(' + signer(homingCalc,true).padEnd(4,' ') + ') [' + gemCalc.toString().padEnd(3,' ') + '-' + useCalc.padEnd(3,' ') + ']  ';
-
-          }
-
-          // console.log(SPLITCOMP);
-          // console.log(LSplitsArr);
-
-
-          //  REPLACE index instead of PUSHING
-
           var L_LIVE_IND_OF = SPLITCOMP.indexOf(LIVE_SPLIT_DETERMINE_STRING);
 
-          SPLITCOMP[L_LIVE_IND_OF] = splitCalc;
-          LSplitsArr[L_LIVE_IND_OF] = [Ltotal,homingCalc,gemCalc,LSPLIT_leftHomingUsed,true];
+          SPLITCOMP[L_LIVE_IND_OF] = LEFT_GETSPLITS[5][0].toString().padEnd(5,' ') + '(' + signer(LEFT_GETSPLITS[5][1],true).padEnd(4,' ') + ') [' + LEFT_GETSPLITS[5][2].toString().padEnd(3,' ') + '-' + LEFT_GETSPLITS[5][3].toString().padEnd(3,' ') + ']  ';
+          LSplitsArr[L_LIVE_IND_OF] = LEFT_GETSPLITS[5];
+
           //  [ homing total, homing split, gems collected, homing used , ALWAYS LIVE SPLIT]
       }
 
@@ -23561,346 +23837,6 @@ var GLOBAL_STAT_CHART = new Chart(ctx3, {
     },
   },
 });
-
-function makeSplitGridCell(Split, vsGivenGame, Min, Max, minIsMax, noItems, Color1, Color2){
-  var DEGREE;
-  var CELL_COLOR;
-  var BG_COLOR_FOR_CONTRAST;
-  var COMPARISON_INFORMATION = '';
-  var TEXTCOLOR = 'var(--UI-foretext)';
-  var splitToString;
-  if(isNaN(Split[0])){ //  if this is a fake item, don't do math on it
-    splitToString = 'N/A';
-    CELL_COLOR = 'background-color:' + ui_bg_fill;
-    BG_COLOR_FOR_CONTRAST = ui_bg_fill;
-  } else {  //  this is a real split; do math on it
-    splitToString = signer(Split[0]);
-    if(Split[1] == true){ // if this split is in progress, give it the hashed pattern
-      CELL_COLOR = 'background:repeating-linear-gradient(45deg,var(--UI-inactive),var(--UI-inactive) 0.5vh,var(--BGFill) 0.5vh,var(--BGFill) 1vh);text-shadow:-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill),-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill),-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill);';
-      TEXTCOLOR = 'var(--UI-active)';
-      BG_COLOR_FOR_CONTRAST = ui_inactive;
-    } else {
-      DEGREE = (Split[0] - Min) / (Max - Min);
-      if(minIsMax == true){ // if sole item, 100% good color
-        DEGREE = 1;
-      }
-      BG_COLOR_FOR_CONTRAST = blendColors(ui_badsplit, ui_goodsplit, DEGREE);
-      CELL_COLOR = 'background-color:' + BG_COLOR_FOR_CONTRAST;
-      TEXTCOLOR = getContrastBWDirectHex(BG_COLOR_FOR_CONTRAST);
-    }
-    if(vsGivenGame != undefined){
-      COMPARISON_INFORMATION = '<br>('+signer(vsGivenGame)+')';
-    }
-  } //  commit the final split and return the Cell HTML for this item
-  return '<div class="splitGridCell" style="'+CELL_COLOR+';color:'+TEXTCOLOR+'"><span class="splitGridCellText">'+splitToString+COMPARISON_INFORMATION+'</span></div>';
-}
-
-//  Split gamepage generator
-function splitGrid(){
-
-  var GRID_CONSTRUCTOR = ''; 
-  var GAME_TITLES = ['THIS', 'L', 'R', 'BEST'];
-  var GAMES = [DD_GAMEPAGE_GAME, DD_LEFT_GAME, DD_RIGHT_GAME]; // sum of best is uniquely added last
-
-  //  Add the live game to grid but only if it is not undefined
-  if(DD != undefined){
-    if(DD.frames != undefined){
-      if(DD.frames[0] != undefined){ // add to the second column
-        GAMES = insert(GAMES, 0, DD);
-        GAME_TITLES = insert(GAME_TITLES, 0, 'LIVE');
-      }
-    }
-  }
-
-  //  Prebuild the game split array and fill with game array's splits programmatically
-  var GAMES_SPLITS = [];
-  var GAMES_SPLITS_LENGTHS = [];
-  var SUMOFBEST_LENGTH = 0;
-  for(var Game of GAMES){
-    var TSPL = getSplits(Game);
-    GAMES_SPLITS.push(TSPL);
-    GAMES_SPLITS_LENGTHS.push(TSPL.length)
-  } 
-
-  //  Add the Sum Of Best Splits to the end of the prebuild splits array
-  if(SPLITGRID_OMIT_BEST != true){
-    var sumOfBestArray = [];
-    for(var Split of V3_SPLITS){
-      //  sum of best inherently lacks Total Homing, collection, use, etc. so only push Split and Time
-      sumOfBestArray.push([undefined, Split[2], undefined, undefined, false, Split[1]]);
-      if(Split[2] != undefined){
-        SUMOFBEST_LENGTH++; //  Only count this split as a real index if it is non-undefined
-      }
-    }
-    GAMES_SPLITS.push(sumOfBestArray);
-    GAMES_SPLITS_LENGTHS.push(SUMOFBEST_LENGTH);
-  }
-
-  // console.log('GAMES_SPLITS: ', GAMES_SPLITS); // Log the GAMES_SPLITS array for development
-
-  //  Determine how high the grid needs to be based on which game has the most splits
-  var HIGHEST_SPLIT_CELL = Math.max(...GAMES_SPLITS_LENGTHS);
-
-  //  create the grid's data, and construct the grid
-  //      GRID DATA IS REPRESENTED AS THIS ARRAY:
-  //      [ [splits, for, this, row],  [min, max, no_items, min_is_max],  [split name, split time]  ]
-  //   THE 'SPLITS' ARE EACH AN ARRAY OF THEIR OWN, CONTAINING:
-  //   [  split,  is_in_progress  ]
-
-  var GRID_DATA = [];
-
-  for(var r=0; r<HIGHEST_SPLIT_CELL; r++){  //  COLUMNS, one per game (and sum-of-best """game""");
-    var COLWORTH_ARRAY = [[], [], []];
-    var COLWORTH_SPLIT_MINMAX_BUFFER = [];
-    for(var c=0; c<GAMES_SPLITS.length; c++){ //  ROWS (max split index = number of rows)
-      if(GAMES_SPLITS[c][r] != undefined){  //  if this row exists whatsoever,
-        if(GAMES_SPLITS[c][r][1] != undefined){ // and if its split exists,
-          COLWORTH_ARRAY[0].push([GAMES_SPLITS[c][r][1], GAMES_SPLITS[c][r][4]]);
-          if(GAMES_SPLITS[c][r][4] == false){ //  if not in progress, can be compared to others
-            COLWORTH_SPLIT_MINMAX_BUFFER.push(GAMES_SPLITS[c][r][1]);
-          }
-        } else {
-          COLWORTH_ARRAY[0].push(['N/A','N/A']); // preserve grid by inserting real item
-        }
-      } else {
-        COLWORTH_ARRAY[0].push(['N/A','N/A']);
-      }
-    }
-    var COL_MIN = Math.min(...COLWORTH_SPLIT_MINMAX_BUFFER);
-    var COL_MAX = Math.max(...COLWORTH_SPLIT_MINMAX_BUFFER);
-    var MIN_IS_MAX = false;
-    var NO_ITEMS = false;
-    if(COLWORTH_SPLIT_MINMAX_BUFFER[0] == undefined){
-      NO_ITEMS = true;
-    }
-    if(COLWORTH_SPLIT_MINMAX_BUFFER[0] != undefined && COLWORTH_SPLIT_MINMAX_BUFFER[1] == undefined){
-      MIN_IS_MAX = true;
-    }
-    COLWORTH_ARRAY[1] = [COL_MIN, COL_MAX, NO_ITEMS, MIN_IS_MAX];
-    COLWORTH_ARRAY[2] = [V3_SPLITS[c][0], V3_SPLITS[c][1]];
-    GRID_DATA.push(COLWORTH_ARRAY);
-  }
-
-  // console.log('GRID_DATA: ', GRID_DATA);
-
-  //  construct the actual grid. REMEMBER: GRID_DATA is accessed by [ROW][TYPE][COLUMN], not vice-versa
-  for(var c=0; c<GAMES_SPLITS.length; c++){  //  COLUMNS (+1 for the Sum Of Best column)
-    if(c==0){
-      GRID_CONSTRUCTOR += '<div class="splitGridColumn"><div class="splitGridCell" style="background-color:var(--BGFill)" style=""><span class="splitGridCellText" style="color:var(--UI-foretext);top:-0.295vh;font-family:mainFont;left:-0.075vh;font-size:1.75vh;">splits</span></div>';
-      for(var rS=0; rS<HIGHEST_SPLIT_CELL; rS++){
-        GRID_CONSTRUCTOR += '<div class="splitGridCell" style="justify-content:flex-start;padding-left:0.8vh"><span class="splitGridCellText">'+V3_SPLITS[rS][0]+'</span></div>'
-      }
-      GRID_CONSTRUCTOR += '</div>';
-    }
-    GRID_CONSTRUCTOR += '<div class="splitGridColumn">';
-    for(var r=0; r<HIGHEST_SPLIT_CELL; r++){ //  ROWS (max split index = number of rows)
-      //  if first item in row, label this
-      if(r==0){
-        GRID_CONSTRUCTOR += '<div class="splitGridCell"><span class="splitGridCellText">'+GAME_TITLES[c]+'</span></div>'
-      }
-      // makeSplitGridCell(Split, vsGivenGame, Min, Max, minIsMax, noItems, Color1, Color2)
-      GRID_CONSTRUCTOR += makeSplitGridCell(GRID_DATA[r][0][c], undefined, GRID_DATA[r][1][0], GRID_DATA[r][1][1], GRID_DATA[r][1][3], GRID_DATA[r][1][2], ui_badsplit, ui_goodsplit);
-    }
-    GRID_CONSTRUCTOR += '</div>';
-  }
-
-  //  set the grid
-  document.getElementById('SPLIT_GRID').innerHTML = GRID_CONSTRUCTOR;
-
-}
-
-function conditionalSplitGrid(){  //  Create the Splitgrid only if the page is focused
-  if(GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == -1 && GAMEPAGE_INFO_SUBPAGE == 1){
-    splitGrid();
-  }
-}
-
-
-
-//  Gamepage paginators
-function nextGameInfoPage(){
-  GAMEPAGE_INFO_SUBPAGE++;
-  if(GAMEPAGE_INFO_SUBPAGE > GAMEPAGE_INFO_LAST_PAGE){
-    GAMEPAGE_INFO_SUBPAGE = 0;
-  }
-  setGameInfoPage(undefined,true);
-  saveSettings();
-}
-function prevGameInfoPage(){
-  GAMEPAGE_INFO_SUBPAGE--;
-  if(GAMEPAGE_INFO_SUBPAGE < 0){
-    GAMEPAGE_INFO_SUBPAGE = GAMEPAGE_INFO_LAST_PAGE;
-  }
-  setGameInfoPage(undefined,true);
-  saveSettings();
-}
-function setGameInfoPage(PAGE,INIT){
-  if(INIT != undefined){
-    document.getElementById('GAMEPAGE_INFO_PAGE_WRAPPER').style.transform = 'translate(calc('+GAMEPAGE_INFO_SUBPAGE+' * -100%))';
-  } else {
-    if(PAGE > -1 && PAGE < GAMEPAGE_INFO_LAST_PAGE){
-      GAMEPAGE_INFO_SUBPAGE = PAGE;
-      document.getElementById('GAMEPAGE_INFO_PAGE_WRAPPER').style.transform = 'translate(calc('+GAMEPAGE_INFO_SUBPAGE+' * -100%))';
-      saveSettings();
-    }
-  }
-}
-
-//  Gamepage insights show/hide
-function showInsights(){
-  if(INSIGHTS_ON_GAME_GRAPH_HOVER){
-    if(INSIGHTS_TRAY_OPEN == false){
-      INSIGHTS_TRAY_OPEN = true;
-      INSIGHT_TRANSITIONING_FLAG = true;
-      // document.getElementById('INSIGHT_DETAILS_WRAPPER').style.right = '0%';
-      document.getElementById('INSIGHT_DETAILS_WRAPPER').style.opacity = '1';
-      document.getElementById('INSIGHT_DETAILS_WRAPPER').style.pointerEvents = 'all';
-      setTimeout(function(){
-        INSIGHT_TRANSITIONING_FLAG = false;
-      },INSIGHT_TRANSITION_TIME);
-    }
-  }
-}
-function hideInsights(conditional){
-  if(SHOW_INSIGHTS_BUTTON_ON == false){
-    if(INSIGHTS_TRAY_OPEN == true){
-      INSIGHTS_TRAY_OPEN = false;
-      INSIGHT_TRANSITIONING_FLAG = true;
-      // document.getElementById('INSIGHT_DETAILS_WRAPPER').style.right = '0%';
-      document.getElementById('INSIGHT_DETAILS_WRAPPER').style.opacity = '0';
-      document.getElementById('INSIGHT_DETAILS_WRAPPER').style.pointerEvents = 'none';
-    }
-  }
-}
-function enableInsightsButton(){
-  SHOW_INSIGHTS_BUTTON_ON = true;
-  showInsights();
-}
-function disableInsightsButton(){
-  SHOW_INSIGHTS_BUTTON_ON = false;
-  hideInsights();
-}
-function toggleInsightsButton(){
-  if(SHOW_INSIGHTS_BUTTON_ON){
-    disableInsightsButton();
-  } else {
-    enableInsightsButton();
-  }
-}
-
-function returnInsightsFromChartIndex(IND){
-  return GAMEPAGE_INSIGHTS_CACHE.insights_organized[IND];
-}
-
-function returnInsightsFromChartIndex_NEAREST_NEIGHBOR(IND){
-  return GAMEPAGE_INSIGHTS_CACHE.insights_organized_bleed[IND];
-}
-
-function buildInsightDetails(INSIGHT){
-  var insightDetailsString = '';
-  var first = true;
-  for(var INSIGHT_DETAIL of INSIGHT.insight_details){
-    var breakBuffer = '<br>';
-    var preBuffer = '<i tabindex="-1" class="material-icons" style="font-size:1.25vh;position:relative;">'+INSIGHT_DETAIL[0]+'</i>';
-    if(INSIGHT_DETAIL[0].startsWith('var(--')){
-      //  This is a color
-      preBuffer = '<div class="insightDetail"><div class="insightOuterCircle"><div class="insightInnerCircle" style="background-color:'+INSIGHT_DETAIL[0]+'"></div></div>';
-    } else {  //  this is an icon
-
-    }
-    if(first){
-      breakBuffer = '';
-    }
-    insightDetailsString += breakBuffer + preBuffer + '<div class="insightDetailText">'+INSIGHT_DETAIL[1]+'</div></div>';
-    first = false;
-  }
-  return insightDetailsString;
-}
-
-function buildInsightList(INSIGHTS_OBJECT){
-  document.getElementById('INSIGHT_DETAILS_WRAPPER').innerHTML = '';
-  var INSIGHTS_TIME_SORTED = new Array(...INSIGHTS_OBJECT.insights); // make new array to unpointer this
-  INSIGHTS_TIME_SORTED.sort(function(a,b){
-    return parseFloat(a.time) - parseFloat(b.time);
-  });
-  for(var INSIGHT of INSIGHTS_TIME_SORTED){
-    var PAD_BUFFER = 'padding-top:0.2vh';
-    var INS_DETAILS = buildInsightDetails(INSIGHT);
-    if(INS_DETAILS == '' || INS_DETAILS == null || INS_DETAILS == undefined){
-      PAD_BUFFER = '';
-    }
-    document.getElementById('INSIGHT_DETAILS_WRAPPER').innerHTML += 
-      '<div class="insight" onmousedown="setActiveInsight(this)" insight_index="'+INSIGHT.index+'"><div class="insightLightbarPadding" style="background-color:'+window[INSIGHT.colorType]+'"></div><div class="insightLeftSection" style="color:'+window[INSIGHT.colorType]+'"><div class="insightLeftIcon"><i tabindex="-1" class="material-icons" style="font-size:2.5vh;position:relative;top:-0.75vh;line-height:3vh;">'+INSIGHT.icon+'</i></div><span class="insightLeftTime">'+INSIGHT.time+'</span></div><div class="insightBodyWrapper"><div class="insightTitle">'+INSIGHT.insightTitle+'</div><div class="insightDescription">'+INSIGHT.insightDescription+'</div><div class="insightDetails" style="'+PAD_BUFFER+'">'+INS_DETAILS+'</div></div></div>';
-  }
-}
-
-function gotoInsights(INSIGHT_OR_ARRAY){
-  var insightArray = [].concat(INSIGHT_OR_ARRAY); // makes single elements into arrays
-  if(insightArray[0] != undefined && insightArray[0] != null){
-    var deselectAllTargs = document.querySelectorAll('.insight');
-    for(var TARGET of deselectAllTargs){
-      TARGET.classList.remove('insightActive');
-    }
-
-    var EL = 0; // scrollTop cacher
-    var summedHeights = 0;
-    var topEl;
-
-    for(var INSIGHT of insightArray){
-      activateInsight(INSIGHT);
-      var TH_EL = document.querySelector('.insight[insight_index="'+INSIGHT.index+'"]');
-      if(TH_EL != null && TH_EL != undefined){
-        TH_EL.classList.add('insightActive');
-        summedHeights += TH_EL.offsetHeight;
-      }
-      if(EL == 0){
-        topEl = TH_EL;
-      }
-      EL++;
-    }
-    if(EL > 0 && topEl != null && topEl != undefined){
-      //  scroll to the center of the summed height of all insights
-      var L_OFS_HEIGHT = document.getElementById('INSIGHT_DETAILS_WRAPPER').offsetHeight;
-      var TOTAL_SCROLL_OFFSET = (L_OFS_HEIGHT / 2) - (summedHeights / 2);
-      var TOTAL_SCROLL = topEl.offsetTop - TOTAL_SCROLL_OFFSET;
-      if(summedHeights > L_OFS_HEIGHT){ //  scroll to top element, don't center
-        document.getElementById('INSIGHT_DETAILS_WRAPPER').scroll({
-          top: topEl.offsetTop,
-          behavior: 'auto'
-        });
-      } else { // insights are smaller than container; center
-        // document.getElementById('INSIGHT_DETAILS_WRAPPER').scrollTop = TOTAL_SCROLL;
-        document.getElementById('INSIGHT_DETAILS_WRAPPER').scroll({
-          top: TOTAL_SCROLL,
-          behavior: 'auto'  // alternatively, 'smooth'
-        });
-      }
-    }
-  } // no insights
-}
-
-function setActiveInsight(INSIGHT_ELEMENT){
-  var deselectAllTargs = document.querySelectorAll('.insight');
-  for(var TARGET of deselectAllTargs){
-    TARGET.classList.remove('insightActive');
-  }
-  INSIGHT_ELEMENT.classList.add('insightActive');
-  var insightIndex = INSIGHT_ELEMENT.attributes.insight_index.nodeValue;
-  var THIS_INSIGHT = GAMEPAGE_INSIGHTS_CACHE.insights[insightIndex];
-  zoomToInsight(THIS_INSIGHT);
-}
-
-function activateInsight(INSIGHT){
-  //  Perform the functions embedded within an insight, if any. If the function fails, assume missing
-  if(INSIGHT.hoverFunctionName != undefined && INSIGHT.hoverFunctionName != null){
-    try{ window[INSIGHT.hoverFunctionName](INSIGHT); } catch(e){ }
-  }
-}
-
-function zoomToInsight(INSIGHT){
-  var SCALE_OBJECT = {min: (Math.floor(INSIGHT.time) - 50), max: (Math.floor(INSIGHT.time) + 50)};
-  INSIGHTS_GRAPH.zoomScale('x', SCALE_OBJECT, mode = 'none');
-}
 
 // GAME PAGE INSIGHTS CHART
 var ctx4 = document.getElementById('INSIGHTS_GRAPH').getContext('2d');
