@@ -2034,6 +2034,8 @@ canvas{
   height: calc(31vh + 1px);
   position: relative;
   overflow: hidden;
+
+  display: block;
 }
 #GAMEPAGE_INFO_PAGE_WRAPPER{
   position: absolute;
@@ -2102,7 +2104,7 @@ canvas{
 }
 .overviewItemTextPre{
   width: fit-content;
-  font-size: 1.7vh;
+  font-size: 1.525vh;
   padding-left: 0.55vh;
   padding-right: 0.125vh;
   font-weight: 700;
@@ -2110,6 +2112,8 @@ canvas{
   position: relative;
   top: -0.17vh;
   line-height: 1.25vh;
+
+  text-rendering: optimizeLegibility;
 }
 .overviewItemText{
   width: fit-content;
@@ -2180,6 +2184,8 @@ canvas{
   height: 2vh;
   width: 2.5vh;
   border-radius: 0 0 0 1.2vh;
+
+  padding-top: 0.3vh;
 
   opacity: 0;
   pointer-events: none;
@@ -15843,6 +15849,22 @@ var language = {
       return [i, waveStart, secondsCleaned, (secondsCleaned - waveStart), waveModifier, percentComplete, waveType, waveStarts];
     }
 
+    function getFarmEfficiency(GAME_OBJECT){  //  This contains unnecessary steps
+      if(GAME_OBJECT.frames[363] != undefined){
+        if(GAME_OBJECT.frames[363].level_gems == 71 && GAME_OBJECT.frames[363].homing >= 105 && GAME_OBJECT.block.starting_time <= 0){ 
+          var usedByFarmEnd = (GAME_OBJECT.frames[363].gems_collected - (GAME_OBJECT.frames[363].homing) - 220);
+
+          //  gush-only kill calculator
+          var killBaseline = ((GAME_OBJECT.frames[363].kills - (123 + 4) + (GAME_OBJECT.frames[363].enemies_alive - 1)) );
+          var eliteSkullCollection = ((GAME_OBJECT.frames[363].gems_collected - 285 - parseInt(usedByFarmEnd)));
+          var would_be_perfect_efficiency_per_gem = eliteSkullCollection / eliteSkullCollection*11;
+          var optimumSkullCount = eliteSkullCollection*11 / killBaseline;
+          return (optimumSkullCount * 100).toFixed(2);
+        }
+      }
+      return undefined;
+    }
+
     function V3WaveClarityMinMax(GAME_OBJECT,START,END){
 
       //  Takes a GAME_OBJECT, a START frame and an END frame, and returns an array of:
@@ -15865,8 +15887,6 @@ var language = {
       }
       return [min_cache, max_cache];
     }
-
-
 
     function getSplits(GAME_OBJECT, FORCE_STANDARD_V3_MODEL, COMPARATOR){
 
@@ -16276,12 +16296,14 @@ var language = {
         var TO_SAVE_ON_SUCCESS_FLAG = false;
         var L_REF = document.querySelector('#GAMEPAGE_INFO .gameItem .gamerName');
         var S_REF = document.querySelector('#GAMEPAGE_INFO .gameItem .gamerStats');
+        var INFO_WRAPPER = document.getElementById('GAMEPAGE_INFO_INNER_WRAPPER');
         var BUTTON_WRAPPER = document.getElementById('GAMEPAGE_BUTTON_WRAPPER');
         if(LOAD_FROM_CACHE == undefined && ((GAME_ID != DD_GAMEPAGE_GAME.block.DDSTATS_GAME_ID && GAME_ID != undefined) || GAME_OBJECT_INSTEAD != undefined)){
           //  Clear the graph and buttons so as not to misrepresent this DDStats game
           TRAY_CALL(4,-1,'loading');
           L_REF.innerHTML = 'Loading...'; await sleep(0.0001);
           S_REF.innerHTML = ' <br> '; await sleep(0.0001);
+          INFO_WRAPPER.style.display = 'none';
           document.querySelector('[game_page_game_item]').attributes.game_id.nodeValue = -1;
           document.getElementById('INSIGHT_DETAILS_WRAPPER').innerHTML = '';
           BUTTON_WRAPPER.innerHTML = '<div class="gameButton" onmouseenter="tooltip(\'prevGameInfoPage\')" onmouseleave="tooltip(\'close\')" onmousedown="prevGameInfoPage();" style="position:absolute;left:0;overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_backward</i></div></div><div class="gameButton gameButtonUnclickable gameButtonLoading"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.275vh;line-height:0px;">autorenew</i></div></div><div class="gameButton" onmouseenter="tooltip(\'nextGameInfoPage\')" onmouseleave="tooltip(\'close\')" onmousedown="nextGameInfoPage();" style="overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_forward</i></div></div>';
@@ -16359,6 +16381,7 @@ var language = {
           setGamePageInfoWidth();
 
           //  done
+          INFO_WRAPPER.style.display = 'block';
           TRAY_CALL(4,-1,'success');
 
           if(TO_SAVE_ON_SUCCESS_FLAG == true){  //  only save if this all succeeded
@@ -16497,6 +16520,8 @@ var language = {
           var lostAnyFromLeviTo700; // -1 = did not reach, 0 = lost none, 1 = lost any
           var leviKillTimeTaken;
           var orbKillTimeTaken;
+          var farm_efficiency = getFarmEfficiency(GAME_OBJECT);
+
           if(GAME_OBJECT.block.levi_down_time != undefined){
             leviKillTimeTaken = truncateDecimals((GAME_OBJECT.block.levi_down_time - 358.5065),4); // exact spawn time;
           }
@@ -16505,10 +16530,10 @@ var language = {
           }
 
           //  farm data
-          if(GAME_OBJECT.frames[366] != undefined){
-            farmAtLevi = (GAME_OBJECT.frames[366].homing - 105);
+          if(GAME_OBJECT.frames[363] != undefined){
+            farmAtLevi = (GAME_OBJECT.frames[363].homing - 105);
             nofarmFlag = Math.sign(farmAtLevi); // -1 neg, 0 neutr, 1 = pos
-            lostAnyByLevi = GAME_OBJECT.frames[366].gems_despawned + GAME_OBJECT.frames[366].gems_eaten; 
+            lostAnyByLevi = GAME_OBJECT.frames[363].gems_despawned + GAME_OBJECT.frames[363].gems_eaten; 
             lostByLeviFlag = Math.sign(lostAnyByLevi); // 0 = lost none, 1 = lost any
           } else {
             nofarmFlag = -2; // did not reach
@@ -16605,7 +16630,7 @@ var language = {
 
               //  Insights + calculations for both Early Game AND Loop
 
-              if(GAME_OBJECT.frames[i].homing > GAME_OBJECT.frames[i+1].homing && homingFramesSince > 4){
+              if(GAME_OBJECT.frames[i+25] != undefined && GAME_OBJECT.frames[i].homing > GAME_OBJECT.frames[i+1].homing && homingFramesSince > 4){
                 var homingUsedNow = getHomingUsed(GAME_OBJECT,i+4) - getHomingUsed(GAME_OBJECT,i);
                 homingFramesSince = 0;
                 //  Homing use times; Push to use in second pass. Adjacent items will be considered an undesirable "long use" insight, given certain conditions
@@ -16704,6 +16729,7 @@ var language = {
 
           loopfarm: loopFarmFlag_gemsMoreThanPerfect,
           farm_loop: loopFarmBeyond700NofarmPerfect,
+          farm_efficiency: farm_efficiency,
 
           levi_kill_time_taken: leviKillTimeTaken,
           orb_kill_time_taken: orbKillTimeTaken,
@@ -16875,7 +16901,7 @@ var language = {
       //  construct the actual grid. REMEMBER: GRID_DATA is accessed by [ROW][TYPE][COLUMN], not vice-versa
       for(var c=0; c<GAMES_SPLITS.length; c++){  //  COLUMNS (+1 for the Sum Of Best column)
         if(c==0){
-          var COLLAPSE_BUTTON = '<i tabindex="-1" class="material-icons" style="font-size:1.5vh;padding-top:0.15vh;position:relative;">close_fullscreen</i>';
+          var COLLAPSE_BUTTON = '<i tabindex="-1" class="material-icons" style="font-size:1.5vh;padding-top:0.10vh;position:relative;">close_fullscreen</i>';
           if(SPLITGRID_CONDENSED == true){
             COLLAPSE_BUTTON = '<i tabindex="-1" class="material-icons" style="font-size:1.25vh;padding-top:0.15vh;position:relative;">open_in_full</i>';
           }
@@ -16955,6 +16981,9 @@ var language = {
     function buildGameOverview(GAME_OBJECT, INSIGHTS_OBJECT){
       var GAME_OVERVIEW_CONSTRUCTOR = '';
 
+      //  general
+      var REACHED_LOOP = (GAME_OBJECT.frames[363] != undefined);
+
       //  farm detection
       var farmConstructor = '';
       if(INSIGHTS_OBJECT.nofarm != -2){ // run reached nofarm
@@ -17005,14 +17034,67 @@ var language = {
       var GEM_PCT_EATEN = (GAME_OBJECT.block.gems_eaten / GAME_OBJECT.block.gems_total) * 100;
       var GEM_PCT_UNCOLLECTED = ((UNCOLLECTED_TOTAL / GAME_OBJECT.block.gems_total) * 100);
 
+      //  farm
+      var FARM_PCT_COLLECTED = ((GAME_OBJECT.block.gems_collected) / GAME_OBJECT.block.gems_total) * 100;
+      var FARM_PCT_DESPAWNED = (GAME_OBJECT.block.gems_despawned / GAME_OBJECT.block.gems_total) * 100;
+      var FARM_PCT_EATEN = (GAME_OBJECT.block.gems_eaten / GAME_OBJECT.block.gems_total) * 100;
+      var FARM_PCT_UNCOLLECTED = ((UNCOLLECTED_TOTAL / GAME_OBJECT.block.gems_total) * 100);
+      var FARM_UNCOLLECTED_TOTAL = GAME_OBJECT.block.gems_total - (GAME_OBJECT.block.gems_collected + GAME_OBJECT.block.gems_despawned + GAME_OBJECT.block.gems_eaten);
+      var LOC_FARM_TOTAL = GAME_OBJECT.block.gems_total;
+      var FARM_EAT_TOTAL = GAME_OBJECT.block.gems_eaten;
+      var FARM_DESP_TOTAL = GAME_OBJECT.block.gems_despawned;
+      var FARM_COL_TOTAL = GAME_OBJECT.block.gems_collected;
+      var LOC_FARM_EFFICIENCY = '0';
+      var FARM_TIME_CLIP = Math.floor(GAME_OBJECT.block.time);
+      var FARM_UNCOLLECTED_TOTAL = GAME_OBJECT.block.gems_total - (GAME_OBJECT.block.gems_collected + GAME_OBJECT.block.gems_despawned + GAME_OBJECT.block.gems_eaten);
+      if(FARM_UNCOLLECTED_TOTAL < 0){
+        FARM_UNCOLLECTED_TOTAL = 0;
+      }
+      //  farm if over 366
+      if(GAME_OBJECT.frames[363] != undefined){
+        FARM_TIME_CLIP = 363;
+        LOC_FARM_EFFICIENCY = INSIGHTS_OBJECT.farm_efficiency;
+        FARM_UNCOLLECTED_TOTAL = GAME_OBJECT.frames[363].gems_total - (GAME_OBJECT.frames[363].gems_collected + GAME_OBJECT.frames[363].gems_despawned + GAME_OBJECT.frames[363].gems_eaten);
+        FARM_PCT_COLLECTED = ((GAME_OBJECT.frames[363].gems_collected) / GAME_OBJECT.frames[363].gems_total) * 100;
+        FARM_PCT_DESPAWNED = (GAME_OBJECT.frames[363].gems_despawned / GAME_OBJECT.frames[363].gems_total) * 100;
+        FARM_PCT_EATEN = (GAME_OBJECT.frames[363].gems_eaten / GAME_OBJECT.frames[363].gems_total) * 100;
+        FARM_PCT_UNCOLLECTED = ((FARM_UNCOLLECTED_TOTAL / GAME_OBJECT.frames[363].gems_total) * 100);
+        LOC_FARM_TOTAL = GAME_OBJECT.frames[363].gems_total;
+        FARM_EAT_TOTAL = GAME_OBJECT.frames[363].gems_eaten;
+        FARM_DESP_TOTAL = GAME_OBJECT.frames[363].gems_despawned;
+        FARM_COL_TOTAL = GAME_OBJECT.frames[363].gems_collected;
+
+        FARM_UNCOLLECTED_TOTAL = GAME_OBJECT.frames[363].gems_total - (GAME_OBJECT.frames[363].gems_collected + GAME_OBJECT.frames[363].gems_despawned + GAME_OBJECT.frames[363].gems_eaten);
+        if(FARM_UNCOLLECTED_TOTAL < 0){
+          FARM_UNCOLLECTED_TOTAL = 0;
+        }
+      }
+
       //  accuracy
       var RUN_ACCURACY = ((GAME_OBJECT.block.daggers_hit / GAME_OBJECT.block.daggers_fired) * 100).toFixed(2);
       var unhitPercent = (100 - RUN_ACCURACY).toFixed(2);
 
+      //  kills
+      var ENEMIES_PRELOOP = GAME_OBJECT.block.kills;
+      var ENEMIES_LOOP = 0;
+        //  loops-specific kills data
+      if(REACHED_LOOP){
+        ENEMIES_PRELOOP = GAME_OBJECT.frames[363].kills;
+        ENEMIES_LOOP = GAME_OBJECT.block.kills - GAME_OBJECT.frames[363].kills;
+      }
+      var EnemiesLoopPct = ((ENEMIES_LOOP / GAME_OBJECT.block.kills) * 100).toFixed(2);
+      var EnemiesPreloopPct = ((ENEMIES_PRELOOP / GAME_OBJECT.block.kills) * 100).toFixed(2);
+
       //  FINAL CONSTRUCTION  -  Gems
-      GAME_OVERVIEW_CONSTRUCTOR += '<div class="overviewItem"><div class="overviewItemTextPre" style="top:-0.165vh;">Gems</div><div class="overviewItemBarWrapper">' + '<div class="overviewItemInnerWrapper"><div class="overviewItemBar" style="width:100%;background-color:var(--UI-gems-total)"></div></div><div class="overviewItemInnerWrapper"><div class="overviewItemBar" style="display:inline-block;width:'+FARM_COLLECTED.toFixed(2)+'%;background:repeating-linear-gradient(45deg,var(--UI-gems-collected),var(--UI-gems-collected) 0.2vh,var(--BGFill) 0.2vh,var(--BGFill) 0.3vh)"></div><div class="overviewItemBar" style="display:inline-block;width:'+GEM_PCT_COLLECTED.toFixed(2)+'%;background-color:var(--UI-gems-collected)"></div><div class="overviewItemBar" style="display:inline-block;width:'+GEM_PCT_DESPAWNED.toFixed(2)+'%;background:repeating-linear-gradient(45deg,var(--UI-gems-despawned),var(--UI-gems-despawned) 0.25vh,var(--BGFill) 0.25vh,var(--BGFill) 0.5vh)"></div><div class="overviewItemBar" style="display:inline-block;width:'+GEM_PCT_EATEN.toFixed(2)+'%;background:repeating-linear-gradient(135deg,var(--UI-gems-eaten),var(--UI-gems-eaten) 0.1vh,var(--BGFill) 0.1vh,var(--BGFill) 0.3vh)"></div><div class="overviewItemBar" style="display:inline-block;width:'+GEM_PCT_UNCOLLECTED.toFixed(2)+'%;background:repeating-linear-gradient(45deg,var(--UI-inactive),var(--UI-inactive) 0.1vh,var(--BGFill) 0.1vh,var(--BGFill) 0.3vh)"></div>' + '</div></div><div class="overviewItemText">'+GAME_OBJECT.block.gems_total+'<span style="color:var(--UI-subtext)">T - </span>'+(GAME_OBJECT.block.gems_eaten + GAME_OBJECT.block.gems_despawned)+'<span style="color:var(--UI-subtext)">L (</span>'+(100 - (((GAME_OBJECT.block.gems_eaten + GAME_OBJECT.block.gems_despawned)/GAME_OBJECT.block.gems_total)*100)).toFixed(2)+'%<span style="color:var(--UI-subtext)">)</span><br>'+GAME_OBJECT.block.gems_collected+'<span style="color:var(--UI-subtext)">c - </span>'+GAME_OBJECT.block.gems_despawned+'<span style="color:var(--UI-subtext)">d, </span>'+GAME_OBJECT.block.gems_eaten+'<span style="color:var(--UI-subtext)">e • </span>'+UNCOLLECTED_TOTAL+'<span style="color:var(--UI-subtext)">u</span></div></div>' +
+      GAME_OVERVIEW_CONSTRUCTOR += '<div class="overviewItem"><div class="overviewItemTextPre" style="top:-0.15vh;">Gems</div><div class="overviewItemBarWrapper" style="border-radius:1vh 0 0 0vh">' + '<div class="overviewItemInnerWrapper"><div class="overviewItemBar" style="width:100%;background-color:var(--UI-gems-total)"></div></div><div class="overviewItemInnerWrapper"><div class="overviewItemBar" style="display:inline-block;width:'+FARM_COLLECTED.toFixed(2)+'%;background:repeating-linear-gradient(45deg,var(--UI-gems-collected),var(--UI-gems-collected) 0.2vh,var(--BGFill) 0.2vh,var(--BGFill) 0.3vh)"></div><div class="overviewItemBar" style="display:inline-block;width:'+GEM_PCT_COLLECTED.toFixed(2)+'%;background-color:var(--UI-gems-collected)"></div><div class="overviewItemBar" style="display:inline-block;width:'+GEM_PCT_DESPAWNED.toFixed(2)+'%;background:repeating-linear-gradient(45deg,var(--UI-gems-despawned),var(--UI-gems-despawned) 0.25vh,var(--BGFill) 0.25vh,var(--BGFill) 0.5vh)"></div><div class="overviewItemBar" style="display:inline-block;width:'+GEM_PCT_EATEN.toFixed(2)+'%;background:repeating-linear-gradient(135deg,var(--UI-gems-eaten),var(--UI-gems-eaten) 0.1vh,var(--BGFill) 0.1vh,var(--BGFill) 0.3vh)"></div><div class="overviewItemBar" style="display:inline-block;width:'+GEM_PCT_UNCOLLECTED.toFixed(2)+'%;background:repeating-linear-gradient(45deg,var(--UI-inactive),var(--UI-inactive) 0.1vh,var(--BGFill) 0.1vh,var(--BGFill) 0.3vh)"></div>' + '</div></div><div class="overviewItemText">'+GAME_OBJECT.block.gems_total+'<span style="color:var(--UI-subtext)">T - </span>'+(GAME_OBJECT.block.gems_eaten + GAME_OBJECT.block.gems_despawned)+'<span style="color:var(--UI-subtext)">L (</span>'+(100 - (((GAME_OBJECT.block.gems_eaten + GAME_OBJECT.block.gems_despawned)/GAME_OBJECT.block.gems_total)*100)).toFixed(2)+'%<span style="color:var(--UI-subtext)">)</span><br>'+GAME_OBJECT.block.gems_collected+'<span style="color:var(--UI-subtext)">c - </span>'+GAME_OBJECT.block.gems_despawned+'<span style="color:var(--UI-subtext)">d, </span>'+GAME_OBJECT.block.gems_eaten+'<span style="color:var(--UI-subtext)">e • </span>'+UNCOLLECTED_TOTAL+'<span style="color:var(--UI-subtext)">u</span></div></div>' +
+      //  Farm
+        '<div class="overviewItem"><div class="overviewItemTextPre" style="top:-0.15vh;padding-right:0.45vh;letter-spacing:0.025vh">Farm</div><div class="overviewItemBarWrapper" style="border-radius:0vw 0 0 1vh">' + '<div class="overviewItemInnerWrapper"><div class="overviewItemBar" style="width:100%;background-color:var(--UI-gems-total)"></div></div><div class="overviewItemInnerWrapper"><div class="overviewItemBar" style="display:inline-block;width:'+FARM_PCT_COLLECTED.toFixed(2)+'%;background-color:var(--UI-gems-collected)"></div><div class="overviewItemBar" style="display:inline-block;width:'+FARM_PCT_DESPAWNED.toFixed(2)+'%;background:repeating-linear-gradient(45deg,var(--UI-gems-despawned),var(--UI-gems-despawned) 0.25vh,var(--BGFill) 0.25vh,var(--BGFill) 0.5vh)"></div><div class="overviewItemBar" style="display:inline-block;width:'+FARM_PCT_EATEN.toFixed(2)+'%;background:repeating-linear-gradient(135deg,var(--UI-gems-eaten),var(--UI-gems-eaten) 0.1vh,var(--BGFill) 0.1vh,var(--BGFill) 0.3vh)"></div>' + '</div></div><div class="overviewItemText">'+LOC_FARM_TOTAL+'<span style="color:var(--UI-subtext)">T - </span>'+(FARM_EAT_TOTAL + FARM_DESP_TOTAL)+'<span style="color:var(--UI-subtext)">L (</span>'+(100 - (((FARM_EAT_TOTAL + FARM_DESP_TOTAL)/LOC_FARM_TOTAL)*100)).toFixed(2)+'%<span style="color:var(--UI-subtext)">) @'+FARM_TIME_CLIP+'</span><br>'+FARM_COL_TOTAL+'<span style="color:var(--UI-subtext)">c - </span>'+FARM_DESP_TOTAL+'<span style="color:var(--UI-subtext)">d, </span>'+FARM_EAT_TOTAL+'<span style="color:var(--UI-subtext)">e (</span>'+LOC_FARM_EFFICIENCY+'%<span style="color:var(--UI-subtext)">fe)</span></div></div>' +
+      //  Kills
+        '<div class="overviewItem"><div class="overviewItemTextPre" style="top:-0.1vh">Kills</div><div class="overviewItemBarWrapper" style="height:1vh">' + '<div class="overviewItemInnerWrapper"><div class="overviewItemBar" style="width:'+EnemiesPreloopPct+'%;background:repeating-linear-gradient(45deg,var(--UI-kills),var(--UI-kills) 0.25vh,var(--BGFill) 0.25vh,var(--BGFill) 0.5vh)"></div><div class="overviewItemBar" style="width:'+EnemiesLoopPct+'%;background-color:var(--UI-kills)"></div></div>'+'</div><div class="overviewItemText">'+GAME_OBJECT.block.kills+'<span style="color:var(--UI-subtext)"> (</span>'+ENEMIES_PRELOOP+'<span style="color:var(--UI-subtext)"> farm, </span>'+ENEMIES_LOOP+'<span style="color:var(--UI-subtext)"> loop)</span></div></div>' +
+      //  Enemies
+        '<div class="overviewItem"><div class="overviewItemTextPre" style="top:0vh">Enemies</div><div class="overviewItemBarWrapper" style="height:1vh">' + '<div class="overviewItemInnerWrapper"><div class="overviewItemBar" style="width:'+EnemiesPreloopPct+'%;background:repeating-linear-gradient(45deg,var(--UI-kills),var(--UI-kills) 0.25vh,var(--BGFill) 0.25vh,var(--BGFill) 0.5vh)"></div><div class="overviewItemBar" style="width:'+EnemiesLoopPct+'%;background-color:var(--UI-kills)"></div></div>'+'</div><div class="overviewItemText">'+GAME_OBJECT.block.kills+'<span style="color:var(--UI-subtext)"> (</span>'+ENEMIES_PRELOOP+'<span style="color:var(--UI-subtext)"> farm, </span>'+ENEMIES_LOOP+'<span style="color:var(--UI-subtext)"> loop)</span></div></div>' +
       //  Accuracy
-        '<div class="overviewItem"><div class="overviewItemTextPre">Accuracy</div><div class="overviewItemBarWrapper" style="height:1vh">' + '<div class="overviewItemInnerWrapper"><div class="overviewItemBar" style="width:'+RUN_ACCURACY+'%;background:repeating-linear-gradient(45deg,var(--UI-daggers-hit),var(--UI-daggers-hit) 0.25vh,var(--UI-accuracy) 0.25vh,var(--UI-accuracy) 0.5vh)"></div><div class="overviewItemBar" style="width:'+unhitPercent+'%;background:repeating-linear-gradient(45deg,var(--UI-daggers-fired),var(--UI-daggers-fired) 0.25vh,var(--BGFill) 0.25vh,var(--BGFill) 0.5vh)"></div></div>'+'</div><div class="overviewItemText">'+RUN_ACCURACY+'<span style="color:var(--UI-subtext)">% (</span>'+GAME_OBJECT.block.daggers_hit+'<span style="color:var(--UI-subtext)">h / </span>'+GAME_OBJECT.block.daggers_fired+'<span style="color:var(--UI-subtext)">f)</span></div></div>';
+        '<div class="overviewItem"><div class="overviewItemTextPre" style="top:0vh">Accuracy</div><div class="overviewItemBarWrapper" style="height:1vh">' + '<div class="overviewItemInnerWrapper"><div class="overviewItemBar" style="width:'+RUN_ACCURACY+'%;background:repeating-linear-gradient(45deg,var(--UI-daggers-hit),var(--UI-daggers-hit) 0.25vh,var(--UI-accuracy) 0.25vh,var(--UI-accuracy) 0.5vh)"></div><div class="overviewItemBar" style="width:'+unhitPercent+'%;background:repeating-linear-gradient(45deg,var(--UI-daggers-fired),var(--UI-daggers-fired) 0.25vh,var(--BGFill) 0.25vh,var(--BGFill) 0.5vh)"></div></div>'+'</div><div class="overviewItemText">'+RUN_ACCURACY+'<span style="color:var(--UI-subtext)">% (</span>'+GAME_OBJECT.block.daggers_hit+'<span style="color:var(--UI-subtext)">h / </span>'+GAME_OBJECT.block.daggers_fired+'<span style="color:var(--UI-subtext)">f)</span></div></div>';
 
       document.getElementById('OVERVIEW_TITLE').innerHTML = GAME_OBJECT.block.time + ' ' + farmConstructor;
       document.getElementById('GAME_OVERVIEW').innerHTML = GAME_OVERVIEW_CONSTRUCTOR;
