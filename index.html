@@ -9305,63 +9305,208 @@ void main() {
           setThemeByIndex(0); // Default theme global override
           saveSettings();
         }
-        
-        //  Replay viewer key handlers
-        if (evtobj.key == ',' && GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == -1 && GAMEPAGE_INFO_SUBPAGE == 2){ // replay tick forward
-          replayTickBackward(90, e);
-        }
-        if (evtobj.key == '.' && GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == -1 && GAMEPAGE_INFO_SUBPAGE == 2){ // replay tick forward
-          replayTickForward(90, e);
-        }
-        if (evtobj.key == 'ArrowLeft' && GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == -1 && GAMEPAGE_INFO_SUBPAGE == 2){ // replay tick forward
-          if(evtobj.ctrlKey){
-            replayTickBackward(530, e);
-          } else {
-            replayTickBackward(180, e);
+
+        //  Leaderboard pagination binds
+        if(GLOBAL_NAV_PAGE == 3 && GLOBAL_NAV_PAGE_OFFSETS[3] == 0){
+          //  Pagination binds
+          if(evtobj.shiftKey == true){ // ctrl modifier; fast pagination
+            if (evtobj.key == 'PageUp'){ // fast previous pages
+              e.preventDefault();
+              paginateLeaderboard(PAGE_LEADERBOARD - PAGE_LEADERBOARD_FAST_NAV);
+            }
+            if (evtobj.key == 'PageDown'){ // fast next pages
+              e.preventDefault();
+              paginateLeaderboard(PAGE_LEADERBOARD + PAGE_LEADERBOARD_FAST_NAV);
+            }
+          } else { // no ctrl modifier; normal pagination
+            if (evtobj.key == 'PageUp'){ // previous page
+              paginateLeaderboard(PAGE_LEADERBOARD-1);
+            }
+            if (evtobj.key == 'PageDown'){ // next page
+              paginateLeaderboard(PAGE_LEADERBOARD+1);
+            }
           }
         }
-        if (evtobj.key == 'ArrowRight' && GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == -1 && GAMEPAGE_INFO_SUBPAGE == 2){ // replay tick forward
-          if(evtobj.ctrlKey){
-            replayTickForward(599, e);
-          } else {
-            replayTickForward(180, e);
+
+        //  Custom Spawnset list pagination binds
+        if(GLOBAL_NAV_PAGE == 5 && GLOBAL_NAV_PAGE_OFFSETS[5] == 0){
+          //  Pagination binds
+          if(evtobj.shiftKey == true){ // ctrl modifier; fast pagination
+            if (evtobj.key == 'PageUp'){ // fast previous pages
+              e.preventDefault();
+              paginateCustom(PAGE_CUSTOM - PAGE_CUSTOM_FAST_NAV);
+            }
+            if (evtobj.key == 'PageDown'){ // fast next pages
+              e.preventDefault();
+              paginateCustom(PAGE_CUSTOM + PAGE_CUSTOM_FAST_NAV);
+            }
+          } else { // no ctrl modifier; normal pagination
+            if (evtobj.key == 'PageUp'){ // previous page
+              paginateCustom(PAGE_CUSTOM-1);
+            }
+            if (evtobj.key == 'PageDown'){ // next page
+              paginateCustom(PAGE_CUSTOM+1);
+            }
           }
         }
-        if (evtobj.key == 'ArrowUp' && GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == -1 && GAMEPAGE_INFO_SUBPAGE == 2){ // hitlist scroll up
-          var page = document.querySelector('.replayHitList');
-          if(page != null){ page.scrollTop = page.scrollTop - 16; }
+
+        //  DDCL leaderboard pagination binds
+        if(GLOBAL_NAV_PAGE == 5 && GLOBAL_NAV_PAGE_OFFSETS[5] == 1){
+          //  Pagination binds
+          if(evtobj.shiftKey == true){ // ctrl modifier; fast pagination
+            if (evtobj.key == 'PageUp'){ // fast previous pages
+              e.preventDefault();
+              paginateDDCL(PAGE_DDCL - PAGE_DDCL_FAST_NAV);
+            }
+            if (evtobj.key == 'PageDown'){ // fast next pages
+              e.preventDefault();
+              paginateDDCL(PAGE_DDCL + PAGE_DDCL_FAST_NAV);
+            }
+          } else { // no ctrl modifier; normal pagination
+            if (evtobj.key == 'PageUp'){ // previous page
+              paginateDDCL(PAGE_DDCL-1);
+            }
+            if (evtobj.key == 'PageDown'){ // next page
+              paginateDDCL(PAGE_DDCL+1);
+            }
+          }
         }
-        if (evtobj.key == 'ArrowDown' && GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == -1 && GAMEPAGE_INFO_SUBPAGE == 2){ // hitlist scroll down
-          var page = document.querySelector('.replayHitList');
-          if(page != null){ page.scrollTop = page.scrollTop + 16; }
+
+        //  Recent games pagination keys
+        if(GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == 0){
+          if(evtobj.shiftKey == true){ // ctrl modifier; fast pagination
+            if (evtobj.key == 'PageUp'){ // fast previous pages
+              e.preventDefault();
+              paginateRecent(PAGE_RECENT - PAGE_RECENT_FAST_NAV);
+            }
+            if (evtobj.key == 'PageDown'){ // fast next pages
+              e.preventDefault();
+              paginateRecent(PAGE_RECENT + PAGE_RECENT_FAST_NAV);
+            }
+          } else { // no ctrl modifier; normal pagination
+            if (evtobj.key == 'PageUp'){ // previous page
+              paginateRecent(PAGE_RECENT-1);
+            }
+            if (evtobj.key == 'PageDown'){ // next page
+              paginateRecent(PAGE_RECENT+1);
+            }
+          }
         }
-        if (evtobj.key == ' ' && GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == -1 && GAMEPAGE_INFO_SUBPAGE == 2){ // replay play/pause
-          e.preventDefault();
-          toggleReplayPlayback();
+
+        //  My Games pagination binds
+        if(GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == 1){
+          //  Pagination binds
+          if(evtobj.shiftKey == true){ // ctrl modifier; fast pagination
+            if (evtobj.key == 'PageUp'){ // fast previous pages
+              e.preventDefault();
+              paginateMyGames(PAGE_MYGAMES - PAGE_MYGAMES_FAST_NAV);
+            }
+            if (evtobj.key == 'PageDown'){ // fast next pages
+              e.preventDefault();
+              paginateMyGames(PAGE_MYGAMES + PAGE_MYGAMES_FAST_NAV);
+            }
+          } else { // no ctrl modifier; normal pagination
+            if (evtobj.key == 'PageUp'){ // previous page
+              paginateMyGames(PAGE_MYGAMES-1);
+            }
+            if (evtobj.key == 'PageDown'){ // next page
+              paginateMyGames(PAGE_MYGAMES+1);
+            }
+          }
         }
-        if ((evtobj.key == '-' || evtobj.key == '_') && GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == -1 && GAMEPAGE_INFO_SUBPAGE == 2){ // replay slow down
-          e.preventDefault();
-          decrementReplaySpeed();
+
+        //  Player Games pagination binds
+        if(GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == 2){
+          //  Pagination binds
+          if(evtobj.shiftKey == true){ // ctrl modifier; fast pagination
+            if (evtobj.key == 'PageUp'){ // fast previous pages
+              e.preventDefault();
+              paginatePlayerGames(PAGE_PLAYERGAMES - PAGE_PLAYERGAMES_FAST_NAV);
+            }
+            if (evtobj.key == 'PageDown'){ // fast next pages
+              e.preventDefault();
+              paginatePlayerGames(PAGE_PLAYERGAMES + PAGE_PLAYERGAMES_FAST_NAV);
+            }
+          } else { // no ctrl modifier; normal pagination
+            if (evtobj.key == 'PageUp'){ // previous page
+              paginatePlayerGames(PAGE_PLAYERGAMES-1);
+            }
+            if (evtobj.key == 'PageDown'){ // next page
+              paginatePlayerGames(PAGE_PLAYERGAMES+1);
+            }
+          }
         }
-        if ((evtobj.key == '+' || evtobj.key == '=') && GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == -1 && GAMEPAGE_INFO_SUBPAGE == 2){ // replay speed up
-          e.preventDefault();
-          incrementReplaySpeed();
-        }
-        if ((evtobj.key == 'c' || evtobj.key == 'C') && GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == -1 && GAMEPAGE_INFO_SUBPAGE == 2){ // toggle orthographic camera mode
-          e.preventDefault();
-          toggleOrthoCameraMode();
-        }
-        if ((evtobj.key == 'f' || evtobj.key == 'F') && evtobj.ctrlKey == false && GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == -1 && GAMEPAGE_INFO_SUBPAGE == 2){ // toggle fullscreen replay
-          e.preventDefault();
-          toggleFullscreenReplay();
-        }
-        if ((evtobj.key == 'r' || evtobj.key == 'R') && evtobj.ctrlKey == false && GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == -1 && GAMEPAGE_INFO_SUBPAGE == 2){ // reset replay camera
-          e.preventDefault();
-          REPLAY_RESET_CAMERA();
-        }
-        if (evtobj.key == 'Escape' && GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == -1 && GAMEPAGE_INFO_SUBPAGE == 2){ // exit fullscreen replay
-          e.preventDefault();
-          unfullscreenReplay();
+
+        //  Game Page keys
+        if(GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == -1){
+
+          if (evtobj.key == 'PageUp'){ // previous game info page
+            nextGameInfoPage();
+          }
+          if (evtobj.key == 'PageDown'){ // next game info page
+            prevGameInfoPage();
+          }
+
+          // Replay system keys
+          if(GAMEPAGE_INFO_SUBPAGE == 2){
+            //  Replay viewer key handlers
+            if (evtobj.key == ','){ // replay tick forward
+              replayTickBackward(90, e);
+            }
+            if (evtobj.key == '.'){ // replay tick forward
+              replayTickForward(90, e);
+            }
+            if (evtobj.key == 'ArrowLeft'){ // replay tick forward
+              if(evtobj.ctrlKey){
+                replayTickBackward(530, e);
+              } else {
+                replayTickBackward(180, e);
+              }
+            }
+            if (evtobj.key == 'ArrowRight'){ // replay tick forward
+              if(evtobj.ctrlKey){
+                replayTickForward(599, e);
+              } else {
+                replayTickForward(180, e);
+              }
+            }
+            if (evtobj.key == 'ArrowUp'){ // hitlist scroll up
+              var page = document.querySelector('.replayHitList');
+              if(page != null){ page.scrollTop = page.scrollTop - 16; }
+            }
+            if (evtobj.key == 'ArrowDown'){ // hitlist scroll down
+              var page = document.querySelector('.replayHitList');
+              if(page != null){ page.scrollTop = page.scrollTop + 16; }
+            }
+            if (evtobj.key == ' '){ // replay play/pause
+              e.preventDefault();
+              toggleReplayPlayback();
+            }
+            if (evtobj.key == '-' || evtobj.key == '_'){ // replay slow down
+              e.preventDefault();
+              decrementReplaySpeed();
+            }
+            if (evtobj.key == '+' || evtobj.key == '='){ // replay speed up
+              e.preventDefault();
+              incrementReplaySpeed();
+            }
+            if (evtobj.key == 'c' || evtobj.key == 'C'){ // toggle orthographic camera mode
+              e.preventDefault();
+              toggleOrthoCameraMode();
+            }
+            if ((evtobj.key == 'f' || evtobj.key == 'F') && evtobj.ctrlKey == false){ // toggle fullscreen replay
+              e.preventDefault();
+              toggleFullscreenReplay();
+            }
+            if ((evtobj.key == 'r' || evtobj.key == 'R') && evtobj.ctrlKey == false){ // reset replay camera
+              e.preventDefault();
+              REPLAY_RESET_CAMERA();
+            }
+            if (evtobj.key == 'Escape'){ // exit fullscreen replay
+              e.preventDefault();
+              unfullscreenReplay();
+            }
+          }
         }
       }
     }
@@ -21009,6 +21154,9 @@ var language = {
 
       var LEVI_SPAWN = SPAWN_EVENTS.find(obj => obj.entityType == 'leviathan');
 
+      //  Death type
+      var DEATH_TYPE = HIT_EVENTS.at(-1).b;
+
       //  Array of global position updating ticks
       for(var REPLAY_TICK of PPOS_EVENTS){
         POSITION_TICKS.push(REPLAY_TICK.tick);
@@ -21193,6 +21341,7 @@ var language = {
         forGameID:                  GID,
 
         endTick: LOC_TICK,
+        deathType: DEATH_TYPE,
 
         categories: { //  the various categories of events as their own arrays
 
@@ -22420,14 +22569,6 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
       saveSettings();
     }
 
-
-
-
-
-
-
-
-
     function fullscreenReplay(force){
       if(FULLSCREEN_REPLAY_STATE == false || force == true){
         document.getElementById('REPLAY_FULLSCREEN_CONTAINER').appendChild(document.getElementById('REPLAY_PAGE'));
@@ -22461,21 +22602,6 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
         unfullscreenReplay(true);
       }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     function initReplayRenderer() {
 
@@ -23352,17 +23478,12 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
             }
           }
         }
-
         
-
         // POINTS = [...new Set(POINTS)]; // Redunant points actually perofmr better than making unique
 
         // var GLP_GRID = [...new Set(GRID_LINE_POINTS)]; // But gridline redundant means more draw calls
         // GLP_GRID.pop();
         // GLP_GRID.shift();
-
-
-
 
 
 
@@ -23396,10 +23517,6 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
           REPLAY_MESHES.push(GRID_LINE);
         }
         */
-
-
-
-
 
         //  MERGED-GEOMETRY GRIDLINE METHOD (CULLS, and is MEMORY-STABLE)
 
@@ -24490,8 +24607,21 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
           var DEBUG_STRING = '';
           if(REPLAY_DEBUG){ DEBUG_STRING = 'f' + replayRenderer.info.render.frame + ': ' + replayRenderer.info.memory.geometries + ' geos, ' + replayRenderer.info.memory.textures + ' txturs<br>' + replayRenderer.info.render.calls + ' calls, ' + replayRenderer.info.render.triangles + ' tris, ' + replayRenderer.info.render.lines + ' lines<br>'; }
 
+          var HOMING_STRING = '';
+          var homing_source = DD_GAMEPAGE_GAME.frames[Math.floor(REPLAY_TICK / 60)];
+          if(homing_source != undefined){
+            HOMING_STRING = DD_GAMEPAGE_GAME.frames[Math.floor(REPLAY_TICK / 60)].homing + ' homing<br>';
+          }
+
+          var DEATH_STRING = '';
+          if(REPLAY_OBJECT_CACHE != undefined){
+            if(REPLAY_TICK > REPLAY_OBJECT_CACHE.endTick - 90){ // if this is the last shown keyframe,
+              DEATH_STRING = deathText(REPLAY_OBJECT_CACHE.deathType) + '<br>';
+            }
+          }
+
           REPLAY_TITLE_ELEMENT.innerHTML = timeFromTickStr(REPLAY_TICK); // replay • 
-          REPLAY_SUBTITLE_ELEMENT.innerHTML = DEBUG_STRING + DD_GAMEPAGE_GAME.frames[Math.floor(REPLAY_TICK / 60)].homing + ' homing<br>' + REPLAY_FPS_ARRAY[REPLAY_FPS_INDEX][1] + REPLAY_RAYCAST_INFORMATION_STRING + REPLAY_RAYCAST_PEDE_INFO_CACHE;
+          REPLAY_SUBTITLE_ELEMENT.innerHTML = DEBUG_STRING + DEATH_STRING + HOMING_STRING + REPLAY_FPS_ARRAY[REPLAY_FPS_INDEX][1] + REPLAY_RAYCAST_INFORMATION_STRING + REPLAY_RAYCAST_PEDE_INFO_CACHE;
         }
         //  otherwise, don't do anything
       }
@@ -24587,63 +24717,11 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
       }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     function MINIMAP(REPLAY_EVENTS){ // Draw the Minimap view based on Replay Event data
       if(REPLAY_EVENTS == undefined){
         // draw a clear minimap; 0 seconds V3
 
-      } else {
+      } else {  // Barebones function to be used in the future (?)
 
       }
     }
