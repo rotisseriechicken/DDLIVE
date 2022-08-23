@@ -80,6 +80,8 @@ Use ddstats-rust to link your Devil Daggers games with DDLIVE." property="og:des
 <script src="lib/globe2.min.js"></script>
 <script src="lib/SVGLoader.js"></script>
 
+<script src="lib/detectGPU.js"></script>
+
 <script src="lib/pako.min.js"></script>
 <script src="lib/replay-parser.js?v=2"></script>
 
@@ -1172,11 +1174,15 @@ input[type="range"]::-webkit-slider-thumb {
 
   right: -5vh;
 }
+#CREDITS_CLOSEBUTTON i{
+  color: var(--UI-foretext);
+  transition: color 0.2s cubic-bezier(.01,.81,.55,1.01) !important;
+}
 #CREDITS_CLOSEBUTTON:hover {
   background-color: var(--UI-active);
 }
 #CREDITS_CLOSEBUTTON:hover i{
-  color: var(--BGFill);
+  color: var(--BGFill) !important;
 }
 
 #DDLIVE_CREDITS_LOGO{
@@ -5766,6 +5772,8 @@ etukudo           ┣┅   replay viewer testing
 hmm               ┃
 Rayka            ┅┛ 
 
+NueSB            ┅┅┅   orb shader
+
 Carson           ┅┓
 Henry             ┣┅   security
 KyoZM            ┅┛
@@ -5828,6 +5836,10 @@ EventSource              <a href="https://github.com/fanout/reconnecting-eventso
 Material Icons   ┅┅┅   <a href="https://fonts.google.com/icons" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">Google Fonts / Icons</a>
                          <a href="https://github.com/google/material-design-icons/blob/master/LICENSE" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">Apache License 2.0</a>
                          generic iconography
+
+Detect GPU       ┅┅┅   <a href="https://github.com/pmndrs/detect-gpu" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">github / pmndrs / detect-gpu</a>
+                         <a href="https://github.com/pmndrs/detect-gpu/blob/master/LICENSE" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">MIT License</a>
+                         performance defaults detection
 
 
 <div class="donationLeaderboard"></div>
@@ -7691,6 +7703,7 @@ trauma queen
 
 </div>
 
+<!-- Sobel Vertex and Fragment Shaders (unused) -->
 
 <script type="x-shader/x-vertex" id="vertex.vs">
 void main() {
@@ -7754,6 +7767,56 @@ void main() {
 //  gl_FragColor = vec4(edgeIntensity * 1.0,0.0,0.0,1.0);
         }
 </script>
+
+<!-- Orb Vetex and Fragment Shaders -->
+
+<script type="x-shader/x-vertex" id="orb_vertex">
+out     vec2 vert_uv0;
+out     vec4 vert_world_position;
+out     float vert_view_dir;
+void main() {
+    vert_uv0 = vec2((position.y + 100.0) / 200.0);
+    vert_view_dir = projectionMatrix[2][3];
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0 );
+}
+</script>
+
+<script type="x-shader/x-fragment" id="orb_fragment" >
+float hash11(float p)
+{
+    p = fract(p * .1031);
+    p *= p + 33.33;
+    p *= p + p;
+    return fract(p);
+}
+
+float noise(float p)
+{
+    float fl = floor(p);
+    float fc = fract(p);
+    return mix(hash11(fl), hash11(fl + 1.0), fc);
+}
+
+uniform float tick;
+uniform float rand;
+uniform vec3 col1;
+uniform vec3 col2;
+
+in vec2 vert_uv0;
+in vec4 vert_world_position;
+in float vert_view_dir;
+void main(void)
+{
+  vec2 uv = vert_uv0;
+
+  uv.y = round(noise(uv.x * 20.0 + tick + rand) * 4.0) / 4.0;
+  
+  vec3 color = vec3( mix(col1, col2, uv.y) );
+  gl_FragColor = vec4(color, 1.0);
+}
+</script>
+
+<!-- DDLIVE Total Core ENGINE -->
 
 <script id="SCRIPTBODY" type="text/javascript">
 
@@ -8036,8 +8099,6 @@ void main() {
     }
 
     function initColorPicker(){
-
-
       var ALL_COLORS = document.querySelectorAll('input[colortype]');
       for(var COLOR_INPUT of ALL_COLORS){
         // console.log('CINP: ',COLOR_INPUT);
@@ -8045,63 +8106,6 @@ void main() {
         window[COLOR_INPUT.attributes.colortype.nodeValue] = COLOR_INPUT.value;
         contrastor(COLOR_INPUT);
       }
-
-
-      //  UNCOMMENT WHEN FIGURED OUT
-      /*
-
-
-      // This shit does not work in OBS!
-      if(OBS_MODE == false){ // so only enable it outside of OBS!
-        COLORPICKER = jsColorPicker('input.color', {
-          customBG: '#000',
-          readOnly: false,
-          size: 3,
-          // patch: false,
-          init: function(elm, colors) { // colors is a different instance (not connected to colorPicker)
-            elm.style.backgroundColor = elm.value;
-            // console.log(colors);
-            elm.style.color = colors.rgbaMixCustom.luminance > 0.22 ? '#000000' : '#ffffff';
-            // change associated text as well
-            var colorType = elm.attributes.colortype.nodeValue;
-            var tagElm = document.querySelectorAll('a[colortype="' + colorType + '"]')[0];
-            if(tagElm != undefined){
-              tagElm.style.color = colors.rgbaMixCustom.luminance > 0.22 ? '#000000' : '#ffffff';
-            }
-          },
-          actionCallback: function(a,b){
-            console.log(a,b);
-            if(b != 'init' && b != 'alphaBackground' && b != 'external' && b != 'changeZValue' && b != 'changeXYValue'){
-              
-            }
-          },
-          displayCallback: function(a,b,c,d){
-            // additional code to run on display completion
-              //console.log(a,b,c,d);
-            // change associated text as well
-            var colorType = d.attributes.colortype.nodeValue;
-            var tagElm = document.querySelectorAll('a[colortype="' + colorType + '"]')[0];
-            if(tagElm != undefined){
-              tagElm.style.color = a.rgbaMixCustom.luminance > 0.22 ? '#000000' : '#ffffff';
-            }
-            window[colorType] = d.value;
-            STYLE_CHANGES++;
-            if(GLOBAL_WAS_LAST_THEME_CHANGED == false){
-              GLOBAL_WAS_LAST_THEME_CHANGED = true;
-            }
-          }
-        });
-      } else {
-        //  in the case of OBS, we can make theme colors exist but we cannot edit them...
-        alert('initColorPicker CALL SKIPPED - PER-COLOR EDITING DISABLED!','warning');
-        //  hide the per color picker as well
-        document.getElementById('THEME_SCROLL_WRAPPER').style.display = 'none';
-      }
-
-
-      */
-
-
     }
 
     function setVersionString(){
@@ -8190,25 +8194,6 @@ void main() {
         }catch(e){drapeLogError('Tried to update globe style but failed because of (unreferenceable error)')}
 
       }
-
-
-
-      /*  OLD METHOD
-
-      if(Globe != undefined){
-        try{
-        var newColor = hexToRgb(ui_active); // active convert
-        var newColor2 = hexToRgb(ui_bg_fill); // foretext convert
-        renderer.setClearColor( ui_bg_fill, 1);
-        // directionalLight.color = {r: (newColor.r / 255), g: (newColor.g / 255), b: (newColor.b / 255)};
-        ambientLight.color = {r: (newColor2.r / 255), g: (newColor2.g / 255), b: (newColor2.b / 255)};
-        Globe.atmosphereColor(ui_inactive).polygonCapColor(feat => ui_inactive).polygonSideColor(() => ui_foretext);
-        setGlobeRegion();
-        }catch(e){console.log('Tried to update globe style but failed because of: ',e)}
-      }
-
-    */
-
     }
 
     function animateGlobe(FORCE,INIT) { // IIFE
@@ -8323,9 +8308,6 @@ void main() {
 
       var PARSED_GEOJSON = JSON.parse(GEOJSON);
 
-        // drapeLog(arguments.callee.name,'COUNTRIES: ',PARSED_GEOJSON);
-        // drapeLog(arguments.callee.name,'FEATURES: ',PARSED_GEOJSON.features);
-
             WORLD = Globe({ rendererConfig: {antialias: false, alpha: false} })
                     .globeImageUrl(GLOBE_WATER)
                     .atmosphereColor(ui_inactive)
@@ -8339,14 +8321,6 @@ void main() {
                     .height(document.getElementById('MAINPAGE_GLOBE_CONTAINER').offsetWidth)
                     (document.getElementById('MAINPAGE_GLOBE_CONTAINER'));
 
-
-                    /*
-                    .polygonLabel(({ properties: d }) => `
-            <b>${d.ADMIN} (${d.ISO_A2})</b> <br />
-            Population: <i>${Math.round(+d.POP_EST / 1e4) / 1e2}M</i>
-          `);
-          */
-
           WORLD.controls().autoRotate = true;
           WORLD.controls().autoRotateSpeed = -0.5;
           WORLD.controls().enablePan = false;
@@ -8354,97 +8328,14 @@ void main() {
 
       }
 
-        
-        
-        //  this is the first region set; set it to the last recorded region instance,
-        //  and if it is not new, do not treat it as if it is new
+    }
 
-        //  perhaps on first load the globe should direct to the user's location?
-
-        // setGlobeRegion('US');
-
-        /* OLD GLOBE 1 METHOD
-
-
-
-      // custom globe material
-      const globeMaterial = Globe.globeMaterial();
-      globeMaterial.bumpScale = 10;
-      new THREE.TextureLoader().load(GLOBE_WATER, texture => {
-        globeMaterial.specularMap = texture;
-        globeMaterial.specular = new THREE.Color('grey');
-        globeMaterial.shininess = 15;
-      });
-
-      directionalLight = new THREE.DirectionalLight(ui_active, 0.6);
-      directionalLight.position.set(1, 1, 1); // change light position to see the specularMap's effect
-
-      // Setup renderer
-      renderer = new THREE.WebGLRenderer();
-      renderer.setSize(document.getElementById('MAINPAGE_GLOBE_CONTAINER').offsetWidth, document.getElementById('MAINPAGE_GLOBE_CONTAINER').offsetHeight);
-      document.getElementById('MAINPAGE_GLOBE_CONTAINER').appendChild(renderer.domElement);
-      renderer.setClearColor( ui_bg_fill, 1);
-
-      // Setup scene
-      scene = new THREE.Scene();
-
-      scene.add(Globe);
-      ambientLight = new THREE.AmbientLight(ui_bg_fill);
-
-      scene.add(ambientLight);
-      // scene.add(directionalLight);
-
-      // Setup camera
-      camera = new THREE.PerspectiveCamera();
-      camera.aspect = 1;
-      camera.updateProjectionMatrix();
-      camera.position.z = 275;
-
-      // Add camera controls
-      
-      tbControls = new THREE.OrbitControls(camera, renderer.domElement);
-      tbControls.minDistance = 101;
-      tbControls.rotateSpeed = 0.25;
-      tbControls.zoomSpeed = 0;
-      tbControls.autoRotate = true;
-      tbControls.autoRotateSpeed = -0.66;
-      tbControls.enablePan = false;
-
-      
-
-
-      */
-
-
-
-
-
-
-
-
-
-
-      /* OLD GLOBE2 METHOD
-
-      fetch('https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson').then(res => res.json()).then(countries =>
-    {
-      const world = Globe()
-        .globeImageUrl(GLOBE_WATER)
-        .hexPolygonsData(countries.features)
-        .hexPolygonResolution(3)
-        .hexPolygonMargin(0.3)
-        .hexPolygonColor(() => `#${Math.round(Math.random() * Math.pow(2, 24)).toString(16).padStart(6, '0')}`)
-        .hexPolygonLabel(({ properties: d }) => `
-          <b>${d.ADMIN} (${d.ISO_A2})</b> <br />
-          Population: <i>${d.POP_EST}</i>
-        `)
-        (document.getElementById('MAINPAGE_GLOBE_CONTAINER'));
-
-    });
-
-    */
-
-
+    async function GPUTEST(){ // Test the GPU; Do things in certain conditions
+      var RET_GPU_DATA = await DetectGPU.getGPUTier();
+      GPU_DATA = RET_GPU_DATA; // Set the global GPU dat cache to this value
+      //  If there is stuff to do with this GPU data, do it here
+      //    (ignore GPU-based defaulting done here if user has explicitly set it in Settings;
+      //      settings set here should probably only be done on first load, or flagged for it)
     }
 
     //  ENGINE INITIALIZATION 
@@ -8480,6 +8371,8 @@ void main() {
           setInitState('loading settings'); await sleep(INIT_MSG_WAIT);
           await loadSettings(); // SETTINGS
           setInitState('settings loaded'); await sleep(INIT_MSG_WAIT);
+          setInitState('calibrating from GPU'); await sleep(INIT_MSG_WAIT);
+          await GPUTEST();
           setInitState('applying hash'); await sleep(INIT_MSG_WAIT);
           hash(undefined,true);
           // window.requestAnimationFrame(STATSLOOP);
@@ -8786,7 +8679,11 @@ void main() {
     var RPL_LOOKAHEAD_DEFAULT = 0; // number of seconds (n * 60) to look ahead by
     var RPL_LOOKBEHIND_DEFAULT = 1250; // number of seconds (n * 60) to look behind by
 
-    var SKULL_1_GEOMETRY, SKULL_2_GEOMETRIES, SKULL_3_GEOMETRY, SKULL_4_GEOMETRY, SPIDERLING_GEOMETRY, SQUID_1_GEOMETRY, SQUID_2_GEOMETRY, SQUID_3_GEOMETRY, THORN_GEOMETRY, SPIDER_1_GEOMETRY, SPIDER_2_GEOMETRY, SKULL_3_T_GEOMETRY, SQUID_1_T_GEOMETRY, SQUID_2_T_GEOMETRY, SQUID_3_T_GEOMETRY, SPIDER_1_T_GEOMETRY, SPIDER_2_T_GEOMETRY;   // Geometries shared by Three to reduce VRAM
+    var SKULL_1_GEOMETRY, SKULL_2_GEOMETRIES, SKULL_3_GEOMETRY, SKULL_4_GEOMETRY, SPIDERLING_GEOMETRY, SQUID_1_GEOMETRY, SQUID_2_GEOMETRY, SQUID_3_GEOMETRY, THORN_GEOMETRY, SPIDER_1_GEOMETRY, SPIDER_2_GEOMETRY, SKULL_3_T_GEOMETRY, SQUID_1_T_GEOMETRY, SQUID_2_T_GEOMETRY, SQUID_3_T_GEOMETRY, SPIDER_1_T_GEOMETRY, SPIDER_2_T_GEOMETRY, LEVI_GEOMETRY, LEVI_T_GEOMETRY, ORB_GEOMETRY;  
+     // Geometries shared by Three to reduce VRAM
+
+    var GPU_DATA = {tier: undefined}; // on initialization, will baseline the app's graphical performance
+    var SHADOW_PERFORMANCE_MODE = true; // if true, will scale shadowmap based on GPU. false = 4096 static
 
     const GAME_PAGE_ANNOTATIONS = []; // Annotation cache by which paginateGame() draws markers/insights
     var SHOW_INSIGHTS_BUTTON_ON = false; // if true, keeps insights window open
@@ -9302,8 +9199,19 @@ void main() {
       if(anyInputsFocused() == false){  //  No-focus only events
 
         if (evtobj.key == 'Backspace' && evtobj.ctrlKey){
-          setThemeByIndex(0); // Default theme global override
-          saveSettings();
+          if(evtobj.altKey){ // alternate default (showoff binds)
+            if(evtobj.shiftKey){ // random theme
+              setRandomLocalTheme();
+            } else { // apply Gunmetal as opposed to Default
+              setThemeByIndex(12);
+            }
+          } else {
+            if(evtobj.shiftKey){ // apply Lightcycle as opposed to default or Gunmetal
+              setThemeByIndex(6);
+            } else {
+              setThemeByIndex(0); // Default theme global override
+            }
+          }
         }
 
         //  Leaderboard pagination binds
@@ -13964,6 +13872,10 @@ var language = {
       DISCARD_THEME_PROMPT_OPEN = false;
     }
 
+    async function setRandomLocalTheme(){
+      await setThemeByIndex(Math.round(Math.random() * THEMES.length));
+    }
+
     async function setThemeByIndex(index,themeElement,ONLINE_INSTEAD){
       var INTL_THEL = themeElement;
       if(INTL_THEL == 'TH_EL_RQ_OVR'){
@@ -16947,7 +16859,7 @@ var language = {
       // alert(DDCL_LAST_ID + \' loaded to DDCL subpage\');
     }
 
-    function formatGameItemObject(DATA, RECENTS_OR_MYGAMES){
+    function formatGameItemObject(DATA, RECENTS_OR_MYGAMES, MYGAMES_SPECIFICALLY){
 
       var homingParser = '';
       if(DATA.homing_daggers_max != 0 && DATA.homing_daggers_max != undefined){
@@ -16964,7 +16876,18 @@ var language = {
         ifLiveClass = ' currentlyLive';
       }
 
-      return '<div class="gameItem" GAME_ID="' + DATA.id + '" PLAYER_ID="' + DATA.player_id + '"><div class="gamerName"><span class="gamerActualName' + ifLiveClass + '">' + deEmojifiedPlayerName + '</span></div><div class="gamerStats">' + DATA.game_time + 's  ‣  ' + DATA.spawnset + ', <span timestamp_item="' + (new Date(DATA.time_stamp).getTime()) + '">' + timeSince(new Date(DATA.time_stamp)) + '</span>' + homingParser + '<br>' + DATA.gems + ' gems, ' + DATA.accuracy + '% acc, ' + DATA.enemies_alive + ' alive, ' + DATA.enemies_killed + ' kills</div><div class="gameButtonWrapper">' + /*<div class="gameButton" onmouseenter="tooltip(\'favoriteButton\')" onmouseleave="tooltip(\'close\')" onmousedown="alert(this.parentElement.parentElement.attributes.game_id.nodeValue + \' can be favorited (UNIMPLEMENTED TO-DO)\'); toggleFavoriteIcon(this);"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.9955vh;position:relative;right:0.295vh;line-height:0px;top:0.125vh;">favorite_border</i></div></div>*/ '<div class="gameButton" onmouseenter="tooltip(\'loadLeft\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue)"><div class="gameButtonInside" style="left: 0.5vh;font-size:2.125vh;">➊</div></div><div class="gameButton" onmouseenter="tooltip(\'loadRight\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue,\'R\')"><div class="gameButtonInside" style="left: 0.5vh;font-size:2.125vh;">➋</div></div><div REPLAY_BUTTON resolved="0" onmouseenter="tooltip(\'replayButton\')" onmouseleave="tooltip(\'close\')" class="gameButton gameButtonUnclickable gameButtonLoading" onclick="alert(\'Replay presence is still resolving! Please wait...\',\'warning\')"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.275vh;line-height:0px;">autorenew</i></div></div></div><div class="gameItemBackgroundClickbox" onmouseenter="tooltip(\'viewDDStatsGame\')" onmouseleave="tooltip(\'close\')" onmousedown="paginateGame(' + DATA.id + ')"></div></div>';
+      var GAMETIME = DATA.game_time.toFixed(4) + 's' + '  ‣  ';
+      var PLAYERNAME = '<span class="gamerActualName' + ifLiveClass + '">' + deEmojifiedPlayerName + '</span>';
+      var POST_PLAYERNAME = '';
+
+      if(MYGAMES_SPECIFICALLY == true){ // switch gametime and player name for Mygames items
+        GAMETIME = '';
+        var T_PLAYERNAME = DATA.game_time.toFixed(4) + 's';
+        PLAYERNAME = T_PLAYERNAME.splice(T_PLAYERNAME.length-5, 0, '<span style="font-size:2vh">') + '</span>';
+        POST_PLAYERNAME = '  •  ' + '<span class="gamerActualName' + ifLiveClass + '">' + deEmojifiedPlayerName + '</span>';
+      }
+
+      return '<div class="gameItem" GAME_ID="' + DATA.id + '" PLAYER_ID="' + DATA.player_id + '"><div class="gamerName">' + PLAYERNAME + '</div><div class="gamerStats">' + GAMETIME + DATA.spawnset + ', <span timestamp_item="' + (new Date(DATA.time_stamp).getTime()) + '">' + timeSince(new Date(DATA.time_stamp)) + '</span>' + homingParser + '<br>' + DATA.gems + ' gems, ' + DATA.accuracy + '% acc, ' + DATA.enemies_alive + ' alive, ' + DATA.enemies_killed + ' kills' + POST_PLAYERNAME + '</div><div class="gameButtonWrapper">' + /*<div class="gameButton" onmouseenter="tooltip(\'favoriteButton\')" onmouseleave="tooltip(\'close\')" onmousedown="alert(this.parentElement.parentElement.attributes.game_id.nodeValue + \' can be favorited (UNIMPLEMENTED TO-DO)\'); toggleFavoriteIcon(this);"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.9955vh;position:relative;right:0.295vh;line-height:0px;top:0.125vh;">favorite_border</i></div></div>*/ '<div class="gameButton" onmouseenter="tooltip(\'loadLeft\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue)"><div class="gameButtonInside" style="left: 0.5vh;font-size:2.125vh;">➊</div></div><div class="gameButton" onmouseenter="tooltip(\'loadRight\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue,\'R\')"><div class="gameButtonInside" style="left: 0.5vh;font-size:2.125vh;">➋</div></div><div REPLAY_BUTTON resolved="0" onmouseenter="tooltip(\'replayButton\')" onmouseleave="tooltip(\'close\')" class="gameButton gameButtonUnclickable gameButtonLoading" onclick="alert(\'Replay presence is still resolving! Please wait...\',\'warning\')"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.275vh;line-height:0px;">autorenew</i></div></div></div><div class="gameItemBackgroundClickbox" onmouseenter="tooltip(\'viewDDStatsGame\')" onmouseleave="tooltip(\'close\')" onmousedown="paginateGame(' + DATA.id + ')"></div></div>';
         //  "VISIBILITY" should be LOADING, and then ANOTHER FUNCTION should take care of
         //    CHECKING if REPLAY is present for GIVEN GAME IDs in THIS PAGE based on the IDS in elements
 
@@ -18915,7 +18838,7 @@ var language = {
 
                 var GAME_ID_ARRAY = [];
                 for(var GameItem_OBJ of data.games){
-                  document.getElementById('MYGAMES_WRAPPER').innerHTML += formatGameItemObject(GameItem_OBJ);
+                  document.getElementById('MYGAMES_WRAPPER').innerHTML += formatGameItemObject(GameItem_OBJ, undefined, true);
                   GAME_ID_ARRAY.push(GameItem_OBJ.id);
                 }
                 var GI_indexOfFirstEntry = (1 + (PAGE_MYGAMES_SIZE * (data.page_number - 1)));
@@ -18972,7 +18895,7 @@ var language = {
 
                   var GAME_ID_ARRAY = [];
                   for(var GameItem_OBJ of data.games){
-                    document.getElementById('PLAYERGAMES_WRAPPER').innerHTML += formatGameItemObject(GameItem_OBJ);
+                    document.getElementById('PLAYERGAMES_WRAPPER').innerHTML += formatGameItemObject(GameItem_OBJ, undefined, true);
                     GAME_ID_ARRAY.push(GameItem_OBJ.id);
                   }
                   var GI_indexOfFirstEntry = (1 + (PAGE_PLAYERGAMES_SIZE * (data.page_number - 1)));
@@ -21617,7 +21540,7 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
             HITLIST.push(['<span>type: ' + DAG + ', DMG: ' + DMG + ', NHP: ' + NHP + ' a: ' + HIT.a + ', b: ' + HIT.b + ', c: ' + HIT.c + ', d: ' + HIT.d + ', tick: ' + HIT.tick + '</span>', 0, false]);
           }
 
-          SLICE_LEVI_DATA_AND_ARB.push(['HP', NHP + ' / ' + getTypeHP(LEVI.entityType)]);
+          SLICE_LEVI_DATA_AND_ARB.push(['HP', NHP + ' / ' + getTypeHP('orb')]);
           SLICE_LEVI_DATA_AND_ARB.push(['Normal DMG', NORMAL_DAMAGE]);
           SLICE_LEVI_DATA_AND_ARB.push(['Homing DMG', HOMING_DAMAGE]);
 
@@ -21669,11 +21592,10 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
         //  [arbitrary]
         SLICE_LEVI_DATA_AND_ARB = [[], NHP]; // [Arbitrary], HP
 
-        SLICE_LEVI_DATA_AND_ARB[0].push(['HP', NHP + ' / ' + getTypeHP(LEVI.entityType)]);
-        SLICE_LEVI_DATA_AND_ARB[0].push(['Normal DMG', NORMAL_DAMAGE]);
-        SLICE_LEVI_DATA_AND_ARB[0].push(['Homing DMG', HOMING_DAMAGE]);
-
         if(IS_LEVI_FLAG == true){ // this is levi; display segments
+          SLICE_LEVI_DATA_AND_ARB[0].push(['HP', NHP + ' / ' + getTypeHP('leviathan')]);
+          SLICE_LEVI_DATA_AND_ARB[0].push(['Normal DMG', NORMAL_DAMAGE]);
+          SLICE_LEVI_DATA_AND_ARB[0].push(['Homing DMG', HOMING_DAMAGE]);
           SLICE_LEVI_DATA_AND_ARB[0].push(['<br>', 0, false]); // spacer
           for(var c=0; c<LEVI_nodeHealthArray.length; c++){
             var SEGNUM = c+1;
@@ -21685,6 +21607,10 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
             }
             SLICE_LEVI_DATA_AND_ARB[0].push(['<br><span style="'+STYLESTRING+'"><span style="color:var(--UI-active)">Node ' + SEGNUM + '</span><br>' + HPSTRING + '<br>(' + segmentHealth + ' - ' + DMG_PER_SEGMENT[c] + ' - ' + HOMING_DMG_PER_SEGMENT[c] + ')</span>', 0, false]);
           }
+        } else { // this is the orb or it is dead
+          SLICE_LEVI_DATA_AND_ARB[0].push(['HP', NHP + ' / ' + getTypeHP('orb')]);
+          SLICE_LEVI_DATA_AND_ARB[0].push(['Normal DMG', NORMAL_DAMAGE]);
+          SLICE_LEVI_DATA_AND_ARB[0].push(['Homing DMG', HOMING_DAMAGE]);
         }
 
         if(HITLIST.length > 0 && REPLAY_SHOW_DAGGER_HIT_LIST == true){
@@ -21739,14 +21665,28 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
             EVENT.entityType = TYPE.entityType;
             if(EVENT.entityType != 'dagger' && EVENT.entityType != 'spider 1' && EVENT.entityType != 'spider 2' && EVENT.entityType != 'gigapede' && EVENT.entityType != 'centipede' && EVENT.entityType != 'ghostpede' && EVENT.entityType != 'thorn'){ // fuck daggers all my homies hate daggers
 
+              //  Determine if this object has ever been transmuted (skulls only);
+              //  If it has, set its entityType to "transmuted skull 1", etc.
+              var TICK_TRANSMUTED = 0; // default to start if not transmuted
+              if(EVENT.entityType == 'skull 1' || EVENT.entityType == 'skull 2' || EVENT.entityType == 'skull 3' || EVENT.entityType == 'skull 4'){
+                var TRANSMUTED_STATUS = REPLAY_OBJECT_CACHE.categories.transmute.find(obj => {
+                  return (obj.entityId == EVENT.entityId && obj.tick < THIS_TICK) 
+                }); // the hits on this entity
+                if(TRANSMUTED_STATUS != undefined){
+                  var ET_STRINGBUFFER = EVENT.entityType;
+                  EVENT.entityType = 'transmuted ' + ET_STRINGBUFFER;
+                  EVENT.transmuted = TRANSMUTED_STATUS.tick;
+                  TICK_TRANSMUTED = TRANSMUTED_STATUS.tick;
+                }
+              }
 
               if(REPLAY_RICH_ENTITY_DATA_MODE && EVENT.entityType != 'skull 1'){ // exclude skull 1s
                 //  If rich data mode is enabled,
                 //  do HP calculation for all static entities that are not pedes or specials
 
                 var TH_ENT_HITS = REPLAY_OBJECT_CACHE.categories.hit.filter(obj => {
-                  return (obj.a == EVENT.entityId && obj.tick <= THIS_TICK) 
-                }); // the hits on this entity
+                  return (obj.a == EVENT.entityId && obj.tick <= THIS_TICK && obj.tick > TICK_TRANSMUTED) 
+                }); // the valid hits on this entity
 
                 var TOTAL_DAMAGE = 0;
                 var NORMAL_DAMAGE = 0;
@@ -22358,6 +22298,15 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
         case 'skull 4':
           return 100;
 
+        case 'transmuted skull 1': // Transmuted Skulls
+          return 10;
+        case 'transmuted skull 2':
+          return 20;
+        case 'transmuted skull 3':
+          return 100;
+        case 'transmuted skull 4':
+          return 300;
+
         case 'squid 1': // Squids
           return 10;
         case 'squid 2':
@@ -22391,15 +22340,6 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
 
         case 'thorn': // Thorn
           return 120;
-        
-        case 'transmuted skull 1': // Transmuted Skulls
-          return 1;
-        case 'transmuted skull 2':
-          return 5;
-        case 'transmuted skull 3':
-          return 10;
-        case 'transmuted skull 4':
-          return 100;
       }
     }
 
@@ -22702,6 +22642,36 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
       SPIDER_1_T_GEOMETRY = new THREE.SphereGeometry( 70, 8, 8 );
       SPIDER_2_T_GEOMETRY = new THREE.SphereGeometry( 250, 8, 8 );
 
+      LEVI_GEOMETRY = new THREE.CylinderGeometry( 250, 150, 400, 12 );
+      LEVI_T_GEOMETRY = new THREE.CylinderGeometry( 250, 150, 400, 12 );
+      ORB_GEOMETRY = new THREE.SphereGeometry( 95, 50, 50 );
+
+      //  Calculate vertex normals for these geometries
+      /*
+      SKULL_1_GEOMETRY.computeVertexNormals();
+      SKULL_2_GEOMETRIES[0].computeVertexNormals();
+      SKULL_2_GEOMETRIES[1].computeVertexNormals();
+      SKULL_2_GEOMETRIES[2].computeVertexNormals();
+      SKULL_3_GEOMETRY.computeVertexNormals();
+      SKULL_4_GEOMETRY.computeVertexNormals();
+      SPIDERLING_GEOMETRY.computeVertexNormals();
+      SQUID_1_GEOMETRY.computeVertexNormals();
+      SQUID_2_GEOMETRY.computeVertexNormals();
+      SQUID_3_GEOMETRY.computeVertexNormals();
+      THORN_GEOMETRY.computeVertexNormals();
+      SPIDER_1_GEOMETRY.computeVertexNormals();
+      SPIDER_2_GEOMETRY.computeVertexNormals();
+      SKULL_3_T_GEOMETRY.computeVertexNormals();
+      SQUID_1_T_GEOMETRY.computeVertexNormals();
+      SQUID_2_T_GEOMETRY.computeVertexNormals();
+      SQUID_3_T_GEOMETRY.computeVertexNormals();
+      SPIDER_1_T_GEOMETRY.computeVertexNormals();
+      SPIDER_2_T_GEOMETRY.computeVertexNormals();
+      ORB_GEOMETRY.computeVertexNormals();
+      LEVI_GEOMETRY.computeVertexNormals();
+      LEVI_T_GEOMETRY.computeVertexNormals();
+      */
+
       //  make renderer available
 
       makeDDLIVE3D();
@@ -22794,9 +22764,10 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
                 REPLAY_RAYCAST_PEDE_INFO_CACHE = ''; // no pede info by default
 
                 var isPedeFlag = false;
+                var isOrbFlag = false;
 
                 if(intersects[ i ].object.parent.userData != undefined && intersects[ i ].object.parent.userData != null){
-                  if(intersects[ i ].object.parent.userData.pedeData != undefined){
+                  if(intersects[ i ].object.parent.userData.pedeData != undefined){ // a pede
 
                     for(var OBJECT of intersects[ i ].object.parent.children){ // push memory to restore head mesh
                       // console.log(intersects[ i ].object.parent.children);
@@ -22829,10 +22800,17 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
                     intersects[ i ].object.parent.children[0].geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( intersects[ i ].object.parent.children[0].userData.hoverVertexColors , 3 )); // set vertex colors to hovered
                     // console.log(intersects[ i ].object.parent.userData.headHoverColor);
                     intersects[ i ].object.parent.children[1].material.color.set( new THREE.Color(intersects[ i ].object.parent.userData.headHoverColor) );
+
+                  } else if(intersects[ i ].object.parent.userData.entityType == 'orb'){ // the orb
+                    isOrbFlag = true;
+                    for(var OBJECT of intersects[ i ].object.parent.children){
+                      NEW_OBJ_MEMORY.push(OBJECT);
+                      NEW_COLOR_MEMORY.push([1, 1, 1]); // new color object
+                    }
                   }
                 }
 
-                if(isPedeFlag == false){
+                if(isPedeFlag == false && isOrbFlag == false){
                   for(var OBJECT of intersects[ i ].object.parent.children){
                     // console.log(intersects[ i ].object.parent.children);
                     NEW_OBJ_MEMORY.push(OBJECT);
@@ -22962,7 +22940,10 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
 
         for(var i=0; i<GROUP_OBJECTS.length; i++){
           if(GROUP_OBJECTS[i].userData != undefined && GROUP_OBJECTS[i].userData != null){
-            if(GROUP_OBJECTS[i].userData.vertexColored == true){
+            if(GROUP.userData.entityType == 'orb'){
+              //  do nothing! for now. in the future use this to reset orb material on hover.
+              continue; //  continue the loop but don't do the normal color setting for this object
+            } else if(GROUP_OBJECTS[i].userData.vertexColored == true){
               GROUP_OBJECTS[i].geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( GROUP_OBJECTS[i].userData.normalVertexColors , 3 )); // return vertex colors to normal
               continue; //  continue the loop but don't do the normal color setting for this object
             }
@@ -22980,6 +22961,12 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
       REPLAY_RAYCAST_GROUP_COLOR_MEMORY = [];
       REPLAY_RAYCAST_TICK_MEMORY = REPLAY_TICK;
       REPLAY_RAYCAST_INFORMATION_STRING = '';
+    }
+
+    function updateOrbShaders(SHADER_TEXTS){ // array containing Vertex and Fragment shader text
+      document.getElementById('orb_vertex').innerHTML = SHADER_TEXTS[0];
+      document.getElementById('orb_fragment').innerHTML = SHADER_TEXTS[1];
+      setStyle(THEMES[0], undefined, undefined, true);
     }
 
     function CLEAR_REPLAY_OBJECT(){
@@ -23188,12 +23175,16 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
         }
     }
 
-    function makeXGeometry(VEC3_POS, ENT_SOURCE){
+    function makeXGeometry(VEC3_POS, ENT_SOURCE, TRANSMUTED){
       // var BGEO = [[7, 37, 7], [37, 7, 7], [7, 7, 37]];
       const group = new THREE.Group();
+      var COL = ui_gems_despawned;
+      if(TRANSMUTED == true){
+        COL = ui_levi; // this can be a material-to-shader-material toggle in the future
+      }
       // for(var GEO of BGEO){
         for(var i=0; i<SKULL_2_GEOMETRIES.length; i++){
-        var x1c_material = new THREE.MeshToonMaterial( {color: new THREE.Color(ui_gems_despawned) } );
+        var x1c_material = new THREE.MeshToonMaterial( {color: new THREE.Color(COL) } );
         var x1c_cube = new THREE.Mesh( SKULL_2_GEOMETRIES[i], x1c_material );
         x1c_cube.rotation.set( 0, Math.PI / 4, 0);
         x1c_cube.position.set(VEC3_POS[0], VEC3_POS[1], VEC3_POS[2]);
@@ -23369,6 +23360,15 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
       var LOC_x = (Math.floor(radius * Math.cos(-angle * Math.PI / 180)) * scale) + SCAL_OFS;
       var LOC_z = (Math.floor(radius * Math.sin(-angle * Math.PI / 180)) * scale) + SCAL_OFS;
       return [LOC_x, LOC_z];
+    }
+
+    function rotatePointOnPlane(cx, cy, x, y, angle) {
+      var radians = (Math.PI / 180) * angle,
+          cos = Math.cos(radians),
+          sin = Math.sin(radians),
+          nx = (cos * (x - cx)) + (sin * (y - cy)) + cx,
+          ny = (cos * (y - cy)) - (sin * (x - cx)) + cy;
+      return [nx, ny];
     }
 
 
@@ -23684,13 +23684,28 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
 
           REPLAY[REPLAY_TICK] = new THREE.Scene(); // Create a new scene
 
-          var LIGHT = new THREE.DirectionalLight( 0xffffff, 0.45 ); // DIRECTIONAL LIGHT (Shadowcasting)
+          // DIRECTIONAL LIGHT (Shadowcasting)
+          var LIGHT = new THREE.DirectionalLight( 0xffffff, 0.45 );
+
+          //  Set up shadow settings based on GPU performance
+          var SHADOWMAP_SIZE = 4096; // 64x larger than shadow practices default (linear 8x)
+          if(SHADOW_PERFORMANCE_MODE == true){
+            switch(GPU_DATA.tier){
+              case 3:
+                SHADOWMAP_SIZE = 2048; // 16x larger than shadow practices default (linear 4x)
+                break;
+              default:
+                SHADOWMAP_SIZE = 1024; // 4x larger than shadow practices default (linear 2x)
+                break;
+            }
+          }
+
           LIGHT.castShadow = true; // cast shadows
 
           LIGHT.shadow.normalBias = 0.01; // Solves shadow acne
 
-          LIGHT.shadow.mapSize.width = 2048; // 4x larger than default
-          LIGHT.shadow.mapSize.height = 2048; // 4x larger than default
+          LIGHT.shadow.mapSize.width = SHADOWMAP_SIZE;
+          LIGHT.shadow.mapSize.height = SHADOWMAP_SIZE;
           LIGHT.shadow.camera.near = -750;
           LIGHT.shadow.camera.far = 280;
 
@@ -24399,6 +24414,38 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
                 DO_NOT_RECEIVE_SHADOWS = false;
                 break;
 
+                            //  Transmuted Skulls
+              case 'transmuted skull 1':
+                var SKULL_1_MATERIAL = new THREE.MeshToonMaterial( { color: new THREE.Color(ui_levi) });
+                FinalMesh = new THREE.Mesh( SKULL_1_GEOMETRY, SKULL_1_MATERIAL );
+                DO_NOT_RECEIVE_SHADOWS = false;
+                break;
+
+              case 'transmuted skull 2':
+                makeXGeometry([ENT.position.x, ENT.position.y, ENT.position.z], ENT, true);
+                ALREADY_PUSHED = true;
+                break;
+
+              case 'transmuted skull 3':
+                var E_material = new THREE.MeshToonMaterial( { color: new THREE.Color(ui_levi) });
+                FinalMesh = new THREE.Mesh( SKULL_3_GEOMETRY, E_material );
+                FinalMesh.rotation.set(Math.PI / 2, 0, 0); // lay flat
+                //  Bounding geometry
+                var BoundingMaterial = new THREE.MeshBasicMaterial( { transparent: true, opacity: 0 });
+                BoundingMaterial.depthWrite = false;
+                BoundingMesh = new THREE.Mesh( SKULL_3_T_GEOMETRY, BoundingMaterial );
+                DO_NOT_RECEIVE_SHADOWS = false;
+                NBS_FLAG = true;
+                break;
+
+              case 'transmuted skull 4':
+                var E_material = new THREE.MeshToonMaterial( { color: new THREE.Color(ui_levi) });
+                FinalMesh = new THREE.Mesh( SKULL_4_GEOMETRY, E_material );
+                // FinalMesh.rotation.set(Math.PI / 2, 0, 0); // lay flat
+                FinalMeshLook = true;
+                DO_NOT_RECEIVE_SHADOWS = false;
+                break;
+
                             //  Spiderling
 
               case 'spiderling':
@@ -24535,11 +24582,44 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
                 //  draw the Orb
                 if(SLICE_LEVI_DATA_AND_ARB[1] > 0){ // Only draw if HP is over 0
                   const group = new THREE.Group();
-                  var ORB_geometry = new THREE.SphereGeometry( 95, 30, 8 );
-                  var ORB_material = new THREE.MeshToonMaterial( { color: new THREE.Color(ui_orb) });
-                  FinalMesh = new THREE.Mesh( ORB_geometry, ORB_material );
+
+                  var ORB_ACTIVE_FLAG = false;
+
+                  var COL1 = hexToRgb(ui_bg_fill);
+                  var COL2 = hexToRgb(ui_orb);
+
+                  if(REPLAY_TICK > Math.floor((DD_GAMEPAGE_GAME.block.levi_down_time + 10) * 60)){
+                    //  Orb is active; Set the Orb active flag, and make the primary color ui_levi instead
+                    ORB_ACTIVE_FLAG = true;
+                    COL2 = hexToRgb(ui_levi);
+                  }
+
+                  var ORB_material = new THREE.ShaderMaterial({ // Orb shader
+                    uniforms: {
+
+                      tick: {value: REPLAY_TICK},
+                      rand: {value: pseudo(Math.floor(DD_GAMEPAGE_GAME.block.levi_down_time), 10000)},
+                      col1: {value: new THREE.Vector3(COL1.r / 255, COL1.g / 255, COL1.b / 255)},
+                      col2: {value: new THREE.Vector3(COL2.r / 255, COL2.g / 255, COL2.b / 255)}
+
+                    },
+                    vertexShader: document.getElementById( 'orb_vertex' ).textContent,
+                    fragmentShader: document.getElementById( 'orb_fragment' ).textContent
+                  } );
+
+                  FinalMesh = new THREE.Mesh( ORB_GEOMETRY, ORB_material );
                   FinalMesh.position.set(0, 88, 0);
-                  FinalMesh.rotation.set(0, ROTATION_OFFSET, 0);
+
+                  // Alwasys look at player, but only if the Orb has activated; change this in the future
+                  //  to the calculated orb look-at direction to be more accurate
+
+                  if(ORB_ACTIVE_FLAG == true){
+                    FinalMesh.lookAt(SLICE_REPLAY_PLAYER_POSITION.x, SLICE_REPLAY_PLAYER_POSITION.y, SLICE_REPLAY_PLAYER_POSITION.z);
+                    //  God I fucking hate THREE default euler orientation so fucking much
+                    //  I'd rather fucking kill myself than work with XYZ instead of XZY
+                    FinalMesh.rotateOnAxis( new THREE.Vector3(1,0,0), Math.PI * -0.5 );
+                  }
+                  
                   FinalMesh.castShadow = true;
                   group.add( FinalMesh );
                   group.userData.entityType = 'orb';
@@ -24552,16 +24632,14 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
               //  draw the Leviathan
               if(SLICE_LEVI_DATA_AND_ARB[1] > 0){ // Only draw if HP is over 0
                 const group = new THREE.Group();
-                var E_geometry = new THREE.CylinderGeometry( 250, 150, 400, 12 );
                 var E_material = new THREE.MeshBasicMaterial( { color: new THREE.Color(ui_levi) });
-                FinalMesh = new THREE.LineSegments( E_geometry, E_material );
+                FinalMesh = new THREE.LineSegments( LEVI_GEOMETRY, E_material );
                 FinalMesh.position.set(0, 400, 0);
                 FinalMesh.rotation.set(0, ROTATION_OFFSET, 0);
                 FinalMesh.receiveShadow = true;
                 //  Bounding geometry
-                var BoundingGeometry = new THREE.CylinderGeometry( 250, 150, 400, 12 );
                 var BoundingMaterial = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide, color: new THREE.Color(ui_bg_fill), transparent: true, opacity: 0.5 });
-                BoundingMesh = new THREE.Mesh( BoundingGeometry, BoundingMaterial );
+                BoundingMesh = new THREE.Mesh( LEVI_T_GEOMETRY, BoundingMaterial );
                 BoundingMesh.position.set(0, 400, 0);
                 BoundingMesh.rotation.set(0, ROTATION_OFFSET, 0);
                 BoundingMesh.castShadow = true;
@@ -25825,6 +25903,12 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
         case 3:  return "rd";
         default: return "th";
       }
+    }
+
+    if (!String.prototype.splice) {
+      String.prototype.splice = function(start, delCount, newSubStr) {
+        return this.slice(0, start) + newSubStr + this.slice(start + Math.abs(delCount));
+      };
     }
 
     function degree(MIN, MAX){
@@ -27928,6 +28012,8 @@ try{
         RIGHT_OBJECT = DD;
     }
 
+    GARBAGE_FLAG = false;
+
     if(STAT_is_RIGHT_GAME_CURRENT && (CLIENT_ACTIVE == false || DD.additional_info.connection_state == 'NotConnected')){
       throw new Error('get me out');
     }
@@ -28712,6 +28798,10 @@ try{
             } else { 
               prevHoming = RIGHT_OBJECT.block.starting_homing;
             }
+            if(SPLITS[R_LIVE_IND] == undefined){
+              GARBAGE_FLAG = true;
+              throw new Error('garbage data');
+            }
             homingCalc = parseInt(RIGHT_OBJECT_STATE_MUTATION.homing - prevHoming) + parseInt(SPLITS[R_LIVE_IND][2]);
             gemCalc = Math.abs((RIGHT_OBJECT_STATE_MUTATION.gems_collected - prevGems));
 
@@ -29362,38 +29452,43 @@ try{
         //  If the client is currently disconnected, errors are SUPPOSED TO EXIST,
         //  so the alternate behavior is to draw "Waiting for ddstats-rust..." or "Trying to reconnect..."
 
-        if(CLIENT_ACTIVE){
-          if(DD.additional_info.connection_state != 'Connected' && STAT_is_RIGHT_GAME_CURRENT){
-            
-            texter( '               ' + waitingForDDMessage, style_fore, xOffset, lineHeight*13 );
-          } else {
-            for(var i=0; i<FinalStack.length; i++){
-                texter( FinalStack[i], style_allBad, xOffset, lineHeight*(i+2) );
-            }
-
-            if(Stack[0] != ERR_CACHE){
-              drapeLogError(Stack);
-              drapeLogError(e);
-            }
-            ERR_CACHE = Stack[0];
-
-            texter( 'Draw failed for ' + errorCache + ' concurrent frames due to:', style_allBad, xOffset, lineHeight);
-          }
+        if(GARBAGE_FLAG == true){
+          texter( '       DD\'s replay buffer contains corrupted data.', style_fore, xOffset, lineHeight*13 );
+          texter( '        awaiting non-corrupted replay information...', style_fore, xOffset, lineHeight*14 );
         } else {
-          if(STAT_is_RIGHT_GAME_CURRENT){
-            texter( '                waiting for ddstats-rust...', style_fore, xOffset, lineHeight*13 );
+          if(CLIENT_ACTIVE){
+            if(DD.additional_info.connection_state != 'Connected' && STAT_is_RIGHT_GAME_CURRENT){
+              
+              texter( '               ' + waitingForDDMessage, style_fore, xOffset, lineHeight*13 );
+            } else {
+              for(var i=0; i<FinalStack.length; i++){
+                  texter( FinalStack[i], style_allBad, xOffset, lineHeight*(i+2) );
+              }
+
+              if(Stack[0] != ERR_CACHE){
+                drapeLogError(Stack);
+                drapeLogError(e);
+              }
+              ERR_CACHE = Stack[0];
+
+              texter( 'Draw failed for ' + errorCache + ' concurrent frames due to:', style_allBad, xOffset, lineHeight);
+            }
           } else {
-            for(var i=0; i<FinalStack.length; i++){
-                texter( FinalStack[i], style_allBad, xOffset, lineHeight*(i+2) );
-            }
+            if(STAT_is_RIGHT_GAME_CURRENT){
+              texter( '                waiting for ddstats-rust...', style_fore, xOffset, lineHeight*13 );
+            } else {
+              for(var i=0; i<FinalStack.length; i++){
+                  texter( FinalStack[i], style_allBad, xOffset, lineHeight*(i+2) );
+              }
 
-            if(Stack[0] != ERR_CACHE){
-              drapeLogError(Stack);
-              drapeLogError(e);
-            }
-            ERR_CACHE = Stack[0];
+              if(Stack[0] != ERR_CACHE){
+                drapeLogError(Stack);
+                drapeLogError(e);
+              }
+              ERR_CACHE = Stack[0];
 
-            texter( 'Draw failed for ' + errorCache + ' concurrent frames due to:', style_allBad, xOffset, lineHeight);
+              texter( 'Draw failed for ' + errorCache + ' concurrent frames due to:', style_allBad, xOffset, lineHeight);
+            }
           }
         }
 
