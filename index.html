@@ -85,6 +85,10 @@ Use ddstats-rust to link your Devil Daggers games with DDLIVE." property="og:des
 <script src="lib/pako.min.js"></script>
 <script src="lib/replay-parser.js?v=2"></script>
 
+<script src="lib/html2canvas.min.js"></script>
+
+<script src="lib/csch.min.js"></script>
+
 <!-- For AJAX JSONP Wrapper support -->
 <script src="lib/jquery-ajaxonly.min.js"></script>
 <script src="lib/vconsole.min.js"></script>
@@ -1681,7 +1685,13 @@ canvas{
 
 
 
-
+#SCREENSHOT_WRAPPER_HIDDEN{
+  position: absolute;
+  top: -10000vh;
+  left: -10000vw;
+  height: 100vh;
+  width: 100vw;
+}
 
 #TOPBAR {
 
@@ -2966,8 +2976,10 @@ canvas{
   right: 0;
   background-color: var(--UI-foretext);
   height: 2vh;
-  width: 2.5vh;
+  width: 4.5vh;
   border-radius: 0 0 0 1.2vh;
+
+  display: inline-flex;
 
   padding-top: 0.3vh;
 
@@ -2990,6 +3002,21 @@ canvas{
   align-items:  center;
 }
 #INSIGHTS_EXPAND_BUTTON:hover{
+  background-color: var(--UI-active) !important;
+  color: var(--BGFill);
+}
+#INSIGHTS_SCREENSHOT_BUTTON{
+  margin-left: 0.5vh;
+  position: relative;
+  right: 0.2vh;
+  background-color: var(--BGFill);
+  color: var(--UI-foretext);
+
+  display:  flex;
+  justify-content: center;
+  align-items:  center;
+}
+#INSIGHTS_SCREENSHOT_BUTTON:hover{
   background-color: var(--UI-active) !important;
   color: var(--BGFill);
 }
@@ -5633,6 +5660,8 @@ canvas{
 
 <div id="WRAPPER">
 
+  <div id="SCREENSHOT_WRAPPER_HIDDEN"></div>
+
   <div id="REPLAY_FULLSCREEN_WRAPPER" class="REPLAY_FULLSCREEN_WRAPPER_HIDDEN noselect">
     <div id="REPLAY_FULLSCREEN_BUTTON_CONTAINER" onclick="unfullscreenReplay();"><i class="material-icons" style="pointer-events:none;font-size:3.5vh;position:relative;left:0vh;line-height:0px;top:0.95vh">fullscreen_exit</i></div>
     <div id="REPLAY_FULLSCREEN_CONTAINER"></div>
@@ -5824,6 +5853,14 @@ jQuery-ajaxOnly  ┅┅┅   <a href="https://jquery.com/" target="_blank" onmou
 vConsole         ┅┅┅   <a href="https://github.com/Tencent/vConsole" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">github / Tencent / vConsole</a>
                          <a href="https://github.com/Tencent/vConsole/blob/dev/LICENSE" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">MIT License</a>
                          console core
+
+color-scheme.js  ┅┅┅   <a href="https://github.com/c0bra/color-scheme-js" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">github / c0bra / color-scheme-js</a>
+                         <a href="https://github.com/c0bra/color-scheme-js/blob/master/LICENSE" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">MIT License</a>
+                         dynamic relative color core
+
+HTML 2 Canvas    ┅┅┅   <a href="https://html2canvas.hertzen.com/" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">html2canvas.hertzen.com</a>
+                         <a href="https://github.com/niklasvh/html2canvas/blob/master/LICENSE" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">MIT License</a>
+                         screenshot core
 
 Reconnecting     ┅┅┅   <a href="https://github.com/joewalnes/reconnecting-websocket" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">github / joewalnes / reconnecting-websocket</a>
 WebSocket                <a href="https://github.com/joewalnes/reconnecting-websocket/blob/master/LICENSE.txt" target="_blank" onmouseenter="pauseCredits()" onmouseleave="resumeCredits()">MIT License</a>
@@ -6782,9 +6819,9 @@ paginateLeaderboard(PAGE_LEADERBOARD_MAX);">last_page</i><div id="LEADERBOARD_MI
 
                   <div id="GAMEPAGE_INFO_INNER_WRAPPER">
                       
-                      <div id="INSIGHT_EXPAND_WRAPPER"><div id="INSIGHTS_EXPAND_BUTTON" class="condenserButton" onmousedown="toggleInsightsCondensed()" onmouseenter="tooltip('toggleCondensedInsights')" onmouseleave="tooltip('close')"><i tabindex="-1" class="material-icons" style="font-size:1.5vh;position:relative;">close_fullscreen</i></div></div> <!-- only becomes opaque when insights are open -->
+                      <div id="INSIGHT_EXPAND_WRAPPER"><div id="INSIGHTS_EXPAND_BUTTON" class="condenserButton" onmousedown="toggleInsightsCondensed()" onmouseenter="tooltip('toggleCondensedInsights')" onmouseleave="tooltip('close')"><i tabindex="-1" class="material-icons" style="font-size:1.5vh;position:relative;">close_fullscreen</i></div><div id="INSIGHTS_SCREENSHOT_BUTTON" class="condenserButton" onmousedown="screenshotInsights();" onmouseenter="tooltip('screenshotInsights')" onmouseleave="tooltip('close')"><i tabindex="-1" class="material-icons" style="font-size:1.3vh;position:relative;">camera</i></div></div> <!-- only becomes opaque when insights are open -->
 
-                      <div id="INSIGHT_DETAILS_WRAPPER"></div>
+                      <div id="INSIGHT_DETAILS_WRAPPER"><div id="INSIGHT_LIST"></div></div>
 
                       <div id="GAMEPAGE_INFO_PAGE_WRAPPER">
                         <div class="gamepageInfoPage">
@@ -8538,13 +8575,16 @@ void main(void)
     var DD_LEFT_GAME; // The left game to compare right game's stats to.
     var DD_RIGHT_GAME; // The right game, if not live, to use.
 
+    var DD_LOCAL_NUM_GAMES = 0; // nubmer of local games from ddstats-rust, if available.
+    var DD_LOCAL_RECENT_GAMES = []; // array of recent games from ddstats-rust, if available.
+    var DD_AVERAGE_GAME; // The Average Game Object, from ddstats-rust, if available. Has no frame data.
+    var DD_MAX_GAME; // The Max Game Object, from ddstats-rust, if available.
+    var DD_MIN_GAME; // The Min Game Object, from ddstats-rust, if available.
+
     var DD_GAMEPAGE_GAME; // The Game Page game, which, while cached like above, is not in the Comparator.
     var GAMEPAGE_INSIGHTS_CACHE; // The Game Page Insights cache, so it doesn't need to be recalculated.
     var GAMEPAGE_REPLAY_CACHE; // The Game Page Replay file cached, so it doesn't need to be redownloaded
     var GAMEPAGE_REPLAY_EVENTS_CACHE; // Above, but parsed into events already
-    var DD_AVERAGE_GAME; // The Average Game Object, from ddstats-rust, if available.
-    var DD_MEAN_GAME; // The Mean Game Object, from ddstats-rust, if available.
-    var DD_MODE_GAME; // The Mode Game Object, from ddstats-rust, if available.
     var DD_PLAYER_PAGE_PB_GAME; // the Player Page PB game, if available.
 
     var DD_L_CACHE; // unused
@@ -8875,6 +8915,7 @@ void main(void)
     var COLORPICKER; // color picker app reference
     var STYLE_CHANGES = 0; // if greater than 0, mainloop sets timeout to apply changes
     var GLOBAL_WAS_LAST_THEME_CHANGED = false; // if true, on colorpick deselects all themes in the browser
+    var SMART_RANDOM_THEME_MODE = true; // if true, uses the smart theme randomizer system
     var LAST_THEME_ELEMENT_REQUEST; // used to request themes in the Discard / No Equivalent situation
     var OBS_TRANSPARENT_BACKGROUND = true; // if false, will not set background to transparent on setStyle
 
@@ -9187,6 +9228,10 @@ void main(void)
       }
     }
 
+    function pagePointer(){ // alias for page() for early-binding functions (like key listeners!)
+      page(...arguments);
+    }
+
     //  GLOBAL KEY LISTENERS
 
     function globalKeyListener(e) {
@@ -9212,6 +9257,11 @@ void main(void)
               setThemeByIndex(0); // Default theme global override
             }
           }
+        }
+
+        if(evtobj.key == 'F1'){ // open help
+          e.preventDefault();
+          pagePointer(9,1);
         }
 
         //  Leaderboard pagination binds
@@ -12047,6 +12097,82 @@ const functionNames = {
       document.body.removeChild(el);
     }
 
+    function copyImageToClipboard(png_blob){
+      try {
+        navigator.clipboard.write([
+          new ClipboardItem({
+            'image/png': pngImageBlob
+          })
+        ]);
+      } catch (error) {
+        drapeLogError('Copying image to clipboard failed! ', error);
+      }
+    }
+
+    function screenshot(ELEMENT, return_instead, alt_success_text){ 
+      // Copies to clipboard automatically unless flagged to return instead
+      document.getElementById('SCREENSHOT_WRAPPER_HIDDEN').innerHTML = ''; // clear screenshot wrapper
+      html2canvas(ELEMENT, {backgroundColor: ui_bg_fill}).then(function(canvas) {
+        document.getElementById('SCREENSHOT_WRAPPER_HIDDEN').appendChild(canvas);
+        canvas.toBlob(function(blob) {
+          if(return_instead == true){
+            return blob;
+          } else {
+            try{
+              navigator.clipboard.write([
+                new ClipboardItem(
+                  Object.defineProperty({}, blob.type, {
+                    value: blob,
+                    enumerable: true
+                  })
+                )
+              ]).then(function() {
+                if(return_instead != true){
+                  if(alt_success_text != undefined){
+                    alert(alt_success_text);
+                  } else {
+                    alert('Element screenshot copied to clipboard!');
+                  }
+                }
+              });
+            } catch(e){
+              drapeLogError('Copying screenshot to clipboard failed! ', e);
+            }
+          }
+        });
+      });
+    }
+
+    function screenshotInsights(){
+      screenshot(document.getElementById('INSIGHT_LIST'), undefined, 'Insights list copied to clipboard!');
+    }
+
+    function screenshotReplay(return_instead){
+      document.getElementById('GAMEPAGE_REPLAY').toBlob(function(blob) {
+        if(return_instead == true){
+          return blob;
+        } else {
+          try{
+            navigator.clipboard.write([
+              new ClipboardItem(
+                Object.defineProperty({}, blob.type, {
+                  value: blob,
+                  enumerable: true
+                })
+              )
+            ])
+            .then(function() {
+              if(return_instead != true){
+                alert('Replay screenshot copied to clipboard!');
+              }
+            });
+          } catch(e){
+            drapeLogError('Copying replay screenshot to clipboard failed! ', e);
+          }
+        }
+      });
+    }
+
     function isURL(PROSPECT_URL){ // returns URL if string is a URL; false if not
       try{
         var THIS_URL = new URL(PROSPECT_URL);
@@ -12847,6 +12973,10 @@ var language = {
                                 ['Toggle Insights Detailed View', // Title
                                 'Toggle whether to show or hide Insight descriptions and additional details.'], // Description
 
+            screenshotInsights:
+                                ['Screenshot Insights', // Title
+                                'Copy an image of the full Insights list to your clipboard.'], // Description
+
             openThemeGallery:   
                                 ['Online Theme Gallery', // Title
                                 'View a globally ranked listing of all submitted themes!'], // Description
@@ -12897,7 +13027,7 @@ var language = {
 
             randomizeTheme:
                                 ['Randomize Theme', // Title
-                                'Generate a random theme. h... heh... y-yeah...'], // Description
+                                'Generate a random theme.'], // Description
 
             importThemesFile:   
                                 ['Import Themes from File', // Title
@@ -13838,11 +13968,20 @@ var language = {
 
     function openDiscardThemePrompt(index,randomizeInstead,onlineInstead){
       var actionToDo = 'setThemeByIndex(' + index + ',\'TH_EL_RQ_OVR\');';
-      if(randomizeInstead){
-        actionToDo = 'randomizeTheme()';
+      if(randomizeInstead != undefined){
+        if(SMART_RANDOM_THEME_MODE){
+          actionToDo = 'smartRandomTheme()';
+        } else {
+          actionToDo = 'randomizeTheme()';
+        }
         if(hasRandomized && REMEMBER_RANDOMIZE){
-          randomizeTheme();
-          return;
+          if(SMART_RANDOM_THEME_MODE == true){
+            smartRandomTheme();
+            return;
+          } else {
+            randomizeTheme();
+            return;
+          }
         }
       }
       if(onlineInstead){
@@ -18558,7 +18697,7 @@ var language = {
         LAST_TWITCH_REFRESH = Date.now(); //  otherwise we are going to fucking refresh EVERY HALF SECOND!!!!!
         //  dude chupa is going to KILL ME!!!!! hes going to make me watch iraqi anime dude.... noooo0o0o0o0o....
 
-        var data = await ajaxRequest('https://swarmer.herokuapp.com/streams',true);
+        var data = await ajaxRequest('https://swarmer.herokuapp.com/streams?gameName=devil%20daggers',true);
         // var THUMB_STRING = 'https://static-cdn.jtvnw.net/previews-ttv/live_user_' +  + '-480x260.jpg'
 
         if(data != 'ERR' && data != null){
@@ -20426,7 +20565,7 @@ var language = {
           S_REF.innerHTML = ' <br> '; await sleep(0.0001);
           INFO_WRAPPER.style.display = 'none';
           document.querySelector('[game_page_game_item]').attributes.game_id.nodeValue = -1;
-          document.getElementById('INSIGHT_DETAILS_WRAPPER').innerHTML = '';
+          document.getElementById('INSIGHT_LIST').innerHTML = '';
           BUTTON_WRAPPER.innerHTML = '<div class="gameButton" onmouseenter="tooltip(\'prevGameInfoPage\')" onmouseleave="tooltip(\'close\')" onmousedown="prevGameInfoPage();" style="position:absolute;left:0;overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_backward</i></div></div><div class="gameButton gameButtonUnclickable gameButtonLoading"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.275vh;line-height:0px;">autorenew</i></div></div><div class="gameButton" onmouseenter="tooltip(\'nextGameInfoPage\')" onmouseleave="tooltip(\'close\')" onmousedown="nextGameInfoPage();" style="overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_forward</i></div></div>';
           INSIGHTS_GRAPH.data = [];
           INSIGHTS_GRAPH.update();
@@ -22263,6 +22402,8 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
         case 4:
           if(ENT_TYPE == 'leviathan'){
             return 1;
+          } else if(ENTY_TYPE == 'squid 3') {
+            return 30;
           } else if(ENT_TYPE == 'ghostpede'){
             return 0;
           } else {
@@ -25298,7 +25439,7 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
     }
 
     function buildInsightList(INSIGHTS_OBJECT){
-      document.getElementById('INSIGHT_DETAILS_WRAPPER').innerHTML = '';
+      document.getElementById('INSIGHT_LIST').innerHTML = '';
       var INSIGHTS_TIME_SORTED = new Array(...INSIGHTS_OBJECT.insights); // make new array to unpointer this
       INSIGHTS_TIME_SORTED.sort(function(a,b){
         return parseFloat(a.time) - parseFloat(b.time);
@@ -25309,7 +25450,7 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
         if(INS_DETAILS == '' || INS_DETAILS == null || INS_DETAILS == undefined){
           PAD_BUFFER = '';
         }
-        document.getElementById('INSIGHT_DETAILS_WRAPPER').innerHTML += 
+        document.getElementById('INSIGHT_LIST').innerHTML += 
           '<div class="insight" onmousedown="setActiveInsight(this)" insight_index="'+INSIGHT.index+'"><div class="insightLightbarPadding" style="background-color:'+window[INSIGHT.colorType]+'"></div><div class="insightLeftSection" style="color:'+window[INSIGHT.colorType]+'"><div class="insightLeftIcon"><i tabindex="-1" class="material-icons" style="font-size:2.5vh;position:relative;top:-0.75vh;line-height:3vh;">'+INSIGHT.icon+'</i></div><span class="insightLeftTime">'+INSIGHT.time+'</span></div><div class="insightBodyWrapper"><div class="insightTitle">'+INSIGHT.insightTitle+'</div><div class="insightDescription">'+INSIGHT.insightDescription+'</div><div class="insightDetails" style="'+PAD_BUFFER+'">'+INS_DETAILS+'</div></div></div>';
       }
     }
@@ -26035,6 +26176,44 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
     function rgbToHex(r, g, b) {
       return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
     }
+
+    function hexToHSL(hex) {
+      var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        r = parseInt(result[1], 16);
+        g = parseInt(result[2], 16);
+        b = parseInt(result[3], 16);
+        r /= 255, g /= 255, b /= 255;
+        var max = Math.max(r, g, b), min = Math.min(r, g, b);
+        var h, s, l = (max + min) / 2;
+        if(max == min){
+          h = s = 0;
+        }else{
+          var d = max - min;
+          s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+          switch(max){
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+          }
+          h /= 6;
+        }
+      var HSL = new Object();
+      HSL['h']=h;
+      HSL['s']=s;
+      HSL['l']=l;
+      return HSL;
+    }
+
+    function HSLToHex(h, s, l) {
+      l /= 100;
+      const a = s * Math.min(l, 1 - l) / 100;
+      const f = n => {
+        const k = (n + h / 30) % 12;
+        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * color).toString(16).padStart(2, '0');
+      };
+      return `#${f(0)}${f(8)}${f(4)}`;
+    } 
 
     function blendColors(hexOne,hexTwo,Amount){ //  Amount is 0 to 1
       try{  //  don't try to fucking... uhhhh.... give me stinky POOP parameters. kay? kay...
@@ -26818,6 +26997,217 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
       } else {
           return false;
       }
+    }
+
+    //  ##############################################################################
+    //  #######################  SMART THEME RANDOMIZER  #############################
+    //  ##############################################################################
+
+    function smartRandomTheme(){
+
+      //  Start with a base color of some value and hue; Must be limited to a mid value + saturation range
+      //    so that lesser and greater value + saturation variants have a baseline to modify off of
+      var BASE_HUE = Math.floor(Math.random() * 360); // random hue rotation
+      var GEN_THEME = new ColorScheme;
+      GEN_THEME.from_hue(BASE_HUE);
+      var GEN_THEME_TEXT = new ColorScheme;
+      GEN_THEME.from_hue(BASE_HUE);
+
+      //  randomize the process through which the palette is generated
+      var SEED1 = Math.round(Math.random() * 5); // second number is the number of possible options
+      switch(SEED1){
+        case 0:
+          GEN_THEME.scheme('monochromatic')
+          GEN_THEME_TEXT.scheme('monochromatic')
+          break;
+        case 1:
+          GEN_THEME.scheme('contrast')
+          GEN_THEME_TEXT.scheme('contrast')
+          break;
+        case 2:
+          GEN_THEME.scheme('triade')
+          GEN_THEME_TEXT.scheme('triade')
+          break;
+        case 3:
+          GEN_THEME.scheme('tetrade')
+          GEN_THEME_TEXT.scheme('tetrade')
+          break;
+        case 4:
+          GEN_THEME.scheme('analogic')
+          GEN_THEME_TEXT.scheme('analogic')
+          break;
+        case 5:
+          GEN_THEME.scheme('analogic')
+          GEN_THEME_TEXT.scheme('analogic')
+          break;
+      }
+
+      //  randomize the variation process
+      var SEED2 = Math.round(Math.random() * 3); // second number is the number of possible options
+      switch(SEED2){
+        case 0:
+          GEN_THEME.variation('default')
+          break;
+        case 1:
+          GEN_THEME.variation('default')
+          break;
+        case 2:
+          GEN_THEME.variation('light')
+          break;
+        case 3:
+          GEN_THEME.variation('hard')
+          break;
+      }
+
+      GEN_THEME_TEXT.variation('pale'); // always generate a pale alternate palette for the compositor
+
+      //  randomize distance for non-mono and non-contrast palettes
+      var distanceFactor = Math.random() / 1.5 + 0.25; // 0.25 to 1
+      GEN_THEME.distance(distanceFactor);
+      GEN_THEME_TEXT.distance(distanceFactor);
+
+      //  set color array from palette's colors
+      var COLORS = GEN_THEME.colors();
+      var PCOLORS = GEN_THEME_TEXT.colors();
+
+      //  organize the sampleable colors into 4 different arrays with various values per tone
+      var CORE_COLORS = [];
+      var DEEPER_COLORS = [];
+      var LIGHTER_COLORS = [];
+      var PASTELIZED_COLORS = [];
+
+      var ALL_PALE_COLORS = [];
+
+      for(var i=0; i<16; i+=4){
+        if(i < COLORS.length){
+          CORE_COLORS.push(COLORS[i]);
+          DEEPER_COLORS.push(COLORS[i+1]);
+          LIGHTER_COLORS.push(COLORS[i+2]);
+          PASTELIZED_COLORS.push(COLORS[i+3]);
+          ALL_PALE_COLORS.push(PCOLORS[i]);
+          ALL_PALE_COLORS.push(PCOLORS[i+1]);
+          ALL_PALE_COLORS.push(PCOLORS[i+2]);
+          ALL_PALE_COLORS.push(PCOLORS[i+3]);
+        } else { // duplicate previous colors if palette doesn't have additional to use
+          CORE_COLORS.push(COLORS[0]);
+          DEEPER_COLORS.push(COLORS[1]);
+          LIGHTER_COLORS.push(COLORS[2]);
+          PASTELIZED_COLORS.push(COLORS[3]);
+          ALL_PALE_COLORS.push(PCOLORS[0]);
+          ALL_PALE_COLORS.push(PCOLORS[1]);
+          ALL_PALE_COLORS.push(PCOLORS[2]);
+          ALL_PALE_COLORS.push(PCOLORS[3]);
+        }
+      }
+
+      //  create the color mapping array
+      var COLORMAP = [];
+
+      console.log(BGCOLOR);
+
+      //  penultimately, randomize the mapping of colors to their respective destinations
+      var SEED4 = Math.round(Math.random() * 10); // second number is the number of possible options
+      switch(0){ // CHANGE TO SEED4 WHEN THIS IS DONE !
+        case 0:
+
+          //    Common dark theme, semi saturated element
+
+          //  BG + Grid color + Mutations
+          var BGCOLOR = hexToHSL(CORE_COLORS[1]);
+          var GRIDCOLOR;
+          var randomLuminosity = Math.floor((Math.random() * 6) + 0.75);
+          var randomSat = Math.min(100, Math.floor(BGCOLOR.s/(Math.random() * 2)) + (Math.random() * 25));
+          GRIDCOLOR = HSLToHex(BGCOLOR.h*360, randomSat, randomLuminosity + (Math.random()*7));
+          BGCOLOR = HSLToHex(BGCOLOR.h*360, randomSat, randomLuminosity)
+
+          //  Color mapping
+          COLORMAP = hashifyHex([BGCOLOR, ALL_PALE_COLORS[1], LIGHTER_COLORS[0], ALL_PALE_COLORS[0], PASTELIZED_COLORS[0], CORE_COLORS[0], DEEPER_COLORS[1], CORE_COLORS[1], LIGHTER_COLORS[0], ALL_PALE_COLORS[1], ALL_PALE_COLORS[1], ALL_PALE_COLORS[1], PASTELIZED_COLORS[0], CORE_COLORS[2], PASTELIZED_COLORS[2], ALL_PALE_COLORS[3], LIGHTER_COLORS[0], DEEPER_COLORS[0], DEEPER_COLORS[2], PASTELIZED_COLORS[0], DEEPER_COLORS[1], PASTELIZED_COLORS[1], DEEPER_COLORS[2], DEEPER_COLORS[2], CORE_COLORS[2], DEEPER_COLORS[2], PASTELIZED_COLORS[3], PASTELIZED_COLORS[1], DEEPER_COLORS[2], GRIDCOLOR, ALL_PALE_COLORS[1]]);
+
+          break;
+        case 1:
+
+          break;
+        case 2:
+
+          break;
+        case 3:
+
+          break;
+        case 4:
+
+          break;
+        case 5:
+
+          break;
+        case 6:
+
+          break;
+        case 7:
+
+          break;
+        case 8:
+
+          break;
+        case 9:
+
+          break;
+        case 10:
+
+          break;
+      }
+
+      //  and finally, create, set, and push the theme to the active theme
+      var RANDOM_THEME = {
+        StyleClass: "SMARTRANDOM",
+        SavedWithVersion: VERSION,
+        ui_bg_fill: COLORMAP[0],
+        ui_inactive: COLORMAP[1],
+        ui_active: COLORMAP[2],
+        ui_subtext: COLORMAP[3],
+        ui_foretext: COLORMAP[4],
+        ui_goodsplit: COLORMAP[5],
+        ui_badsplit: COLORMAP[6],
+        ui_live: COLORMAP[7],
+        ui_current_marker: COLORMAP[8],
+        ui_level2_marker: COLORMAP[9],
+        ui_level3_marker: COLORMAP[10],
+        ui_level4_marker: COLORMAP[11],
+        ui_level3: COLORMAP[12],
+        ui_level4: COLORMAP[13],
+        ui_levi: COLORMAP[14],
+        ui_orb: COLORMAP[15],
+        ui_peak: COLORMAP[16],
+        ui_gems_total: COLORMAP[17],
+        ui_gems_collected: COLORMAP[18],
+        ui_gems_eaten: COLORMAP[19],
+        ui_gems_despawned: COLORMAP[20],
+        ui_enemies_alive: COLORMAP[21],
+        ui_daggers_fired: COLORMAP[22],
+        ui_daggers_hit: COLORMAP[23],
+        ui_homing_used: COLORMAP[24],
+        ui_homing_eaten: COLORMAP[25],
+        ui_accuracy: COLORMAP[26],
+        ui_col_accuracy: COLORMAP[27],
+        ui_kills: COLORMAP[28],
+        ui_gridlines: COLORMAP[29],
+        ui_ticks: COLORMAP[30],
+      };
+      console.log(RANDOM_THEME);
+      setStyle(RANDOM_THEME);
+      buildThemeBrowser();
+      saveSettings();
+    }
+
+    function hashifyHex(HEX_COLOR_ARRAY){
+      var NEW_HEX_COLOR_ARRAY = [];
+      for(var HEX of HEX_COLOR_ARRAY){
+        var SPING = HEX;
+        if(SPING.startsWith('#') == false){
+          SPING = '#' + SPING;
+        }
+        NEW_HEX_COLOR_ARRAY.push(SPING);
+      }
+      return NEW_HEX_COLOR_ARRAY;
     }
 
     //  ##############################################################################
@@ -27748,6 +28138,7 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
             alert('ddstats-rust connected!',undefined,undefined,'link');
             setTimeout(function(){
               splitGrid();
+              socket.send(JSON.stringify({type:"get_saved_games",data:null}));
             },1500);
           } else {
             DDRUST_SESSION_PROCESSED = true;
@@ -27792,6 +28183,17 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
 
         if(DDRUST_SESSION_VERIFIED){  //  all data-oriented actions, which can only be performed when connected...
 
+          if(LOCAL_DAT.type == 'saved_games_ok'){
+            var LOCAL_GAMES_DATA = JSON.parse(LOCAL_DAT.data);
+            //  The list of saved games; Use this to propagate/paginate the average game objects
+            console.log('%c 🡺 ddstats-rust socket %c  ', console_message_blue, console_message_neutral,'SAVED_GAMES_OK: ', LOCAL_GAMES_DATA);
+            DD_LOCAL_NUM_GAMES = LOCAL_GAMES_DATA.recorded_runs;
+            DD_LOCAL_RECENT_GAMES = LOCAL_GAMES_DATA.recent_runs.runs;
+            DD_AVERAGE_GAME = LOCAL_GAMES_DATA.avg;
+            DD_MAX_GAME = LOCAL_GAMES_DATA.max;
+            DD_MIN_GAME = LOCAL_GAMES_DATA.min;
+          }
+
           if(LOCAL_DAT.type == 'fullblock'){
 
             LAST_FULLBLOCK = message.data;
@@ -27826,6 +28228,9 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
               paginateMyGames(PAGINATION_TARGET,true);
             }
             splitGrid();
+            setTimeout(function(){
+              socket.send(JSON.stringify({type:"get_saved_games",data:null})); // update local games
+            },1500);
             /*   DEPRECATED IN FAVOR OF THE DDSTATS LIVE GAMES WEBSOCKET 'game_submitted' FUNCTION
             setTimeout(function(){
               if(AUTO_UPDATE_DDSTATS_GAMES_ON_SUBMIT){
@@ -28067,6 +28472,14 @@ try{
         TIMER_CACHE = RIGHT_OBJECT.block.time;
 
     } else { // use literal from ddstats-rust
+
+        if(RIGHT_OBJECT == undefined){
+          GARBAGE_FLAG = true;
+          throw new Error('garbage data');
+        } else if(RIGHT_OBJECT.block == undefined){
+          GARBAGE_FLAG = true;
+          throw new Error('garbage data');
+        }
 
         selectedTime = (RIGHT_OBJECT.block.starting_time + RIGHT_OBJECT.block.time);
 
@@ -28958,7 +29371,7 @@ try{
 
         POST_COMP_LINE8 = POST_COMP_LINE8.slice(0,23) + centerPad((signer((parseFloat(rightColAcc) - parseFloat(leftColAcc)).toFixed(2)) + '%'),10) + POST_COMP_LINE8.slice(33);
 
-        var lostCompString = signer(((RIGHT_OBJECT.block.gems_despawned + RIGHT_OBJECT.block.gems_eaten) - (DD_LEFT_GAME.block.gems_despawned + DD_LEFT_GAME.block.gems_eaten))) + ' [' + signer((RIGHT_OBJECT.block.gems_despawned - DD_LEFT_GAME.block.gems_despawned)) + ' / ' + signer((DD_LEFT_GAME.block.gems_eaten - RIGHT_OBJECT.block.gems_eaten)) + ']'
+        var lostCompString = signer(((RIGHT_OBJECT.block.gems_despawned + RIGHT_OBJECT.block.gems_eaten) - (DD_LEFT_GAME.block.gems_despawned + DD_LEFT_GAME.block.gems_eaten))) + ' [' + signer((RIGHT_OBJECT.block.gems_despawned - DD_LEFT_GAME.block.gems_despawned)) + ' / ' + signer((RIGHT_OBJECT.block.gems_eaten - DD_LEFT_GAME.block.gems_eaten)) + ']'
 
         POST_COMP_LINE9 = POST_COMP_LINE9.slice(0,20) + centerPad(lostCompString,17).padEnd(20,' ') + POST_COMP_LINE9.slice(40);
 
