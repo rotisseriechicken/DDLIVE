@@ -4868,6 +4868,13 @@ canvas{
 }
 
 
+.searchThemeWrapper{
+  position:relative;
+  border-radius: 100vh 0vh 0vh 100vh;
+  overflow:hidden;
+}
+
+
 
 #THEME_PICKER{
   position: absolute;
@@ -7010,6 +7017,9 @@ paginateDDCL(PAGE_DDCL_MAX);">last_page</i><div id="DDCL_NAVIGATOR_TEXT" class="
                     <div categoryID="4" onclick="goToCategory(this)" onmouseenter="tooltip('search_playerByRank')" onmouseleave="tooltip('close')" class="resultsCategory resultsCategoryUnresolved"><div class="resultsCategoryViableWrapper"><div class="resultsCategoryViableInnerWrapper"><div class="resultsCategoryViable"></div></div><div class="resultsCategoryName">Player by Rank</div></div><div class="resultsCategoryNumberContainer"><div class="resultsCategoryNumber"></div><div class="resultsStatusIconContainer resultsStatusIconContainerFlip"><i class="material-icons categoryIconIgnored">pending</i></div></div></div>
                     <div class="fauxResultsCategory"></div>
 
+                    <div categoryID="5" onclick="goToCategory(this)" onmouseenter="tooltip('search_themesByName')" onmouseleave="tooltip('close')" class="resultsCategory resultsCategoryUnresolved"><div class="resultsCategoryViableWrapper"><div class="resultsCategoryViableInnerWrapper"><div class="resultsCategoryViable"></div></div><div class="resultsCategoryName">Themes by Name</div></div><div class="resultsCategoryNumberContainer"><div class="resultsCategoryNumber"></div><div class="resultsStatusIconContainer resultsStatusIconContainerFlip"><i class="material-icons categoryIconIgnored">pending</i></div></div></div>
+                    <div class="fauxResultsCategory"></div>
+
                     
 
                   </div>
@@ -8920,7 +8930,10 @@ void main(void)
     var OBS_TRANSPARENT_BACKGROUND = true; // if false, will not set background to transparent on setStyle
 
     var EVER_INPUT_INTO_SEARCH = false; // used as a flag to extend the category viewer
+    var SEARCHED_THIS_SESSION = false; // flag to determine if a search was ever actually committed
+    var THEME_SEARCH_CURRENTLY_FRUITFUL = false; // if true, find currently shows theme results
     var CURRENT_SEARCH_TOKEN; // used to guarantee that async results relate to the correct search
+    var LAST_SEARCH_QUERY; // used to repeat a search, ie on theme significant delta (deletion, addition)
     var COMPLETED_SEARCH_ENDPOINTS = 0; // used to decide what item in the list is going to be reordered
     var CURRENT_SEARCH_ORDER = []; // used to reorder search category elements; generated ascending list
 
@@ -12917,6 +12930,10 @@ var language = {
                                 ['Player by Rank', // Title
                                 'Show a given Player, as found by their rank.'], // Description
 
+            search_themesByName:
+                                ['Themes by Name', // Title
+                                'Show DDLIVE Color Themes, as found by their name.'], // Description
+
             returnToLeaderboard:   
                                 ['Return to Leaderboard', // Title
                                 'Return to the ranked list of all players.'], // Description
@@ -14206,6 +14223,12 @@ var language = {
       }
     }
 
+    function conditionalUpdateThemeFind(){
+      if(THEME_SEARCH_CURRENTLY_FRUITFUL){
+        SEARCH_themesByName(LAST_SEARCH_QUERY, CURRENT_SEARCH_TOKEN, true);
+      }
+    }
+
     //  ONLINE TOGGLERS
 
     function conditionalOnlineThemeTooltip(){
@@ -14436,6 +14459,8 @@ var language = {
             // appendThemeDuplicateSuffix(THEMES[i]);
           }
 
+          conditionalUpdateThemeFind();
+
           //  set equivalencies and finish
           equivalentThemes(true);
           if(ONLINE_THEMES_EVER_BUILT == false){
@@ -14467,6 +14492,7 @@ var language = {
           appendThemeDuplicateSuffix(THEMES[i]);
         }
         PICKER_EL.scrollTop = PREV_SCROLL; // restore scroll
+        conditionalUpdateThemeFind();
         equivalentThemes(true); // check for thematic equivalency
         if(POSITION_SELECTED == true){
           try{ document.querySelector(".THEME_SELECTED").parentElement.parentElement.scrollTop = document.querySelector(".THEME_SELECTED").parentElement.offsetTop; }catch(p){};
@@ -14478,12 +14504,17 @@ var language = {
       }
     }
 
-    function createThemeBrowserObject(THEME,INDEX){
+    function createThemeBrowserObject(THEME,INDEX,forSearch){
       // console.log(THEME);
 
       //  UPLOADABLE CONTAINER
       var selectedRight = '7.75vh';
-      var UPLOAD_BUTTON = '<div themeuploadbutton class="themeButton" onMouseDown="uploadTheme(' + INDEX + ')" onmouseenter="tooltip(\'uploadTheme\')" onmouseleave="tooltip(\'close\')" onMouseOver="this.style.color = \'' + THEME.ui_active + '\';" onMouseOut="this.style.color = \'' + THEME.ui_foretext + '\';" style="font-size:1.6vh;z-index:100;right:5.35vh;padding-top:0vh;color:' + THEME.ui_foretext + '"><i class="material-icons" style="position:relative;">cloud_upload</i></div>';
+      var rightOffset = '0vh';
+      if(forSearch != undefined){
+        rightOffset = '0.5vh';
+      }
+
+      var UPLOAD_BUTTON = '<div themeuploadbutton class="themeButton" onMouseDown="uploadTheme(' + INDEX + ')" onmouseenter="tooltip(\'uploadTheme\')" onmouseleave="tooltip(\'close\')" onMouseOver="this.style.color = \'' + THEME.ui_active + '\';" onMouseOut="this.style.color = \'' + THEME.ui_foretext + '\';" style="font-size:1.6vh;z-index:100;right:calc(5.35vh  - ' + rightOffset + ');padding-top:0vh;color:' + THEME.ui_foretext + '"><i class="material-icons" style="position:relative;">cloud_upload</i></div>';
 
       var UPLOADABLE_CONDITION = true;
       var NO_UPLOAD_REASON = 'cannotUploadTheme';
@@ -14536,19 +14567,19 @@ var language = {
       }
 
       if(UPLOADABLE_CONDITION == false && THEME_EXISTS == false){
-        UPLOAD_BUTTON = '<div themeuploadbutton class="themeButton" onmouseenter="tooltip(\''+NO_UPLOAD_REASON+'\')" onmouseleave="tooltip(\'close\')" style="font-size:1.6vh;z-index:100;right:5.35vh;padding-top:0vh;color:' + THEME.ui_inactive + '"><i class="material-icons" style="position:relative;">cloud_off</i></div>';
+        UPLOAD_BUTTON = '<div themeuploadbutton class="themeButton" onmouseenter="tooltip(\''+NO_UPLOAD_REASON+'\')" onmouseleave="tooltip(\'close\')" style="font-size:1.6vh;z-index:100;right:calc(5.35vh - ' + rightOffset + ');padding-top:0vh;color:' + THEME.ui_inactive + '"><i class="material-icons" style="position:relative;">cloud_off</i></div>';
         // selectedRight = '5.25vh';
       } else if(UPLOADABLE_CONDITION == false && THEME_EXISTS == true){
         UPLOAD_BUTTON = '';
-        selectedRight = '5.25vh';
+        selectedRight = 'calc(5.25vh - ' + rightOffset + ')';
       }
 
-      var customStyleModifierMaterial = '<div class="themeButton" onMouseDown="copyThemeToClipboard(THEMES[' + INDEX + '])" onmouseenter="tooltip(\'copyThemeInlineButton\')" onmouseleave="tooltip(\'close\')" onMouseOver="this.style.color = \'' + THEME.ui_active + '\';" onMouseOut="this.style.color = \'' + THEME.ui_foretext + '\';" style="z-index:100;right:3.0vh;color:' + THEME.ui_foretext + '"><i class="material-icons">content_paste</i></div><div onMouseDown="openDeleteThemePrompt(THEMES[' + INDEX + '].StyleName,' + INDEX + ')" onmouseenter="tooltip(\'deleteThemeInlineButton\')" onmouseleave="tooltip(\'close\')" onMouseOver="this.style.color = \'' + THEME.ui_active + '\';" onMouseOut="this.style.color = \'' + THEME.ui_foretext + '\';" class="themeButton" style="z-index:10;margin-right:0.5vh;color:' + THEME.ui_foretext + '"><i class="material-icons">close</i></div>';
+      var customStyleModifierMaterial = '<div class="themeButton" onMouseDown="copyThemeToClipboard(THEMES[' + INDEX + '])" onmouseenter="tooltip(\'copyThemeInlineButton\')" onmouseleave="tooltip(\'close\')" onMouseOver="this.style.color = \'' + THEME.ui_active + '\';" onMouseOut="this.style.color = \'' + THEME.ui_foretext + '\';" style="z-index:100;right:calc(3.0vh - ' + rightOffset + ');color:' + THEME.ui_foretext + '"><i class="material-icons">content_paste</i></div><div onMouseDown="openDeleteThemePrompt(THEMES[' + INDEX + '].StyleName,' + INDEX + ')" onmouseenter="tooltip(\'deleteThemeInlineButton\')" onmouseleave="tooltip(\'close\')" onMouseOver="this.style.color = \'' + THEME.ui_active + '\';" onMouseOut="this.style.color = \'' + THEME.ui_foretext + '\';" class="themeButton" style="z-index:10;margin-right:calc(0.5vh - ' + rightOffset + ');color:' + THEME.ui_foretext + '"><i class="material-icons" style="left:0.25vh;position:relative;">close</i></div>';
       var buttonBuffer = '';
       var stauthor = '';
       if(THEME.StyleClass == 'DEFAULTS'){
         customStyleModifierMaterial = '';
-        selectedRight = '1vh';
+        selectedRight = 'calc(1vh - ' + rightOffset + ')';
         buttonBuffer = 'width:calc(100%)';
         UPLOAD_BUTTON = '';
       }
@@ -14562,14 +14593,30 @@ var language = {
       if(THEME.StyleAuthorID != undefined){
         stauthorid = THEME.StyleAuthorID;
       }
-      return '<div themeIndex="' + INDEX + '" theme="' + cleanString(deEmojify(THEME.StyleName)) + '" themeIDName="'+ cleanZWSString(THEME.StyleName) +'" class="theme" style="background:' + THEME.ui_bg_fill + ';border:1px solid ' + THEME.ui_bg_fill + '" onmouseenter="tooltip(\'themeObject\')" onmouseleave="tooltip(\'close\')"><div class="themeClickBackground" style="' + buttonBuffer + '" onmousedown="requestSetTheme(this.parentElement.attributes.themeindex.nodeValue,this.parentElement);" onMouseOver="this.parentElement.querySelector(\'.themeTitle\').style.color = \'' + THEME.ui_active + '\';this.parentElement.querySelector(\'.themeDescription\').style.color = \'' + THEME.ui_active + '\';" onMouseOut="this.parentElement.querySelector(\'.themeTitle\').style.color = \'' + THEME.ui_foretext + '\';this.parentElement.querySelector(\'.themeDescription\').style.color = \'' + THEME.ui_subtext + '\';"></div><div class="themeSphereContainer"><div class="themeSphere" style="background:linear-gradient(to right, ' + THEME.ui_goodsplit + ' 50%, ' + THEME.ui_badsplit + ' 50%)"><div class="themeInnerSphere" style="background:' + THEME.ui_inactive + '"><div class="themeInnerestSphere" style="background:' + THEME.ui_active + '"></div></div></div></div><a style="color:' + THEME.ui_foretext + '"><span class="themeTitle">' + cleanString(deEmojify(THEME.StyleName)) + '</span><br><span class="themeDescription" style="white-space:pre;color:' + THEME.ui_subtext + '"><span styleAuthorID="' + stauthorid + '">' + cleanString(deEmojify(stauthor)) + '</span>' + cleanString(deEmojify(THEME.StyleDescription)) + '</span></a>' + customStyleModifierMaterial + UPLOAD_BUTTON + '<div selectionindicator class="THEME_SELECTED themeButton" style="display:none;font-size:1.6vh;z-index:0;right:' + selectedRight + ';padding-top:0vh;color:' + THEME.ui_foretext + '"><i class="material-icons" style="position:relative;">check_circle</i></div></div>';
+
+      var SEARCHWRAP = '';
+      var SEARCHWRAP_POST = '';
+      if(forSearch == true){
+        SEARCHWRAP = '<div class="searchThemeWrapper">';
+        SEARCHWRAP_POST = '</div>';
+      }
+
+      return SEARCHWRAP + '<div themeIndex="' + INDEX + '" theme="' + cleanString(deEmojify(THEME.StyleName)) + '" themeIDName="'+ cleanZWSString(THEME.StyleName) +'" class="theme" style="background:' + THEME.ui_bg_fill + ';border:1px solid ' + THEME.ui_bg_fill + '" onmouseenter="tooltip(\'themeObject\')" onmouseleave="tooltip(\'close\')"><div class="themeClickBackground" style="' + buttonBuffer + '" onmousedown="requestSetTheme(this.parentElement.attributes.themeindex.nodeValue,this.parentElement);" onMouseOver="this.parentElement.querySelector(\'.themeTitle\').style.color = \'' + THEME.ui_active + '\';this.parentElement.querySelector(\'.themeDescription\').style.color = \'' + THEME.ui_active + '\';" onMouseOut="this.parentElement.querySelector(\'.themeTitle\').style.color = \'' + THEME.ui_foretext + '\';this.parentElement.querySelector(\'.themeDescription\').style.color = \'' + THEME.ui_subtext + '\';"></div><div class="themeSphereContainer"><div class="themeSphere" style="background:linear-gradient(to right, ' + THEME.ui_goodsplit + ' 50%, ' + THEME.ui_badsplit + ' 50%)"><div class="themeInnerSphere" style="background:' + THEME.ui_inactive + '"><div class="themeInnerestSphere" style="background:' + THEME.ui_active + '"></div></div></div></div><a style="color:' + THEME.ui_foretext + '"><span class="themeTitle">' + cleanString(deEmojify(THEME.StyleName)) + '</span><br><span class="themeDescription" style="white-space:pre;color:' + THEME.ui_subtext + '"><span styleAuthorID="' + stauthorid + '">' + cleanString(deEmojify(stauthor)) + '</span>' + cleanString(deEmojify(THEME.StyleDescription)) + '</span></a>' + customStyleModifierMaterial + UPLOAD_BUTTON + '<div selectionindicator class="THEME_SELECTED themeButton" style="display:none;font-size:1.6vh;z-index:0;right:' + selectedRight + ';padding-top:0vh;color:' + THEME.ui_foretext + '"><i class="material-icons" style="position:relative;">check_circle</i></div></div>' + SEARCHWRAP_POST;
     }
 
-    function createOnlineThemeBrowserObject(THEME,INDEX){
+    function createOnlineThemeBrowserObject(THEME,GIVEN_INDEX,forSearch){
       // console.log(THEME);
 
       //  VOTE INFORMATION CONTAINER
-      var THIS_THEME = LAST_ONLINE_THEMES[INDEX];
+      var INDEX = GIVEN_INDEX;
+      var THIS_THEME;
+      var rightOffset = '0vh';
+        if(forSearch == true){
+          rightOffset = '0.5vh';
+          THIS_THEME = LAST_ONLINE_THEMES[THEME.online]; // rebuild from mass index
+        } else {
+          THIS_THEME = LAST_ONLINE_THEMES[INDEX];
+        }
       var TH_VOTE = parseInt(THIS_THEME.vote_status);
 
       var UP_CLASS = THEME.ui_active;
@@ -14590,12 +14637,12 @@ var language = {
       //  upvote button: this.parentElement.nextElementSibling.firstChild
       //  downvote button: this.parentElement.nextElementSibling.lastChild
 
-      var VINV_BUTTON_CONTAINER = '<div class="onlineThemeVoteButtonContainer" style="position:absolute;right:0;height:4vh;width:3.5vh;z-index:100;">' + 
+      var VINV_BUTTON_CONTAINER = '<div class="onlineThemeVoteButtonContainer" style="position:absolute;right:calc(0vh - ' + rightOffset + ');height:4vh;width:3.5vh;z-index:100;">' + 
 
       '<div class="onlineThemeVoteButtonCover" upvoteButtonPressable onMouseDown="voteTheme(' + INDEX + ',\'u\',this.parentElement.nextElementSibling.firstChild)" onmouseenter="tooltip(\'upvoteOnlineTheme\')" onmouseleave="tooltip(\'close\')" onMouseOver="this.parentElement.nextElementSibling.firstChild.style.borderBottom = \'0.69vh solid ' + THEME.ui_active + '\';" onMouseOut="this.parentElement.nextElementSibling.firstChild.style.borderBottom = \'0.69vh solid ' + UP_CLASS + '\';"></div>' + 
       '<div class="onlineThemeVoteButtonCover" downvoteButtonPressable onMouseDown="voteTheme('+ INDEX + ',\'d\',this.parentElement.nextElementSibling.lastChild)" onmouseenter="tooltip(\'downvoteOnlineTheme\')" onmouseleave="tooltip(\'close\')" onMouseOver="this.parentElement.nextElementSibling.lastChild.style.borderTop = \'0.69vh solid ' + THEME.ui_active + '\';" onMouseOut="this.parentElement.nextElementSibling.lastChild.style.borderTop = \'0.69vh solid ' + DOWN_CLASS + '\';"></div>' + '</div>';
 
-      var VINV_CONT = VINV_BUTTON_CONTAINER + '<div class="onlineThemeVoteContainer">' + 
+      var VINV_CONT = VINV_BUTTON_CONTAINER + '<div class="onlineThemeVoteContainer" style="right:calc(0.75vh - ' + rightOffset + ')">' + 
 
         '<div upvoteButton class="onlineThemeVoteArrow" style="margin-bottom:0vh; z-index:10; padding-right:0vh; border-bottom:0.69vh solid '+UP_CLASS+'">' + '<div class="onlineThemeVoteArrowInner" style="top:0.225vh;margin-bottom:0vh; z-index:10; padding-right:0vh; border-bottom:0.69vh solid '+UP_CLASS_INNER+'"></div>' + '</div>' + 
 
@@ -14605,13 +14652,13 @@ var language = {
 
         '</div>';
 
-      var customStyleModifierMaterial = '<div class="themeButton" onMouseDown="copyThemeToClipboard(LAST_ONLINE_THEMES[' + INDEX + '].Theme)" onmouseenter="tooltip(\'copyThemeInlineButton\')" onmouseleave="tooltip(\'close\')" onMouseOver="this.style.color = \'' + THEME.ui_active + '\';" onMouseOut="this.style.color = \'' + THEME.ui_foretext + '\';" style="z-index:100;right:3.0vh;color:' + THEME.ui_foretext + '"><i class="material-icons">content_paste</i></div>' + VINV_CONT;
-      var selectedRight = '5.25vh';
+      var customStyleModifierMaterial = '<div class="themeButton" onMouseDown="copyThemeToClipboard(LAST_ONLINE_THEMES[' + INDEX + '].Theme)" onmouseenter="tooltip(\'copyThemeInlineButton\')" onmouseleave="tooltip(\'close\')" onMouseOver="this.style.color = \'' + THEME.ui_active + '\';" onMouseOut="this.style.color = \'' + THEME.ui_foretext + '\';" style="z-index:100;right:calc(3.0vh - ' + rightOffset + ');color:' + THEME.ui_foretext + '"><i class="material-icons">content_paste</i></div>' + VINV_CONT;
+      var selectedRight = 'calc(5.25vh - ' + rightOffset + ')';
       var buttonBuffer = '';
       var stauthor = '';
       if(THEME.StyleClass == 'DEFAULTS'){
         customStyleModifierMaterial = '';
-        selectedRight = '1vh';
+        selectedRight = 'calc(1vh - ' + rightOffset + ')';
         buttonBuffer = 'width:calc(100%)';
       }
       if(THEME.StyleAuthor != undefined){
@@ -14624,14 +14671,30 @@ var language = {
       if(THEME.StyleAuthorID != undefined){
         stauthorid = THEME.StyleAuthorID;
       }
-      return '<div themeIndex="' + INDEX + '" theme="' + cleanString(deEmojify(THEME.StyleName)) + '" themeIDName="'+ cleanZWSString(THEME.StyleName) +'" class="theme" style="background:' + THEME.ui_bg_fill + ';border:1px solid ' + THEME.ui_bg_fill + '" onmouseenter="tooltip(\'themeObject\')" onmouseleave="tooltip(\'close\')"><div class="themeClickBackground" style="' + buttonBuffer + '" onmousedown="requestSetTheme(this.parentElement.attributes.themeindex.nodeValue,this.parentElement,true);" onMouseOver="this.parentElement.querySelector(\'.themeTitle\').style.color = \'' + THEME.ui_active + '\';this.parentElement.querySelector(\'.themeDescription\').style.color = \'' + THEME.ui_active + '\';" onMouseOut="this.parentElement.querySelector(\'.themeTitle\').style.color = \'' + THEME.ui_foretext + '\';this.parentElement.querySelector(\'.themeDescription\').style.color = \'' + THEME.ui_subtext + '\';"></div><div class="themeSphereContainer"><div class="themeSphere" style="background:linear-gradient(to right, ' + THEME.ui_goodsplit + ' 50%, ' + THEME.ui_badsplit + ' 50%)"><div class="themeInnerSphere" style="background:' + THEME.ui_inactive + '"><div class="themeInnerestSphere" style="background:' + THEME.ui_active + '"></div></div></div></div><a style="color:' + THEME.ui_foretext + '"><span class="themeTitle">' + cleanString(deEmojify(THEME.StyleName)) + '</span><br><span class="themeDescription" style="white-space:pre;color:' + THEME.ui_subtext + '"><span styleAuthorID="' + stauthorid + '">' + cleanString(deEmojify(stauthor)) + '</span>' + cleanString(deEmojify(THEME.StyleDescription)) + '</span></a>' + customStyleModifierMaterial + '<div selectionindicator class="THEME_SELECTED themeButton" style="display:none;font-size:1.6vh;z-index:0;right:' + selectedRight + ';padding-top:0vh;color:' + THEME.ui_foretext + '"><i class="material-icons" style="position:relative;">check_circle</i></div></div>';
+
+      var SEARCHWRAP = '';
+      var SEARCHWRAP_POST = '';
+      if(forSearch == true){
+        SEARCHWRAP = '<div class="searchThemeWrapper">';
+        SEARCHWRAP_POST = '</div>';
+      }
+
+      return SEARCHWRAP + '<div themeIndex="' + INDEX + '" theme="' + cleanString(deEmojify(THEME.StyleName)) + '" themeIDName="'+ cleanZWSString(THEME.StyleName) +'" class="theme" style="background:' + THEME.ui_bg_fill + ';border:1px solid ' + THEME.ui_bg_fill + '" onmouseenter="tooltip(\'themeObject\')" onmouseleave="tooltip(\'close\')"><div class="themeClickBackground" style="' + buttonBuffer + '" onmousedown="requestSetTheme(this.parentElement.attributes.themeindex.nodeValue,this.parentElement,true);" onMouseOver="this.parentElement.querySelector(\'.themeTitle\').style.color = \'' + THEME.ui_active + '\';this.parentElement.querySelector(\'.themeDescription\').style.color = \'' + THEME.ui_active + '\';" onMouseOut="this.parentElement.querySelector(\'.themeTitle\').style.color = \'' + THEME.ui_foretext + '\';this.parentElement.querySelector(\'.themeDescription\').style.color = \'' + THEME.ui_subtext + '\';"></div><div class="themeSphereContainer"><div class="themeSphere" style="background:linear-gradient(to right, ' + THEME.ui_goodsplit + ' 50%, ' + THEME.ui_badsplit + ' 50%)"><div class="themeInnerSphere" style="background:' + THEME.ui_inactive + '"><div class="themeInnerestSphere" style="background:' + THEME.ui_active + '"></div></div></div></div><a style="color:' + THEME.ui_foretext + '"><span class="themeTitle">' + cleanString(deEmojify(THEME.StyleName)) + '</span><br><span class="themeDescription" style="white-space:pre;color:' + THEME.ui_subtext + '"><span styleAuthorID="' + stauthorid + '">' + cleanString(deEmojify(stauthor)) + '</span>' + cleanString(deEmojify(THEME.StyleDescription)) + '</span></a>' + customStyleModifierMaterial + '<div selectionindicator class="THEME_SELECTED themeButton" style="display:none;font-size:1.6vh;z-index:0;right:' + selectedRight + ';padding-top:0vh;color:' + THEME.ui_foretext + '"><i class="material-icons" style="position:relative;">check_circle</i></div></div>' + SEARCHWRAP_POST;
     }
 
-    function appendThemeDuplicateSuffix(THEME_DATA){
-      var AMT_OF_THEME = document.querySelectorAll('#THEME_PICKER [themeIDName="' + cleanZWSString(THEME_DATA.StyleName) + '"]').length;
-      if(AMT_OF_THEME > 1){
-        var titleToAppend = document.querySelectorAll('#THEME_PICKER [themeIDName="' + cleanZWSString(THEME_DATA.StyleName) + '"]')[0].querySelector('.themeTitle');
-        titleToAppend.innerHTML = titleToAppend.innerHTML + '<span class="themeDupeAppend"> (' + AMT_OF_THEME + ')</span>'
+    function appendThemeDuplicateSuffix(THEME_DATA, forSearch){
+      if(forSearch == true){ // For search; Append duplicate theme names for all items in search
+        var AMT_OF_THEME = document.querySelectorAll('#RESULTS_themesByName [themeIDName="' + cleanZWSString(THEME_DATA.StyleName) + '"]').length;
+        if(AMT_OF_THEME > 1){
+          var titleToAppend = document.querySelectorAll('#RESULTS_themesByName [themeIDName="' + cleanZWSString(THEME_DATA.StyleName) + '"]')[0].querySelector('.themeTitle');
+          titleToAppend.innerHTML = titleToAppend.innerHTML + '<span class="themeDupeAppend"> (' + AMT_OF_THEME + ')</span>'
+        }
+      } else { // Not for search; Normal appending for theme picker
+        var AMT_OF_THEME = document.querySelectorAll('#THEME_PICKER [themeIDName="' + cleanZWSString(THEME_DATA.StyleName) + '"]').length;
+        if(AMT_OF_THEME > 1){
+          var titleToAppend = document.querySelectorAll('#THEME_PICKER [themeIDName="' + cleanZWSString(THEME_DATA.StyleName) + '"]')[0].querySelector('.themeTitle');
+          titleToAppend.innerHTML = titleToAppend.innerHTML + '<span class="themeDupeAppend"> (' + AMT_OF_THEME + ')</span>'
+        }
       }
     }
 
@@ -14678,7 +14741,7 @@ var language = {
       }
     }
 
-    function equivalentThemes(shouldSet,GIVEN){
+    function equivalentThemes(shouldSet,GIVEN,forSearch){
       var returnedResults = [];
       var returnedNames = [];
       var returnedResultsOnline = [];
@@ -14745,12 +14808,29 @@ var language = {
               BLEL2.classList.add('THEME_SELECTED');
             }
           }
+
+          var FORSEARCH_BLEL_PRE = document.getElementById('RESULTS_themesByName');
+          if(FORSEARCH_BLEL_PRE != null && FORSEARCH_BLEL_PRE != undefined){ // this is a bandaid. fix it.
+            if(FORSEARCH_BLEL_PRE.querySelector('[themeindex="' + p + '"]') != null){ // now it's a waterproof bandaid
+              var BLEL2 = FORSEARCH_BLEL_PRE.querySelector('[themeindex="' + p + '"]').querySelector('[selectionindicator]');
+              BLEL2.style.display = 'flex';
+              BLEL2.classList.remove('THEME_NOT_SELECTED');
+              BLEL2.classList.add('THEME_SELECTED');
+            }
+          }
+
         }
         for(var g of returnedResultsOnline){
           var BLEL_ONLINE = document.getElementById('ONLINE_THEME_PICKER').querySelector('[themeindex="' + g + '"]').querySelector('[selectionindicator]');
           BLEL_ONLINE.style.display = 'flex';
           BLEL_ONLINE.classList.remove('THEME_NOT_SELECTED');
           BLEL_ONLINE.classList.add('THEME_SELECTED');
+          try{
+            var FORSEARCH_BLEL_ONLINE = document.getElementById('RESULTS_themesByName').querySelector('[themeindex="' + g + '"]').querySelector('[selectionindicator]');
+            FORSEARCH_BLEL_ONLINE.style.display = 'flex';
+            FORSEARCH_BLEL_ONLINE.classList.remove('THEME_NOT_SELECTED');
+            FORSEARCH_BLEL_ONLINE.classList.add('THEME_SELECTED');
+          }catch(e){ /* throw */ };
         }
         return null;
       } else {
@@ -19629,6 +19709,7 @@ var language = {
 
       if(SEARCH_REQUIREMENTS_MET == true){ // only initiate the search if requirements are met
         CURRENT_SEARCH_TOKEN = TOKEN;
+        LAST_SEARCH_QUERY = QUERY;
         COMPLETED_SEARCH_ENDPOINTS = 0;
 
         //  clean results
@@ -19653,12 +19734,15 @@ var language = {
       //    Any activated search endpoint yielding a response will cease the predominant 
       //    loading graphics, and build its results - both inline and in the category viewer.
 
+      SEARCHED_THIS_SESSION = true; // flag search as having been done at least once
+
       //  ALWAYS TRIGGER:
       SEARCH_playersByName(QUERY, TOKEN);
       SEARCH_playersByVerifiedName(QUERY, TOKEN);
       SEARCH_spawnsetsByName(QUERY, TOKEN);
       SEARCH_playerByID(QUERY, TOKEN);
       SEARCH_playerByRank(QUERY, TOKEN);
+      SEARCH_themesByName(QUERY, TOKEN);
 
     }
 
@@ -19696,7 +19780,7 @@ var language = {
       }
     }
 
-    function updateSearchCategory(ELEMENT, NUM_RESULTS, STATE){
+    function updateSearchCategory(ELEMENT, NUM_RESULTS, STATE, UPDATE_ONLY){
       /*
       var CAT_WRAP = document.getElementById('FIND_RESULTS_CATEGORY_WRAPPER');
       CAT_WRAP.innerHTML += '<div class="resultsCategory">' + NAME + '<div class="resultsCategoryNumberContainer">'+NUM_RESULTS+'</div></div>';
@@ -19708,11 +19792,13 @@ var language = {
 
           //  successful search; results found
 
-          var CAT_ID_INT = parseInt(UPDATE_CATEGORY_ID);
-          var thisElement = CURRENT_SEARCH_ORDER.splice(CURRENT_SEARCH_ORDER.indexOf(CAT_ID_INT), 1)[0];
-          CURRENT_SEARCH_ORDER.splice(COMPLETED_SEARCH_ENDPOINTS, CURRENT_SEARCH_ORDER.indexOf(CAT_ID_INT), thisElement);
+          if(UPDATE_ONLY == undefined){ // if only updating, do not treat the category as a new result
+            var CAT_ID_INT = parseInt(UPDATE_CATEGORY_ID);
+            var thisElement = CURRENT_SEARCH_ORDER.splice(CURRENT_SEARCH_ORDER.indexOf(CAT_ID_INT), 1)[0];
+            CURRENT_SEARCH_ORDER.splice(COMPLETED_SEARCH_ENDPOINTS, CURRENT_SEARCH_ORDER.indexOf(CAT_ID_INT), thisElement);
 
-          COMPLETED_SEARCH_ENDPOINTS++;
+            COMPLETED_SEARCH_ENDPOINTS++;
+          }
 
           var CAT_ICO = CATEGORY.querySelector('.resultsStatusIconContainer');
           CATEGORY.classList.remove('resultsCategoryUnresolved');
@@ -19765,6 +19851,7 @@ var language = {
 
         setCategoryViability(1, true);
         setCategoryViability(2, true);
+        setCategoryViability(5, true);
 
         if(isNumber(QUERY) && QUERY.length < 32){  //  this query is a number under 32 characters long
           setCategoryViability(3, true);
@@ -20050,6 +20137,93 @@ var language = {
       } else { // query is not long enough to initiate this search; ignore it
         ignoreSearchCategory(Category_ID);
       }
+    }
+
+
+
+    async function SEARCH_themesByName(QUERY, TOKEN, SHOULD_REFRESH){
+      var Category_ID = 5;
+      var Category_NAME = 'RESULTS_themesByName';
+
+      THEME_SEARCH_CURRENTLY_FRUITFUL = false;
+
+        var data = JSON.parse(JSON.stringify(THEMES)); // shallow clone
+        for(var i=0; i<data.length; i++){ // dictate indecies to the builders by baking into the clone
+          data[i].dictatedIndex = i;
+        }
+
+        if(LAST_ONLINE_THEMES != undefined){ // if online themes are present, join them to this list
+          if(LAST_ONLINE_THEMES.length > 0){
+            var ONL_THEMES_PARSED = [];
+            var CL_ONL_THEMES = JSON.parse(JSON.stringify(LAST_ONLINE_THEMES)); // shallow clone
+            for(var i=0; i<CL_ONL_THEMES.length; i++){
+              //  All themes must be checksummed and tagged as their respective types accordingly;
+              //   Transfer the online checksum and "online" flag, to inherit their real values
+              CL_ONL_THEMES[i].Theme.checksum = CL_ONL_THEMES[i].checksum;
+              CL_ONL_THEMES[i].Theme.online = i; // any value other than "undefined" is true
+              ONL_THEMES_PARSED.push(CL_ONL_THEMES[i].Theme);
+            }
+            data = data.concat(ONL_THEMES_PARSED);
+            console.log(ONL_THEMES_PARSED);
+          }
+        }
+
+        //  create the data in the FIND_RESULTS_CONTENT_BOX for its relevant category here;
+        //    but ONLY if the TOKEN matches the CURRENT_SEARCH_TOKEN
+        if(TOKEN == CURRENT_SEARCH_TOKEN || SHOULD_REFRESH){
+          if(data != 'ERR'){
+
+            if(SHOULD_REFRESH == undefined){
+              document.getElementById('FIND_RESULTS_CONTENT_BOX').innerHTML += '<div categoryID="'+Category_ID+'" id="'+Category_NAME+'" class="resultsWrapper" style="border-radius:0vh 1.25vh 1.25vh 0vh;overflow:hidden;"></div>'
+            } else {
+              document.getElementById(Category_NAME).innerHTML = '';
+            }
+
+            var TH_WRAPPER = document.getElementById(Category_NAME);
+            var RESULTS = 0;
+
+            if(data != undefined && data != null != data.length != 0){
+
+                var INCLUDED_THEMES = [];
+                for(var THEME of data){
+                  if(THEME.StyleName.toLowerCase().includes(QUERY.toLowerCase())){
+                    INCLUDED_THEMES.push([THEME, levenshtein(QUERY, THEME.StyleName)]);
+                  }
+                }
+
+                //  sort remaining by levenshtein distance, descending
+                INCLUDED_THEMES.sort(function(a,b){
+                  return a[1] - b[1];
+
+                });
+                //  Themes are addressed as THEME[i][0] as [i][1] references the levenshtein distance
+
+                for(var i=0; i<INCLUDED_THEMES.length; i++){ //  propagate
+                  if(INCLUDED_THEMES[i][0].online != undefined){ // online theme
+                    TH_WRAPPER.innerHTML = createOnlineThemeBrowserObject(INCLUDED_THEMES[i][0],INCLUDED_THEMES[i][0].online,true) + TH_WRAPPER.innerHTML;
+                  } else { // offline theme
+                    TH_WRAPPER.innerHTML = createThemeBrowserObject(INCLUDED_THEMES[i][0],INCLUDED_THEMES[i][0].dictatedIndex,true) + TH_WRAPPER.innerHTML;
+                  }
+                  appendThemeDuplicateSuffix(INCLUDED_THEMES[i][0], true);
+                  RESULTS++;
+                }
+                
+            }
+            if(SHOULD_REFRESH){
+              updateSearchCategory(TH_WRAPPER, RESULTS, 'OK', true);
+              //  equivalency check is done by buildThemeBrowser, which wraps this function correctly,
+              //    when an external category update for theme find should be called
+            } else {
+              equivalentThemes(true,undefined,true); // check for thematic equivalency
+              updateSearchCategory(TH_WRAPPER, RESULTS, 'OK');
+            }
+            THEME_SEARCH_CURRENTLY_FRUITFUL = true;
+          } else {
+            errorSearchCategory(Category_ID);
+          }
+        } else {
+          //  do nothing, because the token is not equivalent and has therefore expired
+        }
     }
 
     //  ##############################################################################
