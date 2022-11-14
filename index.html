@@ -20164,7 +20164,6 @@ var language = {
               ONL_THEMES_PARSED.push(CL_ONL_THEMES[i].Theme);
             }
             data = data.concat(ONL_THEMES_PARSED);
-            console.log(ONL_THEMES_PARSED);
           }
         }
 
@@ -26397,6 +26396,13 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
       return `#${f(0)}${f(8)}${f(4)}`;
     } 
 
+    function hueRotate(hex, degree){
+      var COL = hexToHSL(hex);
+      COL.h = ((COL.h*360 + degree) % 360);
+      var NCOL = HSLToHex(COL.h, COL.s*100, COL.l*100);
+      return NCOL;
+    }
+
     function blendColors(hexOne,hexTwo,Amount){ //  Amount is 0 to 1
       try{  //  don't try to fucking... uhhhh.... give me stinky POOP parameters. kay? kay...
         var COLOR_1 = hexOne;
@@ -27186,6 +27192,61 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
     //  ##############################################################################
 
     function smartRandomTheme(){
+
+      var RAND_IND = Math.floor(Math.random() * THEMES.length);
+      var RAND_HUE = Math.max(Math.floor(Math.random() * 360), 30); // 30 degrees rotation minimum
+      var COLORMAP = [THEMES[RAND_IND].ui_bg_fill, THEMES[RAND_IND].ui_inactive, THEMES[RAND_IND].ui_active, THEMES[RAND_IND].ui_subtext, THEMES[RAND_IND].ui_foretext, THEMES[RAND_IND].ui_goodsplit, THEMES[RAND_IND].ui_badsplit, THEMES[RAND_IND].ui_live, THEMES[RAND_IND].ui_current_marker, THEMES[RAND_IND].ui_level2_marker, THEMES[RAND_IND].ui_level3_marker, THEMES[RAND_IND].ui_level4_marker, THEMES[RAND_IND].ui_level3, THEMES[RAND_IND].ui_level4, THEMES[RAND_IND].ui_levi, THEMES[RAND_IND].ui_orb, THEMES[RAND_IND].ui_peak, THEMES[RAND_IND].ui_gems_total, THEMES[RAND_IND].ui_gems_collected, THEMES[RAND_IND].ui_gems_eaten, THEMES[RAND_IND].ui_gems_despawned, THEMES[RAND_IND].ui_enemies_alive, THEMES[RAND_IND].ui_daggers_fired, THEMES[RAND_IND].ui_daggers_hit, THEMES[RAND_IND].ui_homing_used, THEMES[RAND_IND].ui_homing_eaten, THEMES[RAND_IND].ui_accuracy, THEMES[RAND_IND].ui_col_accuracy, THEMES[RAND_IND].ui_kills, THEMES[RAND_IND].ui_gridlines, THEMES[RAND_IND].ui_ticks];
+
+      for(var i=0; i<COLORMAP.length; i++){
+        if(COLORMAP[i] == undefined){
+          COLORMAP[i] = COLORMAP[13];
+        }
+        COLORMAP[i] = hueRotate(COLORMAP[i], RAND_HUE);
+      }
+
+      //  and finally, create, set, and push the theme to the active theme
+      var RANDOM_THEME = {
+        StyleClass: "SMARTRANDOM",
+        SavedWithVersion: VERSION,
+        ui_bg_fill: COLORMAP[0],
+        ui_inactive: COLORMAP[1],
+        ui_active: COLORMAP[2],
+        ui_subtext: COLORMAP[3],
+        ui_foretext: COLORMAP[4],
+        ui_goodsplit: COLORMAP[5],
+        ui_badsplit: COLORMAP[6],
+        ui_live: COLORMAP[7],
+        ui_current_marker: COLORMAP[8],
+        ui_level2_marker: COLORMAP[9],
+        ui_level3_marker: COLORMAP[10],
+        ui_level4_marker: COLORMAP[11],
+        ui_level3: COLORMAP[12],
+        ui_level4: COLORMAP[13],
+        ui_levi: COLORMAP[14],
+        ui_orb: COLORMAP[15],
+        ui_peak: COLORMAP[16],
+        ui_gems_total: COLORMAP[17],
+        ui_gems_collected: COLORMAP[18],
+        ui_gems_eaten: COLORMAP[19],
+        ui_gems_despawned: COLORMAP[20],
+        ui_enemies_alive: COLORMAP[21],
+        ui_daggers_fired: COLORMAP[22],
+        ui_daggers_hit: COLORMAP[23],
+        ui_homing_used: COLORMAP[24],
+        ui_homing_eaten: COLORMAP[25],
+        ui_accuracy: COLORMAP[26],
+        ui_col_accuracy: COLORMAP[27],
+        ui_kills: COLORMAP[28],
+        ui_gridlines: COLORMAP[29],
+        ui_ticks: COLORMAP[30],
+      };
+      console.log(RANDOM_THEME);
+      setStyle(RANDOM_THEME);
+      buildThemeBrowser();
+      saveSettings();
+    }
+
+    function smartRandomTheme_fromPalette(){ // replaced with smartRandomTheme
 
       //  Start with a base color of some value and hue; Must be limited to a mid value + saturation range
       //    so that lesser and greater value + saturation variants have a baseline to modify off of
