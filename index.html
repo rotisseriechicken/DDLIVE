@@ -19299,53 +19299,54 @@ var language = {
       }
       // console.log('ddstats search replay results:',replayResults);
       if(replayResults == 'ERR'){
-        alert('Error resolving DDStats replay availability - Try again in a moment?','errorNoReport');
-      }
-      for(var G_RESULT of replayResults.ddstats){ // only iterate thru ddstats equivalancies
-        if(G_RESULT != null){ // result is a returned game; update buttons associated with it
-          var associatedGameButton = document.querySelectorAll('[game_id="' + G_RESULT.ddstats_id[0] + '"]');
-          for(var LINKED_GAME_ITEM of associatedGameButton){ // iterate through buttons
-            var entry_replayButton = LINKED_GAME_ITEM.querySelector('[replay_button][resolved="0"]');
-            if(entry_replayButton != null){ //  only if this item isn't already resolved!
-              entry_replayButton.classList.remove('gameButtonLoading');
-              entry_replayButton.classList.remove('gameButtonUnclickable');
-              entry_replayButton.querySelector('i').innerHTML = 'visibility';
-              entry_replayButton.querySelector('i').style.top = VH_FINAL;
-              entry_replayButton.setAttribute('replay_md5',  G_RESULT.replay_md5);
-              entry_replayButton.setAttribute('replay_link', G_RESULT.link);
-              entry_replayButton.setAttribute('onclick','openReplayInDD("' + G_RESULT.link + '","DDStats game replay #' + G_RESULT.ddstats_id[0] + '")');
+        alert('Error resolving DDStats replay availability - The replay server is probably down!','errorNoReport');
+      } else {
+        for(var G_RESULT of replayResults.ddstats){ // only iterate thru ddstats equivalancies
+          if(G_RESULT != null){ // result is a returned game; update buttons associated with it
+            var associatedGameButton = document.querySelectorAll('[game_id="' + G_RESULT.ddstats_id[0] + '"]');
+            for(var LINKED_GAME_ITEM of associatedGameButton){ // iterate through buttons
+              var entry_replayButton = LINKED_GAME_ITEM.querySelector('[replay_button][resolved="0"]');
+              if(entry_replayButton != null){ //  only if this item isn't already resolved!
+                entry_replayButton.classList.remove('gameButtonLoading');
+                entry_replayButton.classList.remove('gameButtonUnclickable');
+                entry_replayButton.querySelector('i').innerHTML = 'visibility';
+                entry_replayButton.querySelector('i').style.top = VH_FINAL;
+                entry_replayButton.setAttribute('replay_md5',  G_RESULT.replay_md5);
+                entry_replayButton.setAttribute('replay_link', G_RESULT.link);
+                entry_replayButton.setAttribute('onclick','openReplayInDD("' + G_RESULT.link + '","DDStats game replay #' + G_RESULT.ddstats_id[0] + '")');
 
-              /* Old ddstats replay links (non-MD5) */
+                /* Old ddstats replay links (non-MD5) */
 
-              var REPLAY_URL_LCL = new URL(G_RESULT.replay_link);
-              var NEW_URL = SUPPORTED_DNS_ORIGIN + REPLAY_URL_LCL.pathname;
-              entry_replayButton.setAttribute('oncontextmenu','copyReplayLink("' + NEW_URL + '");return false;');
+                var REPLAY_URL_LCL = new URL(G_RESULT.replay_link);
+                var NEW_URL = SUPPORTED_DNS_ORIGIN + REPLAY_URL_LCL.pathname;
+                entry_replayButton.setAttribute('oncontextmenu','copyReplayLink("' + NEW_URL + '");return false;');
 
-              //  New ddstats MD5 replay links (conflict-avoiding)
+                //  New ddstats MD5 replay links (conflict-avoiding)
 
-              var REPLAY_URL_LCL = G_RESULT.replay_md5;
-              var NEW_URL = SUPPORTED_DNS_ORIGIN + '/replay/' + REPLAY_URL_LCL;
-              entry_replayButton.setAttribute('oncontextmenu','copyReplayLink("' + NEW_URL + '");return false;');
+                var REPLAY_URL_LCL = G_RESULT.replay_md5;
+                var NEW_URL = SUPPORTED_DNS_ORIGIN + '/replay/' + REPLAY_URL_LCL;
+                entry_replayButton.setAttribute('oncontextmenu','copyReplayLink("' + NEW_URL + '");return false;');
 
-              //  if this is the Gamepage replay, use this link to propagate the Replay Info + Insights. 
-              //    If this has been done for this ID before, don't do it again 
-              //    (post can be wasteful, get can't)
-              if(replayRenderResolveToken != undefined){
-                GP_SUCCESS_FLAG = true;
-                REPLAY_SCENE_LINK(G_RESULT.link, replayRenderResolveToken);
+                //  if this is the Gamepage replay, use this link to propagate the Replay Info + Insights. 
+                //    If this has been done for this ID before, don't do it again 
+                //    (post can be wasteful, get can't)
+                if(replayRenderResolveToken != undefined){
+                  GP_SUCCESS_FLAG = true;
+                  REPLAY_SCENE_LINK(G_RESULT.link, replayRenderResolveToken);
+                }
+
+                //  make it impossible for this item to be retargeted by the resolver
+                entry_replayButton.setAttribute('resolved', 1);
               }
-
-              //  make it impossible for this item to be retargeted by the resolver
-              entry_replayButton.setAttribute('resolved', 1);
             }
-          }
 
-          //  remove item from the failed items array
-          var FI_index = FAILED_ITEMS.indexOf(G_RESULT.ddstats_id[0]);
-          if (FI_index !== -1) {
-            FAILED_ITEMS.splice(FI_index, 1);
-          }
+            //  remove item from the failed items array
+            var FI_index = FAILED_ITEMS.indexOf(G_RESULT.ddstats_id[0]);
+            if (FI_index !== -1) {
+              FAILED_ITEMS.splice(FI_index, 1);
+            }
 
+          }
         }
       }
       //  now iterate failed items and set their buttons to unclickable eyeballs
@@ -27194,7 +27195,7 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
     function smartRandomTheme(){
 
       var RAND_IND = Math.floor(Math.random() * THEMES.length);
-      var RAND_HUE = Math.max(Math.floor(Math.random() * 360), 30); // 30 degrees rotation minimum
+      var RAND_HUE = Math.floor(Math.random() * 280) + 40; // 30 degrees rotation minimum
       var COLORMAP = [THEMES[RAND_IND].ui_bg_fill, THEMES[RAND_IND].ui_inactive, THEMES[RAND_IND].ui_active, THEMES[RAND_IND].ui_subtext, THEMES[RAND_IND].ui_foretext, THEMES[RAND_IND].ui_goodsplit, THEMES[RAND_IND].ui_badsplit, THEMES[RAND_IND].ui_live, THEMES[RAND_IND].ui_current_marker, THEMES[RAND_IND].ui_level2_marker, THEMES[RAND_IND].ui_level3_marker, THEMES[RAND_IND].ui_level4_marker, THEMES[RAND_IND].ui_level3, THEMES[RAND_IND].ui_level4, THEMES[RAND_IND].ui_levi, THEMES[RAND_IND].ui_orb, THEMES[RAND_IND].ui_peak, THEMES[RAND_IND].ui_gems_total, THEMES[RAND_IND].ui_gems_collected, THEMES[RAND_IND].ui_gems_eaten, THEMES[RAND_IND].ui_gems_despawned, THEMES[RAND_IND].ui_enemies_alive, THEMES[RAND_IND].ui_daggers_fired, THEMES[RAND_IND].ui_daggers_hit, THEMES[RAND_IND].ui_homing_used, THEMES[RAND_IND].ui_homing_eaten, THEMES[RAND_IND].ui_accuracy, THEMES[RAND_IND].ui_col_accuracy, THEMES[RAND_IND].ui_kills, THEMES[RAND_IND].ui_gridlines, THEMES[RAND_IND].ui_ticks];
 
       for(var i=0; i<COLORMAP.length; i++){
