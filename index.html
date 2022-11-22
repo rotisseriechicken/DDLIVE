@@ -16251,6 +16251,20 @@ var language = {
         GLOBAL_PLAYER_CHART.data.datasets[2].hoverBackgroundColor = ui_foretext;
         GLOBAL_PLAYER_CHART.data.datasets[2].hoverBorderColor = ui_foretext;
 
+        //  Temp ACC COLOR
+        GLOBAL_PLAYER_CHART.data.datasets[6].backgroundColor = ui_accuracy;
+        GLOBAL_PLAYER_CHART.data.datasets[6].borderColor = ui_accuracy;
+        GLOBAL_PLAYER_CHART.data.datasets[6].hoverBackgroundColor = ui_accuracy;
+        GLOBAL_PLAYER_CHART.data.datasets[6].hoverBorderColor = ui_accuracy;
+        GLOBAL_PLAYER_CHART.data.datasets[5].backgroundColor = ui_kills;
+        GLOBAL_PLAYER_CHART.data.datasets[5].borderColor = ui_kills;
+        GLOBAL_PLAYER_CHART.data.datasets[5].hoverBackgroundColor = ui_kills;
+        GLOBAL_PLAYER_CHART.data.datasets[5].hoverBorderColor = ui_kills;
+        GLOBAL_PLAYER_CHART.data.datasets[4].backgroundColor = ui_gems_collected;
+        GLOBAL_PLAYER_CHART.data.datasets[4].borderColor = ui_gems_collected;
+        GLOBAL_PLAYER_CHART.data.datasets[4].hoverBackgroundColor = ui_gems_collected;
+        GLOBAL_PLAYER_CHART.data.datasets[4].hoverBorderColor = ui_gems_collected;
+
         GLOBAL_STAT_CHART.data.datasets[0].backgroundColor = ui_foretext;
         GLOBAL_STAT_CHART.data.datasets[0].borderColor = ui_foretext;
         GLOBAL_STAT_CHART.data.datasets[1].backgroundColor = ui_inactive;
@@ -18494,6 +18508,7 @@ var language = {
               //  pb history creator
               function makeHistory(HITEM,DATE){ // this joke sucks Cock!
                 var DACC = ((HITEM.daggersHit / HITEM.daggersFired).toFixed(2).toString() + '%');
+                var DACC_SPEC = ((HITEM.daggersHit / HITEM.daggersFired) * 100).toFixed(2);
                 if(DACC == 'NaN%'){
                   DACC = undefined;
                 }
@@ -18525,7 +18540,7 @@ var language = {
                 });
                 DATA_ARR_TOTAL[6].push({
                   x: DATE,
-                  y: DACC
+                  y: DACC_SPEC
                 });
                 DATA_ARR_TOTAL[7].push({
                   x: DATE,
@@ -21827,120 +21842,120 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
         var LEVI_nodeHealthArray = [250, 250, 250, 250, 250, 250];
         var segmentHealth = 250;
 
-        if(DD_GAMEPAGE_GAME.block.levi_down_time != 0 && timeFromTick(THIS_TICK) > DD_GAMEPAGE_GAME.block.levi_down_time){ // this is the orb
-          RENDER_LEVI = true;
-          IS_LEVI_FLAG = false;
-          NHP = 2400;
-          LEVI_ENT_HITS = REPLAY_OBJECT_CACHE.categories.hit.filter(obj => {
-            return (obj.a == LEVI.entityId && obj.tick > (Math.ceil(DD_GAMEPAGE_GAME.block.levi_down_time * 60)) && obj.tick <= THIS_TICK) // only include hits after levi died!
-          });
+        if(LEVI != undefined){ // only if levi exists!
+          if(DD_GAMEPAGE_GAME.block.levi_down_time != 0 && timeFromTick(THIS_TICK) > DD_GAMEPAGE_GAME.block.levi_down_time){ // this is the orb
+            RENDER_LEVI = true;
+            IS_LEVI_FLAG = false;
+            NHP = 2400;
 
+            LEVI_ENT_HITS = REPLAY_OBJECT_CACHE.categories.hit.filter(obj => {
+              return (obj.a == LEVI.entityId && obj.tick > (Math.ceil(DD_GAMEPAGE_GAME.block.levi_down_time * 60)) && obj.tick <= THIS_TICK) // only include hits after levi died!
+            });
 
+            for(var HIT of LEVI_ENT_HITS){ // There are no weakspots on the Orb so do the simple math
 
+              var DAG;
+              var DAG_ID;
+              
+              DAG_ID = DID_LIM.indexOf(HIT.b);
+              DAG = DT_LIM[DAG_ID];
+              DAGGERS.push(DAG);
 
-          for(var HIT of LEVI_ENT_HITS){ // There are no weakspots on the Orb so do the simple math
+              var DMG = getDaggerDamage(DAG, 'leviathan'); // Homing does 1 damage to Levi and Orb
 
-            var DAG;
-            var DAG_ID;
-            
-            DAG_ID = DID_LIM.indexOf(HIT.b);
-            DAG = DT_LIM[DAG_ID];
-            DAGGERS.push(DAG);
+              if(DAG == 4 || DAG == 6 || DAG == 7){
+                HOMING_DAMAGE += parseInt(DMG);
+              } else {
+                NORMAL_DAMAGE += parseInt(DMG); // can also be 0
+              }
 
-            var DMG = getDaggerDamage(DAG, 'leviathan'); // Homing does 1 damage to Levi and Orb
+              TOTAL_DAMAGE += DMG;
+              NHP = NHP - DMG;
 
-            if(DAG == 4 || DAG == 6 || DAG == 7){
-              HOMING_DAMAGE += parseInt(DMG);
-            } else {
-              NORMAL_DAMAGE += parseInt(DMG); // can also be 0
+              HITLIST.push(['<span>type: ' + DAG + ', DMG: ' + DMG + ', NHP: ' + NHP + ' a: ' + HIT.a + ', b: ' + HIT.b + ', c: ' + HIT.c + ', d: ' + HIT.d + ', tick: ' + HIT.tick + '</span>', 0, false]);
             }
 
-            TOTAL_DAMAGE += DMG;
-            NHP = NHP - DMG;
-
-            HITLIST.push(['<span>type: ' + DAG + ', DMG: ' + DMG + ', NHP: ' + NHP + ' a: ' + HIT.a + ', b: ' + HIT.b + ', c: ' + HIT.c + ', d: ' + HIT.d + ', tick: ' + HIT.tick + '</span>', 0, false]);
-          }
-
-          SLICE_LEVI_DATA_AND_ARB.push(['HP', NHP + ' / ' + getTypeHP('orb')]);
-          SLICE_LEVI_DATA_AND_ARB.push(['Normal DMG', NORMAL_DAMAGE]);
-          SLICE_LEVI_DATA_AND_ARB.push(['Homing DMG', HOMING_DAMAGE]);
+            SLICE_LEVI_DATA_AND_ARB.push(['HP', NHP + ' / ' + getTypeHP('orb')]);
+            SLICE_LEVI_DATA_AND_ARB.push(['Normal DMG', NORMAL_DAMAGE]);
+            SLICE_LEVI_DATA_AND_ARB.push(['Homing DMG', HOMING_DAMAGE]);
 
 
-
-        } else { // this is leviathan
-          NHP = 1500;
-          LEVI_ENT_HITS = REPLAY_OBJECT_CACHE.categories.hit.filter(obj => {
-            return (obj.a == LEVI.entityId && obj.tick <= THIS_TICK && obj.c < 6) // exclude nonweak hits
-          });
+          } else { // this is leviathan
+            NHP = 1500;
+            LEVI_ENT_HITS = REPLAY_OBJECT_CACHE.categories.hit.filter(obj => {
+              return (obj.a == LEVI.entityId && obj.tick <= THIS_TICK && obj.c < 6) // exclude nonweak hits
+            });
 
 
 
-          for(var HIT of LEVI_ENT_HITS){ // There are no weakspots on the Orb so do the simple math
+            for(var HIT of LEVI_ENT_HITS){ // There are no weakspots on the Orb so do the simple math
 
-            var DAG;
-            var DAG_ID;
-            
-            DAG_ID = DID_LIM.indexOf(HIT.b);
-            DAG = DT_LIM[DAG_ID];
-            DAGGERS.push(DAG);
+              var DAG;
+              var DAG_ID;
+              
+              DAG_ID = DID_LIM.indexOf(HIT.b);
+              DAG = DT_LIM[DAG_ID];
+              DAGGERS.push(DAG);
 
-            var DMG = getDaggerDamage(DAG, LEVI.entityType); // dag used to be full dagger object, now just its type
+              var DMG = getDaggerDamage(DAG, LEVI.entityType); // dag used to be full dagger object, now just its type
 
-            var DELTA_BASELINE = LEVI_nodeHealthArray[HIT.c];
-            LEVI_nodeHealthArray[HIT.c] = Math.max(LEVI_nodeHealthArray[HIT.c] - DMG, 0); // Can never have less than 0 hp/seg.
-            var DELTA_NEW = LEVI_nodeHealthArray[HIT.c];
-            var DELTA = DELTA_BASELINE - DELTA_NEW;
+              var DELTA_BASELINE = LEVI_nodeHealthArray[HIT.c];
+              LEVI_nodeHealthArray[HIT.c] = Math.max(LEVI_nodeHealthArray[HIT.c] - DMG, 0); // Can never have less than 0 hp/seg.
+              var DELTA_NEW = LEVI_nodeHealthArray[HIT.c];
+              var DELTA = DELTA_BASELINE - DELTA_NEW;
 
-            if(DAG == 4 || DAG == 6 || DAG == 7){
-              HOMING_DMG_PER_SEGMENT[HIT.c] += DELTA;
-              HOMING_DAMAGE += DELTA;
-            } else {
-              DMG_PER_SEGMENT[HIT.c] += DELTA;
-              NORMAL_DAMAGE += DELTA; // neither can be 0 in this case; all hits must be non-weak hits.
+              if(DAG == 4 || DAG == 6 || DAG == 7){
+                HOMING_DMG_PER_SEGMENT[HIT.c] += DELTA;
+                HOMING_DAMAGE += DELTA;
+              } else {
+                DMG_PER_SEGMENT[HIT.c] += DELTA;
+                NORMAL_DAMAGE += DELTA; // neither can be 0 in this case; all hits must be non-weak hits.
+              }
+
+              TOTAL_DAMAGE += DELTA;
+              NHP = NHP - DELTA;
+
+              HITLIST.push(['<span>type: ' + DAG + ', DMG: ' + DMG + ', NHP: ' + NHP + ' a: ' + HIT.a + ', b: ' + HIT.b + ', c: ' + HIT.c + ', d: ' + HIT.d + ', tick: ' + HIT.tick + '</span>', 0, false]);
+
             }
 
-            TOTAL_DAMAGE += DELTA;
-            NHP = NHP - DELTA;
 
-            HITLIST.push(['<span>type: ' + DAG + ', DMG: ' + DMG + ', NHP: ' + NHP + ' a: ' + HIT.a + ', b: ' + HIT.b + ', c: ' + HIT.c + ', d: ' + HIT.d + ', tick: ' + HIT.tick + '</span>', 0, false]);
 
           }
 
+          //  [arbitrary]
+          SLICE_LEVI_DATA_AND_ARB = [[], NHP]; // [Arbitrary], HP
 
-
-        }
-
-        //  [arbitrary]
-        SLICE_LEVI_DATA_AND_ARB = [[], NHP]; // [Arbitrary], HP
-
-        if(IS_LEVI_FLAG == true){ // this is levi; display segments
-          SLICE_LEVI_DATA_AND_ARB[0].push(['HP', NHP + ' / ' + getTypeHP('leviathan')]);
-          SLICE_LEVI_DATA_AND_ARB[0].push(['Normal DMG', NORMAL_DAMAGE]);
-          SLICE_LEVI_DATA_AND_ARB[0].push(['Homing DMG', HOMING_DAMAGE]);
-          SLICE_LEVI_DATA_AND_ARB[0].push(['<br>', 0, false]); // spacer
-          for(var c=0; c<LEVI_nodeHealthArray.length; c++){
-            var SEGNUM = c+1;
-            var HPSTRING = 'HP: ' + LEVI_nodeHealthArray[c];
-            var STYLESTRING = '';
-            if(LEVI_nodeHealthArray[c] <= 0){
-              HPSTRING = 'Dead';
-              STYLESTRING = 'color:var(--UI-inactive)!important';
+          if(IS_LEVI_FLAG == true){ // this is levi; display segments
+            SLICE_LEVI_DATA_AND_ARB[0].push(['HP', NHP + ' / ' + getTypeHP('leviathan')]);
+            SLICE_LEVI_DATA_AND_ARB[0].push(['Normal DMG', NORMAL_DAMAGE]);
+            SLICE_LEVI_DATA_AND_ARB[0].push(['Homing DMG', HOMING_DAMAGE]);
+            SLICE_LEVI_DATA_AND_ARB[0].push(['<br>', 0, false]); // spacer
+            for(var c=0; c<LEVI_nodeHealthArray.length; c++){
+              var SEGNUM = c+1;
+              var HPSTRING = 'HP: ' + LEVI_nodeHealthArray[c];
+              var STYLESTRING = '';
+              if(LEVI_nodeHealthArray[c] <= 0){
+                HPSTRING = 'Dead';
+                STYLESTRING = 'color:var(--UI-inactive)!important';
+              }
+              SLICE_LEVI_DATA_AND_ARB[0].push(['<br><span style="'+STYLESTRING+'"><span style="color:var(--UI-active)">Node ' + SEGNUM + '</span><br>' + HPSTRING + '<br>(' + segmentHealth + ' - ' + DMG_PER_SEGMENT[c] + ' - ' + HOMING_DMG_PER_SEGMENT[c] + ')</span>', 0, false]);
             }
-            SLICE_LEVI_DATA_AND_ARB[0].push(['<br><span style="'+STYLESTRING+'"><span style="color:var(--UI-active)">Node ' + SEGNUM + '</span><br>' + HPSTRING + '<br>(' + segmentHealth + ' - ' + DMG_PER_SEGMENT[c] + ' - ' + HOMING_DMG_PER_SEGMENT[c] + ')</span>', 0, false]);
+          } else { // this is the orb or it is dead
+            SLICE_LEVI_DATA_AND_ARB[0].push(['HP', NHP + ' / ' + getTypeHP('orb')]);
+            SLICE_LEVI_DATA_AND_ARB[0].push(['Normal DMG', NORMAL_DAMAGE]);
+            SLICE_LEVI_DATA_AND_ARB[0].push(['Homing DMG', HOMING_DAMAGE]);
           }
-        } else { // this is the orb or it is dead
-          SLICE_LEVI_DATA_AND_ARB[0].push(['HP', NHP + ' / ' + getTypeHP('orb')]);
-          SLICE_LEVI_DATA_AND_ARB[0].push(['Normal DMG', NORMAL_DAMAGE]);
-          SLICE_LEVI_DATA_AND_ARB[0].push(['Homing DMG', HOMING_DAMAGE]);
-        }
 
-        if(HITLIST.length > 0 && REPLAY_SHOW_DAGGER_HIT_LIST == true){
-          SLICE_LEVI_DATA_AND_ARB[0].push(['<br><div class="replayHitList">',0,false]);
-          for(var HIT of HITLIST){
-            SLICE_LEVI_DATA_AND_ARB[0].push(HIT);
+          if(HITLIST.length > 0 && REPLAY_SHOW_DAGGER_HIT_LIST == true){
+            SLICE_LEVI_DATA_AND_ARB[0].push(['<br><div class="replayHitList">',0,false]);
+            for(var HIT of HITLIST){
+              SLICE_LEVI_DATA_AND_ARB[0].push(HIT);
+            }
+            SLICE_LEVI_DATA_AND_ARB[0].push(['</div>',0,false]);
           }
-          SLICE_LEVI_DATA_AND_ARB[0].push(['</div>',0,false]);
-        }
+
+        } // end leviathan segment
 
 
 
@@ -24897,7 +24912,7 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
           }
 
           //  Leviathan / orb hack
-          if(TICK_AS_FLOORSEC > 358){
+          if(TICK_AS_FLOORSEC > 358 && SLICE_LEVI_DATA_AND_ARB[0] != undefined){ // if levi-able!
             if(TICK_AS_FLOORSEC > DD_GAMEPAGE_GAME.block.levi_down_time && DD_GAMEPAGE_GAME.block.levi_down_time != 0){
               if(TICK_AS_FLOORSEC > DD_GAMEPAGE_GAME.block.orb_down_time && DD_GAMEPAGE_GAME.block.orb_down_time != 0){
                 //  draw nothing because this frame has passed the orb kill threshold
@@ -33225,10 +33240,10 @@ var data2 = {
     {
       label: '  Gems',
       data: [],
-      backgroundColor: "rgba(0,0,0,0)",
-      borderColor: "rgba(0,0,0,0)",
-      hoverBackgroundColor: "rgba(0,0,0,0)",
-      hoverBorderColor: "rgba(0,0,0,0)",
+      backgroundColor: ui_gems_collected,
+      borderColor: ui_gems_collected,
+      hoverBackgroundColor: ui_gems_collected,
+      hoverBorderColor: ui_gems_collected,
       /*
       backgroundColor: [
         'rgba(255, 99, 132, 0.2)',
@@ -33252,19 +33267,20 @@ var data2 = {
       borderWidth: 1,
       barPercentage: 1.0,
       categoryPercentage: 1.0,
-      borderWidth: 2,
+      borderWidth: 1,
       stepped: true,
       pointRadius: 0,
-      yAxisID: 'yLive2',
-      order: 3,
+      yAxisID: 'yGems',
+      order: 5,
+      borderDash: [1,3],
     },
     {
       label: '  Kills',
       data: [],
-      backgroundColor: "rgba(0,0,0,0)",
-      borderColor: "rgba(0,0,0,0)",
-      hoverBackgroundColor: "rgba(0,0,0,0)",
-      hoverBorderColor: "rgba(0,0,0,0)",
+      backgroundColor: ui_kills,
+      borderColor: ui_kills,
+      hoverBackgroundColor: ui_kills,
+      hoverBorderColor: ui_kills,
       /*
       backgroundColor: [
         'rgba(255, 99, 132, 0.2)',
@@ -33288,19 +33304,20 @@ var data2 = {
       borderWidth: 1,
       barPercentage: 1.0,
       categoryPercentage: 1.0,
-      borderWidth: 2,
+      borderWidth: 1,
       stepped: true,
       pointRadius: 0,
-      yAxisID: 'yLive2',
+      yAxisID: 'yKills',
       order: 4,
+      borderDash: [1,3],
     },
     {
       label: '  Accuracy',
       data: [],
-      backgroundColor: "rgba(0,0,0,0)",
-      borderColor: "rgba(0,0,0,0)",
-      hoverBackgroundColor: "rgba(0,0,0,0)",
-      hoverBorderColor: "rgba(0,0,0,0)",
+      backgroundColor: ui_accuracy,
+      borderColor: ui_accuracy,
+      hoverBackgroundColor: ui_accuracy,
+      hoverBorderColor: ui_accuracy,
       /*
       backgroundColor: [
         'rgba(255, 99, 132, 0.2)',
@@ -33324,11 +33341,12 @@ var data2 = {
       borderWidth: 1,
       barPercentage: 1.0,
       categoryPercentage: 1.0,
-      borderWidth: 2,
+      borderWidth: 1,
       stepped: true,
       pointRadius: 0,
-      yAxisID: 'yLive2',
-      order: 5,
+      yAxisID: 'yAcc',
+      order: 3,
+      borderDash: [1,3],
     },
     {
       label: '  Death Type',
@@ -34254,7 +34272,7 @@ var GLOBAL_PLAYER_CHART = new Chart(ctx2, {
     spanGaps: true,
     layout: {
         padding: {
-            left: 0,
+            left: -27,
             bottom: 0,
             right: 0,
             top: 0,
@@ -34284,6 +34302,9 @@ var GLOBAL_PLAYER_CHART = new Chart(ctx2, {
               yLive: 'original',
               yLive2: 'original',
               yRank: 'original',
+              yAcc: 'original',
+              yGems: 'original',
+              yKills: 'original',
           },
       },
       legend: {
@@ -34381,6 +34402,93 @@ var GLOBAL_PLAYER_CHART = new Chart(ctx2, {
       yLive2: { //     main homing axis
         // alignToPixels: true,
         alignToPixels: false,
+        beginAtZero: false,
+        /*
+        min: 0,
+        grid: {
+            display: GRAPH_SHOW_Y_GRID,
+            drawBorder: false,
+            color: ui_gridlines,
+        },
+        ticks: {
+            display: false,
+            autoSkip: true,
+            maxTicksLimit: 20,
+            color: ui_inactive,
+            beginAtZero: true,
+        }
+        */
+        grid: {
+          borderColor: ui_foretext,
+          display: false,
+          drawBorder: false,
+        },
+        ticks: {
+          color: ui_foretext,
+          display: false
+        },
+      },
+      yAcc: { //     main homing axis
+        // alignToPixels: true,
+        alignToPixels: true,
+        beginAtZero: false,
+        /*
+        min: 0,
+        grid: {
+            display: GRAPH_SHOW_Y_GRID,
+            drawBorder: false,
+            color: ui_gridlines,
+        },
+        ticks: {
+            display: false,
+            autoSkip: true,
+            maxTicksLimit: 20,
+            color: ui_inactive,
+            beginAtZero: true,
+        }
+        */
+        grid: {
+          borderColor: ui_foretext,
+          display: false,
+          drawBorder: false,
+        },
+        ticks: {
+          color: ui_foretext,
+          display: false
+        },
+      },
+      yGems: { //     main homing axis
+        // alignToPixels: true,
+        alignToPixels: true,
+        beginAtZero: false,
+        /*
+        min: 0,
+        grid: {
+            display: GRAPH_SHOW_Y_GRID,
+            drawBorder: false,
+            color: ui_gridlines,
+        },
+        ticks: {
+            display: false,
+            autoSkip: true,
+            maxTicksLimit: 20,
+            color: ui_inactive,
+            beginAtZero: true,
+        }
+        */
+        grid: {
+          borderColor: ui_foretext,
+          display: false,
+          drawBorder: false,
+        },
+        ticks: {
+          color: ui_foretext,
+          display: false
+        },
+      },
+      yKills: { //     main homing axis
+        // alignToPixels: true,
+        alignToPixels: true,
         beginAtZero: false,
         /*
         min: 0,
