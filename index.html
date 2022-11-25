@@ -27213,14 +27213,19 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
 
     function smartRandomTheme(){
 
+      //  R_One:   Directly rotate hues from incumbent themes
+
       var RAND_IND = Math.floor(Math.random() * THEMES.length);
       var RAND_HUE = Math.floor(Math.random() * 280) + 40; // 30 degrees rotation minimum
       var COLORMAP = [THEMES[RAND_IND].ui_bg_fill, THEMES[RAND_IND].ui_inactive, THEMES[RAND_IND].ui_active, THEMES[RAND_IND].ui_subtext, THEMES[RAND_IND].ui_foretext, THEMES[RAND_IND].ui_goodsplit, THEMES[RAND_IND].ui_badsplit, THEMES[RAND_IND].ui_live, THEMES[RAND_IND].ui_current_marker, THEMES[RAND_IND].ui_level2_marker, THEMES[RAND_IND].ui_level3_marker, THEMES[RAND_IND].ui_level4_marker, THEMES[RAND_IND].ui_level3, THEMES[RAND_IND].ui_level4, THEMES[RAND_IND].ui_levi, THEMES[RAND_IND].ui_orb, THEMES[RAND_IND].ui_peak, THEMES[RAND_IND].ui_gems_total, THEMES[RAND_IND].ui_gems_collected, THEMES[RAND_IND].ui_gems_eaten, THEMES[RAND_IND].ui_gems_despawned, THEMES[RAND_IND].ui_enemies_alive, THEMES[RAND_IND].ui_daggers_fired, THEMES[RAND_IND].ui_daggers_hit, THEMES[RAND_IND].ui_homing_used, THEMES[RAND_IND].ui_homing_eaten, THEMES[RAND_IND].ui_accuracy, THEMES[RAND_IND].ui_col_accuracy, THEMES[RAND_IND].ui_kills, THEMES[RAND_IND].ui_gridlines, THEMES[RAND_IND].ui_ticks];
 
-      for(var i=0; i<COLORMAP.length; i++){
+      for(var i=0; i<COLORMAP.length; i++){ // Account for undefined addresses
         if(COLORMAP[i] == undefined){
           COLORMAP[i] = COLORMAP[13];
         }
+      }
+
+      for(var i=0; i<COLORMAP.length; i++){ // Map rotated hues
         COLORMAP[i] = hueRotate(COLORMAP[i], RAND_HUE);
       }
 
