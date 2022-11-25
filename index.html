@@ -9271,6 +9271,9 @@ void main(void)
             }
           }
         }
+        if(evtobj.key == 'Backspace' && evtobj.altKey && !evtobj.ctrlKey && !evtobj.shiftKey){
+          openDiscardThemePrompt(undefined,true);
+        }
 
         if(evtobj.key == 'F1'){ // open help
           e.preventDefault();
@@ -16284,6 +16287,7 @@ var language = {
         // GLOBAL_GRAPH.update();
         GLOBAL_PLAYER_CHART.update();
         GLOBAL_STAT_CHART.update();
+        DDSTATS_LIVE_GRAPH.update();
         updateGraph(undefined,true);
     }
 
