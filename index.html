@@ -1254,7 +1254,7 @@ input[type="range"]::-webkit-slider-thumb {
   background-color: var(--prompt-bg);
   transition: opacity 0.15s cubic-bezier(.01,.81,.55,1.01) !important;
 
-  z-index: 999999998;
+  z-index: 9999999999998;
 
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
@@ -14193,7 +14193,11 @@ var language = {
     }
 
     function addTheme(THEME){
-      THEMES.push(THEME);
+      var BUFFER_THEME = THEME; // account for untitled themes (randomizer themes, etc.)
+      if(BUFFER_THEME.StyleName == undefined || BUFFER_THEME.StyleName == ''){
+        BUFFER_THEME.StyleName = 'Untitled';
+      }
+      THEMES.push(BUFFER_THEME);
       backupThemes();
       saveSettings();
     }
@@ -17832,7 +17836,7 @@ var language = {
     }
 
     async function getClubberUsers(UNUSED_ATTRIBUTE,FORCE){
-      var data_users = await ajaxRequest('https://clubberbot.herokuapp.com/users',true);
+      var data_users = await ajaxRequest('https://clubberbot.azurewebsites.net/users',true);
       if(data_users != 'ERR'){
         LAST_CLUBBER_USERS = data_users;
         getLinkedTwitchUsers();
@@ -17840,7 +17844,7 @@ var language = {
     }
 
     async function getBestSplits(UNUSED_ATTRIBUTE,FORCE){
-      var data_splits = await ajaxRequest('https://clubberbot.herokuapp.com/bestsplits',true);
+      var data_splits = await ajaxRequest('https://clubberbot.azurewebsites.net/bestsplits',true);
       if(data_splits != 'ERR'){
         LAST_CLUBBER_SPLITS = data_splits;
         updateBestSplits();
@@ -17848,7 +17852,7 @@ var language = {
     }
 
     async function getClubberNews(UNUSED_ATTRIBUTE,FORCE){
-      var data_news = await ajaxRequest('https://clubberbot.herokuapp.com/dailynews',true);
+      var data_news = await ajaxRequest('https://clubberbot.azurewebsites.net/dailynews',true);
       if(data_news != 'ERR'){
         LAST_CLUBBER_NEWS = data_news;
         makeNews();
@@ -18796,7 +18800,7 @@ var language = {
         LAST_TWITCH_REFRESH = Date.now(); //  otherwise we are going to fucking refresh EVERY HALF SECOND!!!!!
         //  dude chupa is going to KILL ME!!!!! hes going to make me watch iraqi anime dude.... noooo0o0o0o0o....
 
-        var data = await ajaxRequest('https://swarmer.herokuapp.com/streams?gameName=devil%20daggers',true);
+        var data = await ajaxRequest('https://swarmerbot.azurewebsites.net/streams?gameName=devil%20daggers',true);
         // var THUMB_STRING = 'https://static-cdn.jtvnw.net/previews-ttv/live_user_' +  + '-480x260.jpg'
 
         if(data != 'ERR' && data != null){
@@ -21812,6 +21816,9 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
   if(SLICE_CACHE[THIS_TICK] == undefined){ // if this tick has never been scrubbed to, resolve it 
 
         var SCOOPY_BUCKET = REPLAY_OBJECT_CACHE.organizedEvents[THIS_TICK]; // we will push specials next
+        if(SCOOPY_BUCKET == undefined){ // bandaid fix for off-by-1
+          SCOOPY_BUCKET = REPLAY_OBJECT_CACHE.organizedEvents[THIS_TICK-1];
+        }
 
         var PLAYER_POS_INDEX = 0;
 
@@ -26294,6 +26301,9 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
     }
 
     function deEmojify(STRING){
+      if(STRING == undefined){
+        return ''; // assume this is a string and not an error and return a blank value
+      }
       var deEmojifiedPlayerName = '';
       for(i=0;i<STRING.length;i++){
         deEmojifiedPlayerName += STRING[i] += '&#xFE0E;';
@@ -27265,7 +27275,7 @@ var LOC_LOOKAHEAD  = parseInt((typeof LOOAHEAD   === 'undefined') ? RPL_LOOKAHEA
         ui_gridlines: COLORMAP[29],
         ui_ticks: COLORMAP[30],
       };
-      console.log(RANDOM_THEME);
+      drapeLog(arguments.callee.name,'Theme: ', RANDOM_THEME, ' Copyable JSON: ', JSON.stringify(RANDOM_THEME));
       setStyle(RANDOM_THEME);
       buildThemeBrowser();
       saveSettings();
