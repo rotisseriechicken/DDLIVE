@@ -161,6 +161,55 @@ Use ddstats-rust to link your Devil Daggers games with DDLIVE." property="og:des
 
     --SNOW-DISPLAY: none; /* During December, displays as block */
 
+    --VH-VW: 1vh; /* Dynamically switches to VW when portrait */
+    --VH-VW-anti: 1vw; /* Same as above, but vice versa */
+
+}
+
+@media (orientation: portrait) {
+  :root {
+    --VH-VW: 1vw;
+    --VH-VW-anti: 1vh;
+  }
+
+  /* Top Left; Browser Wrapper Resize */
+  #TL{
+    width: calc(100vw - 20px) !important; /* calc(100vw - 23px - 0.3vw - 8px) */
+  }
+  #TOOLTIP_CONTAINER{
+    width: calc((100vw - 20px) - (23px + 0.25vh)) !important;
+  }
+
+  /* Top Right; Statsblock UI wrapper hiding (elements hidden TEMPORARILY; should be moved in JS!!!) */
+  #TR_UI_WRAPPER{
+    display: none !important;
+    pointer-events: none !important;
+  }
+  #LEFTGAME_ID{
+    display: none !important;
+  }
+  #RIGHTGAME_ID{
+    display: none !important;
+  }
+  #RIGHTGAME_LIVE_TEXT{
+    display: none !important;
+  }
+  #STATS{
+    display: none !important;
+  }
+
+  /* Bottom Bar */
+  .BOTBAR-ITEM{
+    font-size: 1.8vw !important;
+  }
+  .BOTBAR-ITEM-SPACER{
+    font-size: 1.9vw !important;
+  }
+  .BOTBAR-ITEM:hover{
+    font-size: 1.8vw !important;
+  }
+
+
 }
 
 ::-webkit-scrollbar{
@@ -4733,7 +4782,7 @@ canvas{
   font-size: 1.75vh;
   font-family: 'OPM3';
   /* padding-left: 0.75vh; */
-  width: calc((100vw - 49.75vh - 23px - 0.3vw - 8px) / 3.25);
+  /* width: calc((100vw - 49.75vh - 23px - 0.3vw - 8px) / 3.25); */
   flex: 0;
   flex-shrink: 1;
 }
@@ -4762,7 +4811,7 @@ canvas{
   font-size: 1.4vh;
   /* padding-right: 0.75vh;
   padding-left: 0.75vh;  THIS SHOULD BE INCLUDED IN THE CONTENT SET FOR THE SECTION! */ 
-  width: calc((100vw - 49.75vh - 23px - 0.3vw - 8px) / 3.25);
+  /* width: calc((100vw - 49.75vh - 23px - 0.3vw - 8px) / 3.25); */
   flex: 0;
   flex-shrink: 1;
   padding-bottom: 0.5vh;
@@ -7000,10 +7049,6 @@ paginateDDCL(PAGE_DDCL_MAX);">last_page</i><div id="DDCL_NAVIGATOR_TEXT" class="
                   <br>
                   <h3><a style="font-weight: bold" tabindex="-1" href="https://github.com/lsaa/ddstats-rust/releases" target="_blank">Download ddstats-rust here.</a> When open, it will automatically connect to DDLIVE.<br>It can be used without ddstats-rust open, for games besides your currently live game.</h3>
                   <br>
-                  <h1>...Beta, huh? Just what kinda funny business can I expect?</h1>
-                  <br>
-                  <h3>FUNNY BUSINESS IN DDLIVE INCLUDES (BUT IS NOT LIMITED TO):<br>  - Currently only layout/function designed + tested for Chrome and OBS Browser,<br>  - Inaccurate Homing Daggers Eaten graphing (ddstats.com issue; works in live games),<br>  - Unfinished content,<br>  - Unimplemented content,<br>  - Broken content,<br>  - Data providers not loading,<br>  - Inaccurate navigation and state persistence,<br>  - Individual application modules freezing/crashing/needing refresh,<br>  - High CPU/mem demands / poor performance, and, in the absolute worst case,<br>  - Settings corruption.<br><br>Nevertheless, most of these issues have been tested into rarity,<br>if not made entirely impossible altogether.<br><br>If you find what you believe to be a bug, please report it! Settings > Report Bug.</h3>
-                  <br>
                   <h1>I'm having performance issues with DDLIVE open. Ideas?</h1>
                   <br>
                   <h3>Try disabling all extensions for DDLIVE, and refreshing the page.<br>If this doesn't help, disable graph animations (sparkly line icon), open the inline console ( <span style="font-family: 'OPM2';">~</span> ) and enter:<br><span style="font-family: 'OPM2';">FULL_STAT_FPS = 8;</span><br>This reduces the rate at which the stat comparator draws data when live.<br><br>More fine-tuning performance options will be implemented in the future, in Settings.<br>If your performance issues still persist, contact me with the Discord username at the bottom.</h3>
@@ -7075,10 +7120,6 @@ paginateDDCL(PAGE_DDCL_MAX);">last_page</i><div id="DDCL_NAVIGATOR_TEXT" class="
                   <h1>Why are some users' names vividly highlighted?</h1>
                   <br>
                   <h3>Users will instantly have their name change app-wide to be Live colored when they are live.</h3>
-                  <br>
-                  <h1>Clicking on game listings does nothing. What's up with that?</h1>
-                  <br>
-                  <h3>The game page is currently unimplemented, as we want to make sure it's done right.<br>Expect in the future that game pages will include extremely rich comparisons to your data, current and persistent,<br>as well as offer comparisons to global data, such as averages per leaderboard range.</h3>
                   <br>
                   <h1>How do I become Name-Verified on DDLIVE?</h1>
                   <br>
