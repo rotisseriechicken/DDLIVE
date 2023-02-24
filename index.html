@@ -59,6 +59,7 @@
 <meta content="The most advanced speedrunning tool in the world.
 Compare stats + graphs, browse + watch game replays & more.
 Use ddstats-rust to link your Devil Daggers games with DDLIVE." property="og:description">
+<meta content="The most advanced speedrunning tool in the world." property="description">
 <meta content="https://ddstats.live/media/ddlive_logo.png" property="og:image">
 <!-- <meta content="ddstats.live" property="og:site_name"> -->
 
@@ -10085,7 +10086,9 @@ async function divisionLevelRoutine(LEVEL, BOTTOM_INSTEAD_OF_TOP, PERMISSION) {
 
   if (PERMISSION == DIVIDER_PERMISSION) { //  Ignore this task if this instance was killed
 
-    var POSSIBLE_COLORS = [ui_bg_fill, ui_inactive, ui_active, ui_subtext, ui_foretext, ui_goodsplit, ui_badsplit, ui_live, ui_current_marker, ui_level2_marker, ui_level3_marker, ui_level4_marker, ui_level3, ui_level4, ui_levi, ui_orb, ui_peak, ui_gems_total, ui_gems_collected, ui_gems_eaten, ui_gems_despawned, ui_enemies_alive, ui_daggers_fired, ui_daggers_hit, ui_homing_eaten, ui_homing_used, ui_accuracy, ui_col_accuracy, ui_kills, ui_gridlines, ui_ticks];
+    // var POSSIBLE_COLORS = [ui_bg_fill, ui_inactive, ui_active, ui_subtext, ui_foretext, ui_goodsplit, ui_badsplit, ui_live, ui_current_marker, ui_level2_marker, ui_level3_marker, ui_level4_marker, ui_level3, ui_level4, ui_levi, ui_orb, ui_peak, ui_gems_total, ui_gems_collected, ui_gems_eaten, ui_gems_despawned, ui_enemies_alive, ui_daggers_fired, ui_daggers_hit, ui_homing_eaten, ui_homing_used, ui_accuracy, ui_col_accuracy, ui_kills, ui_gridlines, ui_ticks];
+
+    var POSSIBLE_COLORS = ['var(--BGFill)', 'var(--UI-inactive)', 'var(--UI-active)', 'var(--UI-subtext)', 'var(--UI-foretext)', 'var(--UI-goodsplit)', 'var(--UI-badsplit)', 'var(--UI-live)', 'var(--UI-current_marker)', 'var(--UI-level2_marker)', 'var(--UI-level3_marker)', 'var(--UI-level4_marker)', 'var(--UI-level3)', 'var(--UI-level4)', 'var(--UI-levi)', 'var(--UI-orb)', 'var(--UI-peak)', 'var(--UI-gems_total)', 'var(--UI-gems_collected)', 'var(--UI-gems_eaten)', 'var(--UI-gems_despawned)', 'var(--UI-enemies_alive)', 'var(--UI-daggers_fired)', 'var(--UI-daggers_hit)', 'var(--UI-homing_eaten)', 'var(--UI-homing_used)', 'var(--UI-accuracy)', 'var(--UI-col_accuracy)', 'var(--UI-kills)', 'var(--UI-gridlines)', 'var(--UI-ticks)'];
 
     var amtLimiter = CREDITS_SUBDIVISIONS_MAX;
     if (LEVEL == 1) {
