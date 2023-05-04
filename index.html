@@ -85,7 +85,7 @@ Use ddstats-rust to link your Devil Daggers games with DDLIVE." property="og:des
 
 <script src="lib/pako.min.js"></script>
 <script src="lib/lzutf8.min.js"></script>
-<script src="lib/replay-parser.js?v=2"></script>
+<script src="lib/replay-parser-ddlive.js?v=3"></script>
 
 <script src="lib/html2canvas.min.js"></script>
 
@@ -2759,6 +2759,26 @@ canvas{
   margin-top: 0.1vh;
 }
 
+.INSIGHTS_TOGGLES_OFF .INSIGHTS-ITEM{
+  display: none !important;
+  pointer-events: none !important;
+}
+.INSIGHTS_TOGGLES_OFF .INSIGHTS-ITEM-SPACER{
+  display: none !important;
+  pointer-events: none !important;
+}
+.INSIGHTS_TOGGLES_OFF #LB_INSIGHTS_WARNING{
+  display: block !important;
+}
+
+#GAMEPAGE_WARNING{
+  display: inline-flex;
+  float: right;
+  padding-left: 18px;
+  padding-right: 2px;
+  margin-top: 0.1vh;
+}
+
 
 
 .insight{
@@ -3183,7 +3203,7 @@ canvas{
   /* padding-top: 0.4vh; */
 
   font-size: 1.5vh;
-  padding-top: 0.55vh;
+  padding-top: 0.5vh; /* 0.55vh; */
 
   /*               we're just gonna use the anticolor detector instead i think
   text-shadow:
@@ -3214,6 +3234,61 @@ canvas{
     text-rendering: optimizeLegibility;
 
     cursor: pointer;
+
+    transition: color 0.3s cubic-bezier(.01,.81,.55,1.01) !important;
+}
+
+#LB_WARNING{
+    padding-bottom: 0.75vh;
+    padding-top: 0vh;
+    font-family: OPM3;
+    font-size: 1vh;
+    z-index: 50;
+    margin-left: 0.5vh;
+    margin-right: 0;
+    text-rendering: optimizeLegibility;
+
+    cursor: pointer;
+
+    color: var(--BGFill);
+    z-index: -1;
+
+    transition: color 0.3s cubic-bezier(.01,.81,.55,1.01) !important;
+}
+.LBWARNING_SHOW{
+  color: var(--UI-inactive) !important;
+}
+.LBWARNING_SHOW .LBWARNING_CHILD{
+  color: var(--UI-foretext) !important;
+}
+.LBWARNING_BIG{
+  font-size: 2vh;
+  line-height: 0vh;
+}
+.LBWARNING_SHOW .LBWARNING_BIG{
+  color: var(--UI-foretext) !important;
+}
+
+.LBINS_HIDE{
+  display: none !important;
+}
+
+#LB_INSIGHTS_WARNING{
+    padding-bottom: 0.75vh;
+    padding-top: 0vh;
+    font-family: OPM3;
+    font-size: 1vh;
+    z-index: 50;
+    margin-left: 0.5vh;
+    margin-right: 0;
+    text-rendering: optimizeLegibility;
+
+    cursor: pointer;
+
+    color: var(--UI-inactive);
+    z-index: -1;
+
+    display: none;
 
     transition: color 0.3s cubic-bezier(.01,.81,.55,1.01) !important;
 }
@@ -6488,6 +6563,9 @@ paginateLeaderboard(PAGE_LEADERBOARD_MAX);">last_page</i><div id="LEADERBOARD_MI
 
               <div id="INSIGHTS_WRAPPER" style="left:-100%" class="pageWrapper">
 
+                <div id="GAMEPAGE_WARNING" style="margin-top:0;position:absolute;right:0;line-height:1vh;top:0vh;text-align:right;">
+                  <div id="LB_WARNING"><!--<span class="LBWARNING_CHILD">NON-DDSTATS LEADERBOARD REPLAY</span> <span class="LBWARNING_BIG">|</span> <span class="LBWARNING_CHILD">some data will be incomplete or inaccurate</span><br>REPLAY VIEWER IS ALWAYS ACCURATE <span class="LBWARNING_BIG">|</span> submit with ddstats-rust for data accuracy<br><span style="white-space:pre;"><span class="LBWARNING_BIG">|</span>                                           </span>--></div>
+                </div>
                 <div id="INSIGHTS_TOGGLES" style="position:absolute;">
                   <div onclick="setInsightsGraphToggle(this);" onmouseenter="tooltip('toggleHoming')" onmouseleave="tooltip('close')" TOG_ID="0" id="TOGGLE_HOMING" class="INSIGHTS-ITEM INSIGHTS-ITEM-SELECTED">homing</div>
                   <div class="INSIGHTS-ITEM-SPACER">></div>
@@ -6508,6 +6586,9 @@ paginateLeaderboard(PAGE_LEADERBOARD_MAX);">last_page</i><div id="LEADERBOARD_MI
                   <div class="INSIGHTS-ITEM-SPACER">·</div>
                           <div onclick="setInsightsGraphToggle(this);" onmouseenter="tooltip('toggleEnemies')" onmouseleave="tooltip('close')" TOG_ID="10" id="TOGGLE_ALIVE" class="INSIGHTS-ITEM">enemies</div>
                           <div onclick="setInsightsGraphToggle(this);" onmouseenter="tooltip('toggleKills')" onmouseleave="tooltip('close')" TOG_ID="11" id="TOGGLE_KILLS" class="INSIGHTS-ITEM">kills</div>
+
+                  <div id="LB_INSIGHTS_WARNING">(toggles, insights, and overview disabled for leaderboard games  ·  play games with ddstats-rust for full data)</div>
+
                 </div>
                 <div id="INSIGHTS_INNER_WRAPPER" class="gamePageWrapper">
                   <div id="INSIGHTS_GRAPH_WRAPPER" onmouseenter="showInsights();" style="flex:1;flex-shrink:1;width:calc((100vw - 49.75vh - 23px - 0.3vw - 8px) / 2.5)">
@@ -7844,6 +7925,11 @@ var DDSTATS_LIVE_CACHE = []; // cleaned cache of only first-per-second data, asc
 var DDSTATS_LIVE_CACHE_LAST = undefined; // raw cache of last "ALIVE"-status-Game websocket data item
 var DDSTATS_LIVE_CACHE_KILL_FLAG = false; // if true, clears the DDSTATS_LIVE_GRAPH and its caches
 var DD_GAMEPAGE_CACHE_FLAG = undefined; // if INT, gamepage cache escaped for hash game's ID instead
+var IS_LEADERBOARD_REPLAY = false; // false by default; if true, the gamepage is a leaderboard replay
+
+var DD_LB_PB_CACHE; // used to hand off the LeaderboardGamepage result to paginateGame
+var DD_LB_PB_RPOBJ; // used to hand off the replay object to gameObjectFromReplayObject
+var LB_USERNAME_GLOBAL_CACHE; // used to hand off the leaderboard PB usernames to other globals
 
 var ERR_CACHE; // used to prevent console spam
 var NODRAW_CACHE = false; // if true, nodraw has been fired already.
@@ -7962,6 +8048,8 @@ var SLICE_LEVI_SEGMENT_HEALTH = [250, 250, 250, 250, 250, 250]; // " for each le
 var SLICE_ORB_HEALTH = 2400; // " for orb
 var SLICE_LEVI_DATA_AND_ARB = []; // data for leviathan, incl. arbitrary (unique due to gamepage data)
 
+var SLICE_IS_MODERN_REPLAY = true; // if false, an inaccuracy warning is displayed; true by default
+
 var REPLAY_SCRUBBER_ENABLED_FLAG = false; // if true, scrubber can be used to update replay render
 
 var RPL_TICK_DEFAULT = 0; // tick value to use when updating replay slices
@@ -8048,6 +8136,7 @@ var LAST_TWITCH_REFRESH = Date.now(); // last time paginateLive() was called (tw
 var LAST_ON_DEATH_AUTOREFRESH = Date.now(); // last time recent / mygames updated due to submission
 var LAST_SUCCESSFUL_DEATHS_GET = 0; // used to invalidate old data to the animator
 var GET_URL_BUFFER = 'https://ddstats.live/proxy.php?url='; // intermediary JSONP API to use
+var LB_POST_URL_BUFFER = 'https://ddstats.live/proxyPost.php?userid='; // leaderboard POST PB API to use
 
 var GLOBE_HOVERING = false; // if true, user was hovering globe last
 var GLOBE_INITIALIZED = false; // if true, lights were successfully manipulated at launchtime
@@ -9497,20 +9586,40 @@ function enactValidHash(VALID_HASH, CLEAN, VARSET) { // takes hashDecoder that i
   //  GAME PAGE ID
   var GPID = VALID_HASH.findIndex(query_element => query_element[0] === 'gpid');
   if (GPID != -1) {
-    if (DD_GAMEPAGE_GAME != undefined && Number.isInteger(parseInt(VALID_HASH[GPID][1]))) {
-      if (DD_GAMEPAGE_GAME.block != undefined) {
-        if (DD_GAMEPAGE_GAME.block.DDSTATS_GAME_ID != parseInt(VALID_HASH[GPID][1])) {
+    if (DD_GAMEPAGE_GAME != undefined && // is a gamepage game, and is an int OR an LB PB game
+        (Number.isInteger(parseInt(VALID_HASH[GPID][1])) || VALID_HASH[GPID][1].toString().startsWith('LB'))) {
+      if (DD_GAMEPAGE_GAME.block != undefined) { // Gamepage block exists
+        if (VALID_HASH[GPID][1].toString().startsWith('LB')){ // Hash suggests this is a leaderboard game
+          var LBGPID = parseInt(VALID_HASH[GPID][1].toString().substring(2));
+          if (DD_GAMEPAGE_GAME.block.LEADERBOARD_REPLAY_ID != LBGPID) {
+            if (VARSET) { // Can set local variables
+              DD_GAMEPAGE_CACHE_FLAG = VALID_HASH[GPID][1]; // "LB" included; paginateGame handles this
+            } else {
+              paginateGame(undefined, undefined, undefined, undefined, undefined, undefined, true, parseInt(VALID_HASH[GPID][1].toString().substring(2)), ' ');
+            }
+          }
+        } else { // not suggested to be a leaderboard game
+          if (DD_GAMEPAGE_GAME.block.DDSTATS_GAME_ID != parseInt(VALID_HASH[GPID][1])) {
+            if (VARSET) { // Can set local variables
+              DD_GAMEPAGE_CACHE_FLAG = parseInt(VALID_HASH[GPID][1]);
+            } else {
+              paginateGame(parseInt(VALID_HASH[GPID][1]), undefined, undefined, undefined, undefined, undefined, true);
+            }
+          }
+        }
+      } else { // Gamepage block does not exist (?)
+        if (VALID_HASH[GPID][1].toString().startsWith('LB')){ // Hash suggests this is a leaderboard game
+          if (VARSET) {
+            DD_GAMEPAGE_CACHE_FLAG = VALID_HASH[GPID][1]; // "LB" included; paginateGame handles this
+          } else {
+            paginateGame(undefined, undefined, undefined, undefined, undefined, undefined, true, parseInt(VALID_HASH[GPID][1].toString().substring(2)), ' ');
+          }
+        } else {
           if (VARSET) {
             DD_GAMEPAGE_CACHE_FLAG = parseInt(VALID_HASH[GPID][1]);
           } else {
             paginateGame(parseInt(VALID_HASH[GPID][1]), undefined, undefined, undefined, undefined, undefined, true);
           }
-        }
-      } else {
-        if (VARSET) {
-          DD_GAMEPAGE_CACHE_FLAG = parseInt(VALID_HASH[GPID][1]);
-        } else {
-          paginateGame(parseInt(VALID_HASH[GPID][1]), undefined, undefined, undefined, undefined, undefined, true);
         }
       }
     }
@@ -9620,8 +9729,12 @@ function getHash(XY_ONLY) {
   if (GLOBAL_NAV_PAGE == 4 && GLOBAL_NAV_PAGE_OFFSETS[4] == -1) {
     if (DD_GAMEPAGE_GAME != undefined) {
       if (DD_GAMEPAGE_GAME.block != undefined) {
-        if (DD_GAMEPAGE_GAME.block.DDSTATS_GAME_ID != undefined && DD_GAMEPAGE_GAME.block.DDSTATS_GAME_ID != null && DD_GAMEPAGE_GAME.block.DDSTATS_GAME_ID != -1) {
+        if (typeof DD_GAMEPAGE_GAME.block.DDSTATS_GAME_ID != 'undefined' && DD_GAMEPAGE_GAME.block.DDSTATS_GAME_ID != null && DD_GAMEPAGE_GAME.block.DDSTATS_GAME_ID != -1) {
+          //  traditional DDStats game
           HASH_STRING += '&gpid=' + DD_GAMEPAGE_GAME.block.DDSTATS_GAME_ID;
+        } else if(typeof DD_GAMEPAGE_GAME.block.LEADERBOARD_REPLAY_ID != 'undefined' && DD_GAMEPAGE_GAME.block.LEADERBOARD_REPLAY_ID != null && DD_GAMEPAGE_GAME.block.LEADERBOARD_REPLAY_ID != -1){
+          //  Leaderboard PB game
+          HASH_STRING += '&gpid=' + 'LB' + DD_GAMEPAGE_GAME.block.LEADERBOARD_REPLAY_ID;
         }
       }
     }
@@ -16444,7 +16557,7 @@ async function loadGame(ID, LR, NO_R_FORCE, JUST_RETURN, GAME_OBJECT_INSTEAD) {
 
       if (JUST_RETURN) {
         if (data != 'ERR') {
-          var DD_RET = buildDDStatsGame(data);
+          var DD_RET = gameObjectFromDDStatsJSON(data);
           return DD_RET;
         } else {
           alert('Error in loadGame for Game Page - Game not loaded (see console).', 'error');
@@ -16453,10 +16566,10 @@ async function loadGame(ID, LR, NO_R_FORCE, JUST_RETURN, GAME_OBJECT_INSTEAD) {
       } else {
         if (data != 'ERR') {
           if (LR == 'R') {
-            DD_RIGHT_GAME = buildDDStatsGame(data);
+            DD_RIGHT_GAME = gameObjectFromDDStatsJSON(data);
             setRightGame(DD_RIGHT_GAME, NO_R_FORCE, data);
           } else {
-            DD_LEFT_GAME = buildDDStatsGame(data);
+            DD_LEFT_GAME = gameObjectFromDDStatsJSON(data);
             setLeftGame(DD_LEFT_GAME, data);
           }
         } else {
@@ -16538,6 +16651,7 @@ function formatLeaderboardObject(DATA) {
   */
 
   var deEmojifiedPlayerName = cleanString(deEmojify(DATA.player_name));
+  var simplePlayerName_toBeDeEmojifiedLater = cleanString(DATA.player_name);
 
   var ifLiveClass = '';
   if (DD_LIVE_PLAYERS.includes(DATA.player_id)) {
@@ -16547,7 +16661,18 @@ function formatLeaderboardObject(DATA) {
     ifLiveClass = ' currentlyLive';
   }
 
-  return '<div class="leaderboardItem" PLAYER_ID="' + DATA.player_id + '" PLAYER_NAME="' + deEmojifiedPlayerName + '" onmouseenter="tooltip(\'leaderboardItem\')" onmouseleave="tooltip(\'close\')" onclick="paginatePlayer(this.attributes.player_id.nodeValue,undefined,undefined,this.attributes.player_name.nodeValue)"><div class="leaderboardName"><span class="leaderboardRank">' + DATA.rank + '  ' + DATA.game_time.toFixed(4) + 's  ·  ' + '</span><span class="leaderboardActualName' + ifLiveClass + '">' + deEmojifiedPlayerName + '</span></div><div class="leaderboardStats">   ' + DATA.death_type + ', ' + DATA.gems + ' gems, ' + DATA.enemies_killed + ' kills, ' + DATA.accuracy.toFixed(2) + '% acc</div>' /*<div class="leaderboardButtonWrapper"><div class="leaderboardButton" onmousedown="alert(this.parentElement.parentElement.attributes.player_id.nodeValue + \' can be favorited (UNIMPLEMENTED TO-DO)\'); toggleFavoriteIcon(this);"><div class="leaderboardButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.2vh;position:relative;top:-0.185vh;right:0.65vh;line-height:0px;">favorite_border</i></div></div>' /* <div class="leaderboardButton" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue)"><div class="leaderboardButtonInside" style="left: 0.35vh; top: 0.65vh;">L</div></div><div class="leaderboardButton" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue,\'R\')"><div class="gameButtonInside" style="left: 0.32vh; top: 0.65vh;">R</div></div><div class="leaderboardButton leaderboardButtonUnclickable" onmousedown="alert(this.parentElement.parentElement.attributes.game_id.nodeValue + \' not watchable as replay\',\'warning\')"><div class="leaderboardButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.1vh;position:relative;top:-0.3vh;right:0.595vh;line-height:0px;">visibility_off</i></div></div></div>*/ + /* '<div class="leaderboardItemBackgroundClickbox" onmousedown="alert(this.parentElement.attributes.game_id.nodeValue + \' loadable into right side of leaderboard (UNIMPLEMENTED TO-DO)\')"></div>*/ '</div>';
+  var LBButton = '';
+  var LBPR = '0.5vh';
+  if(parseFloat(DATA.game_time) > 10){
+    LBPR = '2.25vh';
+    LBButton = '<div class="leaderboardButton" onmouseenter="tooltip(\'viewDDStatsPB\')" onmouseleave="tooltip(\'close\')" onmousedown="paginateGame(undefined, undefined, undefined, undefined, undefined, undefined, undefined, '+DATA.player_id+', `'+simplePlayerName_toBeDeEmojifiedLater+'`,`'+DATA.game_time.toFixed(4)+'`);"><div class="leaderboardButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.2vh;position:relative;top:-0.185vh;right:0.65vh;line-height:0px;">search</i></div></div>';
+  }
+
+  return '<div class="leaderboardItem" PLAYER_ID="' + DATA.player_id + '" PLAYER_NAME="' + deEmojifiedPlayerName + '"><div class="leaderboardName"><span class="leaderboardRank">' + DATA.rank + '  ' + DATA.game_time.toFixed(4) + 's  ·  ' + '</span><span class="leaderboardActualName' + ifLiveClass + '">' + deEmojifiedPlayerName + '</span></div><div class="leaderboardStats" style="padding-right:'+LBPR+'">   ' + DATA.death_type + ', ' + DATA.gems + ' gems, ' + DATA.enemies_killed + ' kills, ' + DATA.accuracy.toFixed(2) + '% acc</div>' + '<div class="leaderboardButtonWrapper">'+LBButton+'</div>'
+
+    + '<div onmouseenter="tooltip(\'leaderboardItem\')" onmouseleave="tooltip(\'close\')" onclick="paginatePlayer(this.parentElement.attributes.player_id.nodeValue,undefined,undefined,this.parentElement.attributes.player_name.nodeValue)" class="gameItemBackgroundClickbox" style="width: calc(100% - 2.25vh);height:1.735vh;margin-top:0vh;"></div>'
+
+   /* <div class="leaderboardButtonWrapper"><div class="leaderboardButton" onmousedown="alert(this.parentElement.parentElement.attributes.player_id.nodeValue + \' can be favorited (UNIMPLEMENTED TO-DO)\'); toggleFavoriteIcon(this);"><div class="leaderboardButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.2vh;position:relative;top:-0.185vh;right:0.65vh;line-height:0px;">favorite_border</i></div></div>   <div class="leaderboardButton" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue)"><div class="leaderboardButtonInside" style="left: 0.35vh; top: 0.65vh;">L</div></div><div class="leaderboardButton" onmousedown="loadGame(this.parentElement.parentElement.attributes.game_id.nodeValue,\'R\')"><div class="gameButtonInside" style="left: 0.32vh; top: 0.65vh;">R</div></div><div class="leaderboardButton leaderboardButtonUnclickable" onmousedown="alert(this.parentElement.parentElement.attributes.game_id.nodeValue + \' not watchable as replay\',\'warning\')"><div class="leaderboardButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.1vh;position:relative;top:-0.3vh;right:0.595vh;line-height:0px;">visibility_off</i></div></div></div>*/ + /* '<div class="leaderboardItemBackgroundClickbox" onmousedown="alert(this.parentElement.attributes.game_id.nodeValue + \' loadable into right side of leaderboard (UNIMPLEMENTED TO-DO)\')"></div>*/ '</div>';
   //  "VISIBILITY" should be LOADING, and then ANOTHER FUNCTION should take care of
   //    CHECKING if REPLAY is present for GIVEN GAME IDs in THIS PAGE based on the IDS in elements
 
@@ -18134,7 +18259,7 @@ async function paginatePlayer(PLAYER_ID, FORCE, DO_NOT_GOTO, PROV_PLAYER_NAME, h
         CURRENT_PLAYER_PAGE_NAME = data_ddinfo_lb.username;
         handleSubnavigatorText();
 
-        wrapperElement.querySelector('.gameItem').innerHTML = '<div class="gamerName" style="margin-left:5.15vh;z-index:9999;color:var(--BGFill) !important;top:0.11vh;"><span id="LEADERBOARD_GAME_LINK_WRAP" onclick="paginateGameConditional(this)" onmouseenter="conditionalPBTooltip(this)" onmouseleave="tooltip(\'close\')"><span style="font-weight:800;">' + data_ddinfo_lb.rank + '</span>  ' + data_ddinfo_lb.time.toFixed(4) + '  ‣  ' + deEmojifiedPlayerName + '</div><div class="gamerStats" style="color:var(--BGFill) !important;"> <br> </div></span>' +
+        wrapperElement.querySelector('.gameItem').innerHTML = '<div class="gamerName" style="margin-left:5.15vh;z-index:9999;color:var(--BGFill) !important;top:0.11vh;"><span id="LEADERBOARD_GAME_LINK_WRAP" class="LB_GAMEPAGE_CLICKABLE" onclick="paginateGameConditional(this)" onmouseenter="conditionalPBTooltip(this)" onmouseleave="tooltip(\'close\')"><span style="font-weight:800;">' + data_ddinfo_lb.rank + '</span>  ' + data_ddinfo_lb.time.toFixed(4) + '  ‣  ' + deEmojifiedPlayerName + '</div><div class="gamerStats" style="color:var(--BGFill) !important;"> <br> </div></span>' +
 
           '<div class="gameButtonWrapper" style="right:calc(1px + 0.025vh) !important;width:calc(100% - 0.15vh - 21px);justify-content:right;"><div class="gameButton" onmouseenter="tooltip(\'returnToLeaderboard\')" onmouseleave="tooltip(\'close\')" onmousedown="page(3,0);" style="position:absolute;left:0;overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_backward</i></div></div>' + /* '<div class="gameButton" onmouseenter="tooltip(\'favoriteButton\')" onmouseleave="tooltip(\'close\')" onmousedown="alert(this.parentElement.parentElement.parentElement.attributes.player_page_player_id.nodeValue + \' can be favorited (UNIMPLEMENTED TO-DO)\'); toggleFavoriteIcon(this);"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.9955vh;position:relative;right:0.266vh;line-height:0px;top:0.125vh">favorite_border</i></div></div>' + */ buttonForTwitch + '<span id="PLAYER_GAME_BUTTON_PLACEHOLDER"></div>' + '</div>'; /* <div class="gameItemBackgroundClickbox" onmousedown="alert(this.parentElement.attributes.game_id.nodeValue + \' loadable into right side of recents or myGames (UNIMPLEMENTED TO-DO)\')"></div> */
 
@@ -19375,7 +19500,450 @@ function makeStatsFromCustom(DDCL_JSON) {
 
 }
 
-function buildDDStatsGame(DDSTATS_JSON) {
+function calcLeviDownTimeFromReplayEvents(){
+  // all daggers that have hit levi or orb
+  var LeviDaggers = [];
+  if(typeof REPLAY_OBJECT_CACHE.categories.leviSpawn != 'undefined'){ // only if any daggers hit levi
+    LeviDaggers = REPLAY_OBJECT_CACHE.categories.hit.filter(obj => {
+      return (obj.a == REPLAY_OBJECT_CACHE.categories.leviSpawn.entityId);
+    });
+  }
+  var dmgCache = 0;
+  for(var Hit of LeviDaggers){
+    dmgCache++;
+    if(dmgCache == 1500){
+      return Hit.tick;
+    }
+  }
+  return 0.0; // did not ever reach 1500 damage
+}
+
+async function buildLeaderboardGamepageGame(LB_PB_ID, LBNAME, LBTIME, C){
+  var DDGPG = await gameObjectFromReplayObject(REPLAY_OBJECT_CACHE, C, LB_PB_ID, LBNAME, LBTIME);
+  DD_GAMEPAGE_GAME = DDGPG;
+  drapeLog(arguments.callee.name, 'Generation complete: ', DD_GAMEPAGE_GAME);
+  return true;
+}
+
+async function gameObjectFromReplayObject(givenReplayObject, isGamepageRequest, LB_PB_ID, LBNAME, LBTIME){
+
+  //  USED TO RE-KEY REPLAY EVENT INFORMATION
+  //  WARNING: This function is pricey!
+
+  //  LBTime is a legacy argument and can be removed
+
+  var replayObject = REPLAY_OBJECT_CACHE;
+  if(typeof givenReplayObject != 'undefined'){
+    replayObject = givenReplayObject;
+  }
+
+  var L_REF = document.querySelector('#GAMEPAGE_INFO .gameItem .gamerName'); // Gamepage loading text
+  var Incubation_Block = { // Block to fill
+    block: {},
+    frames: [],
+    additional_info: {}
+  };
+
+  if(isGamepageRequest == true){ L_REF.innerHTML = 'Parsing...'; await sleep(0.0001); }
+
+  //  Calculate the extended event data from the events object
+  var Skull2Spawns = replayObject.categories.spawn.filter(obj => {
+                        return (obj.entityType == 'skull 2');
+                      });
+  var Skull3Spawns = replayObject.categories.spawn.filter(obj => {
+                        return (obj.entityType == 'skull 3');
+                      });
+  var Skull4Spawns = replayObject.categories.spawn.filter(obj => {
+                        return (obj.entityType == 'skull 4');
+                      });
+  var Squid1Spawns = replayObject.categories.spawn.filter(obj => {
+                        return (obj.entityType == 'squid 1');
+                      });
+  var Squid2Spawns = replayObject.categories.spawn.filter(obj => {
+                        return (obj.entityType == 'squid 2');
+                      });
+  var Squid3Spawns = replayObject.categories.spawn.filter(obj => {
+                        return (obj.entityType == 'squid 3');
+                      });
+  var CentipedeSpawns = replayObject.categories.spawn.filter(obj => {
+                        return (obj.entityType == 'centipede');
+                      });
+  var GigapedeSpawns = replayObject.categories.spawn.filter(obj => {
+                        return (obj.entityType == 'gigapede');
+                      });
+  var GhostpedeSpawns = replayObject.categories.spawn.filter(obj => {
+                        return (obj.entityType == 'ghostpede');
+                      });
+  var LeviSpawns = replayObject.categories.spawn.filter(obj => {
+                        return (obj.entityType == 'leviathan');
+                      });
+  var Spider1Spawns = replayObject.categories.spawn.filter(obj => {
+                        return (obj.entityType == 'spider 1');
+                      });
+  var Spider2Spawns = replayObject.categories.spawn.filter(obj => {
+                        return (obj.entityType == 'spider 2');
+                      });
+
+  var DaggerRealHits = replayObject.categories.hit.filter(obj => {
+                        return (obj.b > 0 && obj.c != -1 && obj.c != 3 && obj.c != 1 && obj.c != 6); 
+                        // c =/= 1, 3 and 6 are approximations assuming squid/spider/levi deflects;
+                        //  they cause the calculation to be objectively wrong
+                      });
+
+  var HomingSpawns = replayObject.categories.spawn.filter(obj => {
+                        return (obj.entityType == 'dagger' && (obj.daggerType == 4 || obj.daggerType == 6));
+                      });
+
+  LeviDaggers = []; 
+  if( typeof replayObject.categories.leviSpawn != 'undefined'){
+    LeviDaggers = replayObject.categories.hit.filter(obj => { // all daggers that have hit levi or orb
+      return (obj.a == replayObject.categories.leviSpawn.entityId && obj.c >= 0 && obj.c != 6); // 6 is non-weak hit
+    });
+  }
+
+  var tickToSecConst = Math.fround(1 / 60); // f32 tick length (approximate; not totally accurate)
+  var TIME = 0; // totally accurate calculated final time
+  for(i=0; i<(REPLAY_OBJECT_CACHE.endTick + 1); i++){
+      TIME = Math.fround(TIME + 1 / 60);
+  }
+  TIME = TIME.toFixed(4);
+
+  var GemsPossibleTotal = Skull2Spawns.length + Skull3Spawns.length + Skull4Spawns.length + Squid1Spawns.length + (Squid2Spawns.length * 2) + (Squid3Spawns.length * 3) + (CentipedeSpawns.length * 25) + (GigapedeSpawns.length * 50) + (GhostpedeSpawns.length * 10) + (LeviSpawns.length * 6) + Spider1Spawns.length + Spider2Spawns.length;
+  var GemsOffsetTotal = 0; 
+  var SCL;
+
+  if(isGamepageRequest == true){ L_REF.innerHTML = 'Framing...'; await sleep(0.0001); }
+
+  // Calculate the gems that have not yet been acquired at the end of the game;
+  //  Gems that are on enemies are to be considered not despawned or part of the total,
+  //    but gems that have been popped off but are uncollected are to be considered despawned
+  //      DDStats considers those gems "not despawned" but we will approximate and let them be considered
+  if(SLICE_CACHE == undefined){
+
+    // if unfinished (this should never happen, as this function is invoked after first slice finishes)
+    alert('Loading SLICE_CACHE for leaderboard replay conversion failed!','warning');
+    return 'ERR'; // exit out of this function because it has failed
+
+  } else { // calculate items based on the SLICE_CACHE final frame
+    SCL = SLICE_CACHE[SLICE_CACHE.length-1];
+  }
+
+  //  Calculate Levi and Orb down time
+  var leviDownTime = 0.0;
+  var leviDownTick = 0;
+  var orbDownTime = 0.0;
+  var dmgCache = 0;
+  // for(var i=(356*60); i<replayObject.endTick; i++){
+  for(var Hit of LeviDaggers){
+    if(Hit.tick > leviDownTick + 300){ // cannot include damage after levi's death
+      dmgCache++;
+    }
+    if(dmgCache >= 1500 && leviDownTime == 0.0){
+      leviDownTime = Hit.tick * tickToSecConst;
+    } else if(dmgCache >= 3900){
+      orbDownTime = Hit.tick * tickToSecConst;
+      break;
+    }
+  }
+
+
+
+
+
+
+
+
+  var AllGemDroppingEntitiesLastFrame = SCL[0].filter(obj => {
+    return (obj.entityType != 'skull 1' && obj.entityType != 'transmuted skull 1' && obj.entityType != 'spiderling' && obj.entityType != 'spider egg 1' && obj.entityType != 'spider egg 2' && obj.entityType != 'thorn');
+  });
+
+  var GigasGemsUnpopped = 0;
+  var CentiGemsUnpopped = 0;
+  var GhostGemsUnpopped = 0;
+  var EliteSquidGemsUnpopped = 0;
+  var LeviGemsUnpopped = 0;
+
+  for(var Giga of SCL[5]){ // All gigas
+    for(var Segment of Giga[1]){ // All segments of this giga
+      if(Segment > 0){ // If segment alive, gem unpopped
+        GigasGemsUnpopped++;
+      }
+    }
+  }
+  for(var Centi of SCL[4]){ // All centis
+    for(var Segment of Centi[1]){ // All segments of this centi
+      if(Segment > 0){ // If segment alive, gem unpopped
+        CentiGemsUnpopped++;
+      }
+    }
+  }
+  for(var Ghost of SCL[6]){ // All ghosts
+    for(var Segment of Ghost[1]){ // All segments of this ghost
+      if(Segment > 0){ // If segment alive, gem unpopped
+        GhostGemsUnpopped++;
+      }
+    }
+  }
+  var eliteSquidSpawns = SCL[0].filter(obj => {
+                        return (obj.entityType == 'squid 2' || obj.entityType == 'squid 3');
+                      });
+  for(var Squid of eliteSquidSpawns){
+    for(var Node of Squid.nodeHealth[Squid.nodeHealth.length-1][0]){
+      if(Node > 0){
+        EliteSquidGemsUnpopped++;
+      }
+    }
+  }
+
+  var AllElse = SCL[0].filter(obj => {
+    return (obj.entityType != 'squid 2' && obj.entityType != 'squid 3');
+  });
+
+  var allElseUnpopped = AllElse.length;
+  var CalculatedApproximateRealTotalGems = GemsPossibleTotal - GigasGemsUnpopped - CentiGemsUnpopped - GhostGemsUnpopped - EliteSquidGemsUnpopped - LeviGemsUnpopped - allElseUnpopped;
+
+  //  now assume every squid 1 and all other enemies are unpopped
+
+
+
+
+
+  
+
+
+  //  FINISHED FRAME ITEMS
+  var gemIndexCache = 0;
+  var gemsCache = 0; // gems collected
+  var levelGemsCache = 0; // level gems
+  var homingIndexCache = 0; // homing used 
+  var homingCache = 0; // total homing
+  var level2Time = 0.0; // L2 Time
+  var level3Time = 0.0; // L3 Time
+  var level4Time = 0.0; // L4 Time
+  var currentLevelCache = 1; // Current Level
+  var achievedLevel2Flag = false;
+  var achievedLevel3Flag = false;
+  var achievedLevel4Flag = false;
+  var level4Offset = 0;
+  var homingPeak = 0;
+  var maxHomingTime = 0.0;
+  var despawnedCache = 0; // Gems Despawned (not implemented yet) 
+  var homingArr = [];
+  var daggersFiredCache = 0;
+  var daggersHitCache = 0;
+  for(var i=0; i<replayObject.endTick; i+=60){
+
+    //  GEM EVENTS THIS SECOND
+    var gemsThisSecond = 0;
+    var gemSecFlag = true;
+    while(gemSecFlag == true){ // only calc for this second
+      if(gemIndexCache < replayObject.categories.gem.length){
+        if( replayObject.categories.gem[gemIndexCache].tick >= i && 
+            replayObject.categories.gem[gemIndexCache].tick < i + 60){
+
+          //  This gem was collected this second
+          gemIndexCache++;
+          gemsCache++;
+          gemsThisSecond++;
+
+          //  Calculate current hand level
+          if(gemsCache <= 9){
+            currentLevelCache = 1;
+            levelGemsCache++;
+          } else if(gemsCache >= 10 && gemsCache < 70){
+            currentLevelCache = 2;
+            if(achievedLevel2Flag == false){
+              achievedLevel2Flag = true;
+              level2Time = i * tickToSecConst;
+            }
+            levelGemsCache++;
+          } else if(gemsCache >= 70 && homingCache < 150){
+            currentLevelCache = 3;
+            if(achievedLevel3Flag == false){
+              achievedLevel3Flag = true;
+              level3Time = i * tickToSecConst;
+            } else {
+              homingCache++; // only add homing if not == 70
+            }
+            levelGemsCache = 70;
+          } else if(homingCache >= 150){
+            currentLevelCache = 4;
+            level4Offset = 150;
+            if(achievedLevel4Flag == false){
+              achievedLevel4Flag = true;
+              level4Time = i * tickToSecConst;
+            }
+            levelGemsCache = 71;
+            homingCache++;
+          }
+
+        } else { // end loop
+          gemSecFlag = false;
+        }
+      } else {
+        gemSecFlag = false;
+      }
+    }
+
+    //  HOMING EVENTS THIS SECOND
+    var homingSecFlag = true;
+    while(homingSecFlag == true){ // only calc for this second
+      if(homingIndexCache < HomingSpawns.length){
+        if( HomingSpawns[homingIndexCache].tick >= i && 
+            HomingSpawns[homingIndexCache].tick < i + 60){
+
+          //  This gem was collected this second
+          homingIndexCache++;
+          homingCache--;
+
+        } else { // end loop
+          homingSecFlag = false;
+        }
+      } else {
+        homingSecFlag = false;
+      }
+    }
+
+    /*
+    //  DAGGERS FIRED EVENTS THIS SECOND
+    var dagFiredSecFlag = true;
+    while(dagFiredSecFlag == true){ // only calc for this second
+      if(daggersFiredCache < replayObject.categories.daggerSpawns.length){
+        if( replayObject.categories.daggerSpawns[daggersFiredCache].tick >= i && 
+            replayObject.categories.daggerSpawns[daggersFiredCache].tick < i + 60){
+
+          //  This dagger was fired
+          daggersFiredCache++;
+
+        } else { // end loop
+          dagFiredSecFlag = false;
+        }
+      } else {
+        dagFiredSecFlag = false;
+      }
+    }
+
+    //  DAGGERS FIRED EVENTS THIS SECOND
+    var dagHitSecFlag = true;
+    while(dagHitSecFlag == true){ // only calc for this second
+      if(daggersHitCache < DaggerRealHits.length){
+        if( DaggerRealHits[daggersHitCache].tick >= i && 
+            DaggerRealHits[daggersHitCache].tick < i + 60){
+
+          //  This dagger was fired
+          daggersHitCache++;
+
+        } else { // end loop
+          dagHitSecFlag = false;
+        }
+      } else {
+        dagHitSecFlag = false;
+      }
+    }
+    */
+
+    var realHoming = parseInt(homingCache - level4Offset);
+
+    //  max homing
+    if(realHoming > homingPeak){
+      homingPeak = realHoming;
+      maxHomingTime = i * tickToSecConst;
+    }
+
+    //  commit this second's events
+    var FRAME_OBJECT = {};
+    FRAME_OBJECT.homing = realHoming;
+    FRAME_OBJECT.gems_collected = parseInt(gemsCache);
+    FRAME_OBJECT.level_gems = parseInt(levelGemsCache);
+    // FRAME_OBJECT.daggers_fired = parseInt(daggersFiredCache);
+    // FRAME_OBJECT.daggers_hit = parseInt(daggersHitCache);
+
+    //  unfinished frames
+    FRAME_OBJECT.daggers_fired = -1;
+    FRAME_OBJECT.daggers_hit = -1;
+    FRAME_OBJECT.daggers_eaten = -1;
+    FRAME_OBJECT.enemies_alive = -1;
+    FRAME_OBJECT.gems_despawned = -1;
+    FRAME_OBJECT.gems_eaten = -1;
+    FRAME_OBJECT.gems_total = -1;
+    FRAME_OBJECT.kills = -1;
+
+    Incubation_Block.frames.push(FRAME_OBJECT);
+  }
+
+
+
+
+  //  Calculate the time at which Leviathan and The Orb die
+
+
+
+
+
+//  Now create frame arrays and block statics based on this event data
+  if(isGamepageRequest == true){ L_REF.innerHTML = 'Blocking...'; await sleep(0.0001); }
+
+  //  FINISHED BLOCK ITEMS
+  Incubation_Block.block.daggers_fired = replayObject.categories.daggerSpawns.length;
+  Incubation_Block.block.daggers_hit = DaggerRealHits.length;
+  Incubation_Block.block.death_type = replayObject.categories.hit[replayObject.categories.hit.length-1].b;
+  Incubation_Block.block.gems_collected = replayObject.categories.gem.length;
+  Incubation_Block.block.gems_total = CalculatedApproximateRealTotalGems;
+  Incubation_Block.block.enemies_alive = SCL[0].length;
+  Incubation_Block.block.gems_despawned = CalculatedApproximateRealTotalGems - replayObject.categories.gem.length; // INACCURATE; Doesn't account for gems eaten, etc.
+  Incubation_Block.block.homing = homingCache;
+  Incubation_Block.block.is_player_alive = false;
+  Incubation_Block.block.is_replay = true;
+  Incubation_Block.block.kills = replayObject.categories.nonDaggerSpawns.length - SCL[0].length; // Approximate
+  Incubation_Block.block.is_in_game = '???'; // WHAT EVEN IS THIS FUCKIN SHIT
+  Incubation_Block.block.level_gems = levelGemsCache;
+  Incubation_Block.block.levi_down_time = leviDownTime;
+  Incubation_Block.block.max_homing = homingPeak;
+  Incubation_Block.block.orb_down_time = orbDownTime;
+  Incubation_Block.block.starting_time = 0;
+  Incubation_Block.block.starting_homing = 0;
+  Incubation_Block.block.starting_hand = 0; // maybe should be 1? was previously set to dds "level_gems"
+  Incubation_Block.block.survival_md5 = V3_MD5;
+  Incubation_Block.block.time = TIME; // parseFloat((replayObject.endTick * tickToSecConst).toFixed(4));
+  Incubation_Block.block.time_lvl2 = parseInt(level2Time);
+  Incubation_Block.block.time_lvl3 = parseInt(level3Time);
+  Incubation_Block.block.time_lvl4 = parseInt(level4Time);
+  Incubation_Block.block.time_max = TIME; //parseFloat((replayObject.endTick * tickToSecConst).toFixed(4));
+  Incubation_Block.block.time_max_homing = parseInt(maxHomingTime);
+
+  //  UNIQUE GAME ID RETURNED BY SERVER ON RETRIEVE OR GAME COMMIT
+  Incubation_Block.block.LEADERBOARD_REPLAY_ID = LB_PB_ID;
+  Incubation_Block.block.replay_player_id = LB_PB_ID;
+
+  //  ########################################################
+  //  ############## UNFINISHED BLOCK ITEMS ##################
+  //  ########################################################
+
+  //  The username will ALWAYS be the most recent loaded into cache for a leaderboard game
+  Incubation_Block.block.replay_player_name = cleanString(LB_USERNAME_GLOBAL_CACHE);
+  Incubation_Block.block.username = cleanString(LB_USERNAME_GLOBAL_CACHE);
+
+
+  Incubation_Block.block.daggers_eaten = -1;
+  Incubation_Block.block.ddstats_version = -1;
+  Incubation_Block.block.enemies_alive_max = -1;
+  Incubation_Block.block.gems_eaten = -1;
+  Incubation_Block.block.per_enemy_alive_count = '???'; // NOT CURRENTLY SUPPORTED
+  Incubation_Block.block.per_enemy_kill_count = '???'; // NOT CURRENTLY SUPPPORTED
+  Incubation_Block.block.prohibited_mods = false; // NOT ACCURATE - WHO CARES?
+  Incubation_Block.block.stats_base = '???'; // WHO CARES??!?!??!?!?!?!?!?!??!?!
+  Incubation_Block.block.stats_finished_loading = true; // Always true because setting is instant
+  Incubation_Block.block.status = 7;
+  Incubation_Block.block.time_enemies_alive_max = -1;
+
+  //  Globally cache and return
+  DD_LB_PB_CACHE = Incubation_Block;
+  return Incubation_Block;
+}
+
+
+
+function gameObjectFromDDStatsJSON(DDSTATS_JSON) {
   //  USED TO RE-KEY DDSTATS.COM INFORMATION
   var Incubation_Block = {
     block: {},
@@ -19961,7 +20529,10 @@ async function SEARCH_themesByName(QUERY, TOKEN, SHOULD_REFRESH) {
       if (SHOULD_REFRESH == undefined) {
         document.getElementById('FIND_RESULTS_CONTENT_BOX').innerHTML += '<div categoryID="' + Category_ID + '" id="' + Category_NAME + '" class="resultsWrapper" style="border-radius:0vh 1.25vh 1.25vh 0vh;overflow:hidden;"></div>'
       } else {
-        document.getElementById(Category_NAME).innerHTML = '';
+        var CATEG_NAME = document.getElementById(Category_NAME);
+        if(CATEG_NAME != null){
+          CATEG_NAME.innerHTML = '';
+        }
       }
 
       var TH_WRAPPER = document.getElementById(Category_NAME);
@@ -20516,7 +21087,8 @@ function setGamePageInfoWidth() {
   var OFSW_GNAV = Math.floor(document.getElementById('GAMES_SUBNAVIGATOR').offsetWidth);
   document.getElementById('GAMEPAGE_INFO').style.width = OFSW_GNAV + 'px';
   setTimeout(function() {
-    resizeCanvas(true);
+    resizeCanvas(true); // This used to be a programmatic resize (resizeCanvas(true)) !   Note for future.
+    resizeCanvas();
   }, 250);
 }
 
@@ -20546,10 +21118,13 @@ function paginateGameConditional(PAGE_ELEMENT_TEXT) { // Player page specific fu
     } else {
       paginateGame(gameToPaginate);
     }
+  } else { // DDStats game un-paginatable; Use leaderboard instead
+    var PLID = PAGE_ELEMENT_TEXT.parentElement.parentElement.parentElement.attributes.player_page_player_id.nodeValue;
+    paginateGame(undefined, undefined, undefined, undefined, undefined, undefined, undefined, PLID, '');
   }
 }
 
-async function paginateGame(GAME_ID, LOAD_FROM_CACHE, FORCE, MARKERS_ONLY, GAME_OBJECT_INSTEAD, NAMELOAD, hashless) {
+async function paginateGame(GAME_ID, LOAD_FROM_CACHE, FORCE, MARKERS_ONLY, GAME_OBJECT_INSTEAD, NAMELOAD, hashless, LB_ID_INSTEAD, LBNAME, LBTIME) {
   if (FORCE == undefined) {
     page(4, -1, undefined, hashless);
   }
@@ -20558,17 +21133,25 @@ async function paginateGame(GAME_ID, LOAD_FROM_CACHE, FORCE, MARKERS_ONLY, GAME_
   var TO_SAVE_ON_SUCCESS_FLAG = false;
   var L_REF = document.querySelector('#GAMEPAGE_INFO .gameItem .gamerName');
   var S_REF = document.querySelector('#GAMEPAGE_INFO .gameItem .gamerStats');
+  var G_REF = document.querySelector('#GAMES_SUBNAVIGATOR_TEXT');
   var INFO_WRAPPER = document.getElementById('GAMEPAGE_INFO_INNER_WRAPPER');
   var BUTTON_WRAPPER = document.getElementById('GAMEPAGE_BUTTON_WRAPPER');
-  if (LOAD_FROM_CACHE == undefined && ((GAME_ID != DD_GAMEPAGE_GAME.block.DDSTATS_GAME_ID && GAME_ID != undefined) || GAME_OBJECT_INSTEAD != undefined)) {
+  IS_LEADERBOARD_REPLAY = false;
+  if (LOAD_FROM_CACHE == undefined && ((GAME_ID != DD_GAMEPAGE_GAME.block.DDSTATS_GAME_ID && GAME_ID != undefined) || GAME_OBJECT_INSTEAD != undefined || LB_ID_INSTEAD != undefined)) {
     //  Clear the graph and buttons so as not to misrepresent this DDStats game
     if (MARKERS_ONLY == undefined) {
       TRAY_CALL(4, -1, 'loading');
     }
     CLEAR_REPLAY_SCENE(true);
+    document.getElementById('LB_WARNING').classList.remove('LBWARNING_SHOW');
+    document.getElementById('LB_INSIGHTS_WARNING').classList.remove('LBWARNING_SHOW');
+    document.getElementById('INSIGHT_EXPAND_WRAPPER').classList.remove('LBINS_HIDE');
+    document.getElementById('INSIGHT_DETAILS_WRAPPER').classList.remove('LBINS_HIDE');
     L_REF.innerHTML = 'Loading...';
     await sleep(0.0001);
     S_REF.innerHTML = ' <br> ';
+    await sleep(0.0001);
+    G_REF.innerHTML = 'Loading...';
     await sleep(0.0001);
     INFO_WRAPPER.style.display = 'none';
     document.querySelector('[game_page_game_item]').attributes.game_id.nodeValue = -1;
@@ -20581,32 +21164,67 @@ async function paginateGame(GAME_ID, LOAD_FROM_CACHE, FORCE, MARKERS_ONLY, GAME_
     if (GAME_OBJECT_INSTEAD != undefined) {
       GAME_OBJECT = GAME_OBJECT_INSTEAD;
       if (NAMELOAD == undefined) {
-        GAME_OBJECT.block.DDSTATS_GAME_ID = undefined;
-        GAME_OBJECT.block.replay_player_id = -1;
-        GAME_OBJECT.block.replay_player_name = 'External Replay';
+        if(typeof GAME_OBJECT.block.LEADERBOARD_REPLAY_ID != 'undefined'){ // leaderboard replay
+          // do nothing because the correct data is already embedded into the game object
+        } else { // external replay
+          GAME_OBJECT.block.DDSTATS_GAME_ID = undefined;
+          GAME_OBJECT.block.replay_player_id = -1;
+          GAME_OBJECT.block.replay_player_name = 'External Replay';
+          setReplayTitle(true); // none exists
+        }
+      }
+      if(typeof GAME_OBJECT.block.LEADERBOARD_REPLAY_ID != 'undefined'){
+        IS_LEADERBOARD_REPLAY = true;
       }
     } else {
-      GAME_OBJECT = await loadGame(GAME_ID, undefined, undefined, true);
+      if(LB_ID_INSTEAD == undefined){ // normal gamepage and insight generation (via ddstats)
+        IS_LEADERBOARD_REPLAY = false;
+        GAME_OBJECT = await loadGame(GAME_ID, undefined, undefined, true);
+        if(typeof GAME_OBJECT.block == 'undefined'){ return } // error out if game is bunk
+        GAME_INSIGHTS = await insights(GAME_OBJECT);
+
+      } else { // leaderboard gamepage and insight generation (directly via leaderboard replay data)
+        IS_LEADERBOARD_REPLAY = true;
+        GAME_OBJECT = await leaderboardGamepage(LB_ID_INSTEAD, undefined, undefined, LBTIME, true);
+        if(typeof GAME_OBJECT.block == 'undefined'){ return } // error out if game is bunk
+        GAME_INSIGHTS = await insights(GAME_OBJECT, undefined, LB_ID_INSTEAD);
+      }
     }
-    GAME_INSIGHTS = await insights(GAME_OBJECT);
 
     TO_SAVE_ON_SUCCESS_FLAG = true;
-  } else {
+
+  } else { // Loading from cache (likely?)
 
     //  If hashing requires a rejection of the cache, rerun this function and throw it away
     if (DD_GAMEPAGE_CACHE_FLAG != undefined) {
-      await paginateGame(DD_GAMEPAGE_CACHE_FLAG, undefined, true, undefined, undefined, undefined, true);
-      DD_GAMEPAGE_CACHE_FLAG = undefined;
-      return; // escape this function
+      if(DD_GAMEPAGE_CACHE_FLAG.toString().startsWith('LB')){
+        //  Leaderboard PB cache
+        await paginateGame(undefined, undefined, true, undefined, undefined, undefined, true, parseInt(DD_GAMEPAGE_CACHE_FLAG.toString().substring(2)));
+        DD_GAMEPAGE_CACHE_FLAG = undefined;
+        return; // escape this function
+
+      } else {
+       await paginateGame(DD_GAMEPAGE_CACHE_FLAG, undefined, true, undefined, undefined, undefined, true);
+       DD_GAMEPAGE_CACHE_FLAG = undefined;
+       return; // escape this function
+      }
     }
 
     GAME_OBJECT = DD_GAMEPAGE_GAME;
+
+    //  leaderboard gamepage game resolving
+    if(typeof GAME_OBJECT.block.LEADERBOARD_REPLAY_ID != 'undefined' && LOAD_FROM_CACHE && FORCE){
+      await REPLAY_SCENE_LINK(GAME_OBJECT.block.LEADERBOARD_REPLAY_ID, GAME_OBJECT.block.LEADERBOARD_REPLAY_ID, undefined, GAME_OBJECT.block.LEADERBOARD_REPLAY_ID);
+      IS_LEADERBOARD_REPLAY = true;
+    }
+    
 
     //  INVESTIGATE FUNCTION SAVING SO THIS IS UNNECESSARY!
     //GAME_INSIGHTS = insights(GAME_OBJECT);
 
     GAME_INSIGHTS = GAMEPAGE_INSIGHTS_CACHE;
-    if (GAME_INSIGHTS == undefined) {
+
+    if (typeof GAME_INSIGHTS == 'undefined') {
       GAME_INSIGHTS = await insights(GAME_OBJECT); // first loads and uncommits, etc.
       TO_SAVE_ON_SUCCESS_FLAG = true;
     } else if (GAME_INSIGHTS.madeWithVersion < VERSION || GAME_INSIGHTS.insightsVersion < INSIGHTS_VERSION) {
@@ -20614,6 +21232,11 @@ async function paginateGame(GAME_ID, LOAD_FROM_CACHE, FORCE, MARKERS_ONLY, GAME_
       TO_SAVE_ON_SUCCESS_FLAG = true;
     }
   }
+
+  if(typeof GAME_INSIGHTS == 'undefined'){ // this usually comes about with queued LB games; Fix
+    GAME_INSIGHTS = await insights(GAME_OBJECT);
+  }
+
   if (GAME_INSIGHTS.madeWithVersion != undefined) {
 
     //  first off, grant a load token to the replay resolver to allow for replay data pagination
@@ -20630,10 +21253,19 @@ async function paginateGame(GAME_ID, LOAD_FROM_CACHE, FORCE, MARKERS_ONLY, GAME_
 
     //  set buttons and resolve replay
     if (MARKERS_ONLY != true) {
-      BUTTON_WRAPPER.innerHTML = '<div class="gameButton" onmouseenter="tooltip(\'prevGameInfoPage\')" onmouseleave="tooltip(\'close\')" onmousedown="prevGameInfoPage();" style="position:absolute;left:0;overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_backward</i></div></div>' + '<div class="gameButton" onmouseenter="tooltip(\'viewPlayerGames\')" onmouseleave="tooltip(\'close\')" onmousedown="paginatePlayerGames(1,undefined,' + GAME_OBJECT.block.player_id + ')"><div class="gameButtonInside" style="left: 0.9vh;"><i class="material-icons" style="font-size:2.25vh;position:relative;right:0.52vh;line-height:0px;top:0.06vh">toc</i></div></div>' + '<div class="gameButton" onmouseenter="tooltip(\'loadLeft\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(undefined,\'L\',undefined,undefined,window[\'DD_GAMEPAGE_GAME\'])"><div class="gameButtonInside" style="left: 0.475vh;font-size:2.125vh;padding-top:0.05vh;">➊</div></div><div class="gameButton"  onmouseenter="tooltip(\'loadRight\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(undefined,\'R\',undefined,undefined,window[\'DD_GAMEPAGE_GAME\'])"><div class="gameButtonInside" style="left: 0.475vh;font-size:2.125vh;padding-top:0.05vh;">➋</div></div><div REPLAY_BUTTON resolved="0" onmouseenter="tooltip(\'replayButton\')" onmouseleave="tooltip(\'close\')" class="gameButton gameButtonUnclickable gameButtonLoading"><div class="gameButtonInside" style="left: 0.85vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.325vh;line-height:0px;">autorenew</i></div></div>' + '<div class="gameButton" onmouseenter="tooltip(\'nextGameInfoPage\')" onmouseleave="tooltip(\'close\')" onmousedown="nextGameInfoPage();" style="overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_forward</i></div></div>';
+      if(GAME_OBJECT.block.LEADERBOARD_REPLAY_ID != undefined){
+        //  Leaderboard gamepage buttons; Avoid 1 and 2 gamepage buttons, and the replay button (for now)
+        BUTTON_WRAPPER.innerHTML = '<div class="gameButton" onmouseenter="tooltip(\'prevGameInfoPage\')" onmouseleave="tooltip(\'close\')" onmousedown="prevGameInfoPage();" style="position:absolute;left:0;overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_backward</i></div></div>' + '<div class="gameButton" onmouseenter="tooltip(\'viewPlayerGames\')" onmouseleave="tooltip(\'close\')" onmousedown="paginatePlayerGames(1,undefined,' + GAME_OBJECT.block.LEADERBOARD_REPLAY_ID + ')"><div class="gameButtonInside" style="left: 0.9vh;"><i class="material-icons" style="font-size:2.25vh;position:relative;right:0.52vh;line-height:0px;top:0.06vh">toc</i></div></div>' + /* '<div REPLAY_BUTTON resolved="0" onmouseenter="tooltip(\'replayButton\')" onmouseleave="tooltip(\'close\')" class="gameButton gameButtonUnclickable gameButtonLoading"><div class="gameButtonInside" style="left: 0.85vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.325vh;line-height:0px;">autorenew</i></div></div>' + */ '<div class="gameButton" onmouseenter="tooltip(\'nextGameInfoPage\')" onmouseleave="tooltip(\'close\')" onmousedown="nextGameInfoPage();" style="overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_forward</i></div></div>';
+      } else {
+        //  Normal DDStats gamepage game 
+        BUTTON_WRAPPER.innerHTML = '<div class="gameButton" onmouseenter="tooltip(\'prevGameInfoPage\')" onmouseleave="tooltip(\'close\')" onmousedown="prevGameInfoPage();" style="position:absolute;left:0;overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_backward</i></div></div>' + '<div class="gameButton" onmouseenter="tooltip(\'viewPlayerGames\')" onmouseleave="tooltip(\'close\')" onmousedown="paginatePlayerGames(1,undefined,' + GAME_OBJECT.block.player_id + ')"><div class="gameButtonInside" style="left: 0.9vh;"><i class="material-icons" style="font-size:2.25vh;position:relative;right:0.52vh;line-height:0px;top:0.06vh">toc</i></div></div>' + '<div class="gameButton" onmouseenter="tooltip(\'loadLeft\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(undefined,\'L\',undefined,undefined,window[\'DD_GAMEPAGE_GAME\'])"><div class="gameButtonInside" style="left: 0.475vh;font-size:2.125vh;padding-top:0.05vh;">➊</div></div><div class="gameButton"  onmouseenter="tooltip(\'loadRight\')" onmouseleave="tooltip(\'close\')" onmousedown="loadGame(undefined,\'R\',undefined,undefined,window[\'DD_GAMEPAGE_GAME\'])"><div class="gameButtonInside" style="left: 0.475vh;font-size:2.125vh;padding-top:0.05vh;">➋</div></div><div REPLAY_BUTTON resolved="0" onmouseenter="tooltip(\'replayButton\')" onmouseleave="tooltip(\'close\')" class="gameButton gameButtonUnclickable gameButtonLoading"><div class="gameButtonInside" style="left: 0.85vh;"><i class="material-icons" style="font-size:2vh;position:relative;right:0.325vh;line-height:0px;">autorenew</i></div></div>' + '<div class="gameButton" onmouseenter="tooltip(\'nextGameInfoPage\')" onmouseleave="tooltip(\'close\')" onmousedown="nextGameInfoPage();" style="overflow:hidden;"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:2.5vh;position:relative;right: 0.48vh;line-height:0px;top:0.075vh;">arrow_forward</i></div></div>';
+      }
       if (GAME_OBJECT.block.DDSTATS_GAME_ID != undefined) {
         document.querySelector('[game_page_game_item]').attributes.game_id.nodeValue = GAME_OBJECT.block.DDSTATS_GAME_ID;
         DDSTATS_RESOLVE_REPLAYS([GAME_OBJECT.block.DDSTATS_GAME_ID], '0.09vh', LOCAL_LOAD_TOKEN);
+      } else if(GAME_OBJECT.block.LEADERBOARD_REPLAY_ID != undefined){
+        document.querySelector('[game_page_game_item]').attributes.game_id.nodeValue = 'LB' + GAME_OBJECT.block.LEADERBOARD_REPLAY_ID; // "LB" gets added to front of LB IDs:  LB244105, for example
+        IS_LEADERBOARD_REPLAY = true;
       } else {
         GAMEPAGE_RESOLVER_LAST = Date.now(); // tokenize so unequivalent
         document.querySelector('[game_page_game_item] [replay_button]').outerHTML = '<div replay_button="" resolved="0" onmouseenter="tooltip(\'replayButton\')" onmouseleave="tooltip(\'close\')" class="gameButton gameButtonUnclickable" onclick="alert(\'This game entry does not have an associated watchable replay.\',\'warning\')"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size: 2vh; position: relative; right: 0.275vh; line-height: 0px; top: 0.09vh;">visibility_off</i></div></div>';
@@ -20646,18 +21278,35 @@ async function paginateGame(GAME_ID, LOAD_FROM_CACHE, FORCE, MARKERS_ONLY, GAME_
       DATE_DATA = ' ‣ ' + timeSince(new Date(GAME_OBJECT.block.DDSTATS_GAME_TIMESTAMP));
     }
 
+    var isPB = '';
+    if(typeof GAME_OBJECT.block.LEADERBOARD_REPLAY_ID != 'undefined'){
+      // isPB = '<i class="material-icons" style="font-size: 1.5vh">star</i> '
+      isPB = '<span style="font-family: Arial;font-weight: 500;background-color: var(--BGFill);color: var(--UI-foretext);padding-right: 0.4vh;padding-left: 0.4vh;border-radius: 100vw;font-size: 1.2vh;position: relative;top: -0.1vh;margin-right: 0.3vh;">PB</span>'; /* fontsize 1.4vh */
+    }
+
     //  browser building
     buildInsightList(GAME_INSIGHTS);
     L_REF.innerHTML = '';
-    S_REF.innerHTML = deEmojifiedPlayerName + '<br>' + (GAME_OBJECT.block.time + GAME_OBJECT.block.starting_time) + DATE_DATA;
+    S_REF.innerHTML = isPB + deEmojifiedPlayerName + '<br>' + (parseFloat(GAME_OBJECT.block.time) + parseFloat(GAME_OBJECT.block.starting_time)).toFixed(4) + DATE_DATA;
 
     //  set titles and widths
     var GST_TEXT = GAME_OBJECT.block.DDSTATS_GAME_ID;
     if (GST_TEXT == undefined) {
-      GST_TEXT = 'External Replay';
+      if(GAME_OBJECT.block.LEADERBOARD_REPLAY_ID == undefined){
+        GST_TEXT = 'External Replay';
+      } else {
+        GST_TEXT = '' + GAME_OBJECT.block.LEADERBOARD_REPLAY_ID + "'s PB";
+      }
     }
     document.getElementById('GAMES_SUBNAVIGATOR_TEXT').innerHTML = GST_TEXT;
     setGamePageInfoWidth(); // sets game page info width aswell
+
+    if(IS_LEADERBOARD_REPLAY){
+      document.getElementById('LB_WARNING').classList.add('LBWARNING_SHOW');
+      document.getElementById('LB_INSIGHTS_WARNING').classList.add('LBWARNING_SHOW');
+      document.getElementById('INSIGHT_EXPAND_WRAPPER').classList.add('LBINS_HIDE');
+      document.getElementById('INSIGHT_DETAILS_WRAPPER').classList.add('LBINS_HIDE');
+    }
 
     //  done
     INFO_WRAPPER.style.display = 'block';
@@ -20670,9 +21319,10 @@ async function paginateGame(GAME_ID, LOAD_FROM_CACHE, FORCE, MARKERS_ONLY, GAME_
       DD_GAMEPAGE_GAME = GAME_OBJECT;
       INSIGHTS_GRAPH.resetZoom();
       saveSettings();
+      resizeCanvas();
     }
     //  set main page contents once succeeded
-    buildGameOverview(GAME_OBJECT, GAME_INSIGHTS);
+    buildGameOverview(GAME_OBJECT, GAME_INSIGHTS, IS_LEADERBOARD_REPLAY);
     splitGrid();
 
     if (hashless == undefined) {
@@ -20736,7 +21386,7 @@ function insight(insightText, color, time, parent_array, parent_organized_array,
   }
 }
 
-async function insights(GAME_OBJECT, GOAL_TIME) {
+async function insights(GAME_OBJECT, GOAL_TIME, LB_GAME_INSTEAD) {
   //  takes a Game object, and returns an Insights object
   try {
 
@@ -21065,6 +21715,13 @@ async function insights(GAME_OBJECT, GOAL_TIME) {
       }
     }
 
+    if(typeof LB_GAME_INSTEAD != 'undefined'){ // If this is a leaderboard game, disable insights
+      ARE_AVAILABLE_CONDITIONS = false;
+      ORGANIZED_INSIGHTS = [];
+      ORGANIZED_INSIGHTS_BLED = [];
+      INSIGHTS = [];
+    }
+
     var INSIGHTS_OBJECT = { //  Finalize and generate the final insights object
       //  DIAGNOSTIC 
       madeWithVersion: VERSION,
@@ -21110,11 +21767,7 @@ async function insights(GAME_OBJECT, GOAL_TIME) {
   }
 }
 
-async function getReplayEvents_UserPB(ID) {
-
-}
-
-async function getReplayEvents(VALID_GAME_ID, LINK_INSTEAD, FILE_INSTEAD, RAW_INSTEAD) { // This appends replay insights to the normal insights
+async function getReplayEvents(VALID_GAME_ID, LINK_INSTEAD, FILE_INSTEAD, RAW_INSTEAD, LB_ID, C) { // This appends replay insights to the normal insights
   //  Extract the events from the replay file, if necessary
   var REPLAY_EVENTS = GAMEPAGE_REPLAY_EVENTS_CACHE;
   if (GAMEPAGE_REPLAY_EVENTS_CACHE == undefined) {
@@ -21123,10 +21776,18 @@ async function getReplayEvents(VALID_GAME_ID, LINK_INSTEAD, FILE_INSTEAD, RAW_IN
     var REPLAY_FILE = undefined;
     if (FILE_INSTEAD == true) {
       REPLAY_FILE = GAMEPAGE_REPLAY_CACHE;
-    } else if (LINK_INSTEAD != undefined) {
-      var replay_file = await ajaxFile(LINK_INSTEAD);
-      var e = await replay_file.arrayBuffer();
-      REPLAY_EVENTS = parseLocalReplayIntoEvents(e);
+    } else if (LINK_INSTEAD != undefined){
+      if(LB_ID != undefined){
+        var replay_file = await ajaxFile(LB_POST_URL_BUFFER + LB_ID);
+        var e = await replay_file.arrayBuffer();
+        var LB_EVENTS_ARR_WRAP = parseLeaderboardReplayIntoEvents(e);
+        REPLAY_EVENTS = LB_EVENTS_ARR_WRAP[0];
+        LB_USERNAME_GLOBAL_CACHE = LB_EVENTS_ARR_WRAP[1];
+      } else {
+        var replay_file = await ajaxFile(LINK_INSTEAD);
+        var e = await replay_file.arrayBuffer();
+        REPLAY_EVENTS = parseLocalReplayIntoEvents(e);
+      }
     } else {
       var bleme = {
         id: [],
@@ -21148,14 +21809,18 @@ async function getReplayEvents(VALID_GAME_ID, LINK_INSTEAD, FILE_INSTEAD, RAW_IN
     return REPLAY_EVENTS; // may return 'ERR' if unsuccessful
   } else {
     if (REPLAY_EVENTS != 'ERR') {
-      return replayObjectFromEvents(REPLAY_EVENTS, VALID_GAME_ID);
+      return replayObjectFromEvents(REPLAY_EVENTS, VALID_GAME_ID, LB_ID, C);
     } else {
       return 'ERR'; // error
     }
   }
 }
 
-async function replayObjectFromEvents(REPLAY_EVENTS, GID) { // makes replay object from events
+async function replayObjectFromEvents(REPLAY_EVENTS, GID, LB_ID, C) { // makes replay object from events
+
+  //  If C is UNDEFINED,  and LB_ID is NOT UNDEFINED,  then display advanced loading text.
+  //    C is true if the LB replay is loaded from cache 
+  //    (avoids conflict with the incumbent text).
 
   //  Give every event a parent Tick parameter.
   //  This is used to determine what tick the event occurred on, iterated by the Input event
@@ -21204,10 +21869,21 @@ async function replayObjectFromEvents(REPLAY_EVENTS, GID) { // makes replay obje
       ORGANIZED_EVENTS.push(ORGANIZATION_BUFFER);
       ORGANIZATION_BUFFER = [];
     }
+    if(EVENT.type == 'spawn' && (EVENT.entityType == 'squid 2' || EVENT.entityType == 'squid 3' || EVENT.entityType == 'leviathan')){
+      EVENT.nodeHealth = []; // only applies to squids 2 and 3, and leviathan
+    }
   }
 
   var REPLAYTITLE = REPLAY_TITLE_ELEMENT;
+  var L_REF = document.querySelector('#GAMEPAGE_INFO .gameItem .gamerName');
   REPLAYTITLE.innerHTML = '<span style="position:relative;top:-0.15vh;font-size:1.85vh">parsing events...</span>';
+  var NOTIF_FLAG = false;
+  if(typeof LB_ID != 'undefined' && typeof C != 'undefined'){
+    NOTIF_FLAG = true;
+  }
+  if(NOTIF_FLAG){
+    L_REF.innerHTML = 'Parsing...';
+  }
   await sleep(INIT_MSG_WAIT);
 
   //  Player events
@@ -21259,26 +21935,36 @@ async function replayObjectFromEvents(REPLAY_EVENTS, GID) { // makes replay obje
   var DAG_SPAWNS = SPAWN_EVENTS.filter(obj => {
     return (obj.entityType == 'dagger')
   });
+  var NDAG_SPAWNS = SPAWN_EVENTS.filter(obj => {
+    return (obj.entityType != 'dagger')
+  });
+
+  var ELITE_SQUID_SPAWNS = SPAWN_EVENTS.filter(obj => {
+    return (obj.entityType == 'squid 2' || obj.entityType == 'squid 3')
+  })
 
   REPLAYTITLE.innerHTML = '<span style="position:relative;top:-0.15vh;font-size:1.85vh">organizing positionless...</span>';
+  if(NOTIF_FLAG){
+    L_REF.innerHTML = 'Organizing...';
+  }
   await sleep(INIT_MSG_WAIT);
 
   //  Thorn spawns
-  var THORN_SPAWNS = SPAWN_EVENTS.filter(obj => {
+  var THORN_SPAWNS = NDAG_SPAWNS.filter(obj => {
     return (obj.entityType === 'thorn')
   });
 
   //  Spider 1 spawns
-  var SPIDER_1_SPAWNS = SPAWN_EVENTS.filter(obj => {
+  var SPIDER_1_SPAWNS = NDAG_SPAWNS.filter(obj => {
     return (obj.entityType === 'spider 1')
   });
 
   //  Spider 2 spawns
-  var SPIDER_2_SPAWNS = SPAWN_EVENTS.filter(obj => {
+  var SPIDER_2_SPAWNS = NDAG_SPAWNS.filter(obj => {
     return (obj.entityType === 'spider 2')
   });
 
-  var LEVI_SPAWN = SPAWN_EVENTS.find(obj => obj.entityType == 'leviathan');
+  var LEVI_SPAWN = NDAG_SPAWNS.find(obj => obj.entityType == 'leviathan');
 
   //  Death type
   var DEATH_TYPE = HIT_EVENTS.at(-1).b;
@@ -21351,11 +22037,14 @@ async function replayObjectFromEvents(REPLAY_EVENTS, GID) { // makes replay obje
   */
 
   REPLAYTITLE.innerHTML = '<span style="position:relative;top:-0.15vh;font-size:1.85vh">calculating centipedes...</span>';
+  if(NOTIF_FLAG){
+    L_REF.innerHTML = 'Centipedes...';
+  }
   await sleep(INIT_MSG_WAIT);
 
   //  Array of gigapede IDs
   var CENTI_ID_LIST = [];
-  var LIST_OF_CENTIS = SPAWN_EVENTS.filter(obj => {
+  var LIST_OF_CENTIS = NDAG_SPAWNS.filter(obj => {
     return (obj.type === 'spawn' && obj.entityType == 'centipede')
   });
 
@@ -21385,11 +22074,14 @@ async function replayObjectFromEvents(REPLAY_EVENTS, GID) { // makes replay obje
   }
 
   REPLAYTITLE.innerHTML = '<span style="position:relative;top:-0.15vh;font-size:1.85vh">calculating gigapedes...</span>';
+  if(NOTIF_FLAG){
+    L_REF.innerHTML = 'Gigapedes...';
+  }
   await sleep(INIT_MSG_WAIT);
 
   //  Array of gigapede IDs
   var GIGA_ID_LIST = [];
-  var LIST_OF_GIGAS = SPAWN_EVENTS.filter(obj => {
+  var LIST_OF_GIGAS = NDAG_SPAWNS.filter(obj => {
     return (obj.type === 'spawn' && obj.entityType == 'gigapede')
   });
 
@@ -21419,11 +22111,14 @@ async function replayObjectFromEvents(REPLAY_EVENTS, GID) { // makes replay obje
   }
 
   REPLAYTITLE.innerHTML = '<span style="position:relative;top:-0.15vh;font-size:1.85vh">calculating ghostpedes...</span>';
+  if(NOTIF_FLAG){
+    L_REF.innerHTML = 'Ghostpedes...';
+  }
   await sleep(INIT_MSG_WAIT);
 
   //  Array of gigapede IDs
   var GHOST_ID_LIST = [];
-  var LIST_OF_GHOSTS = SPAWN_EVENTS.filter(obj => {
+  var LIST_OF_GHOSTS = NDAG_SPAWNS.filter(obj => {
     return (obj.type === 'spawn' && obj.entityType == 'ghostpede')
   });
 
@@ -21456,6 +22151,9 @@ async function replayObjectFromEvents(REPLAY_EVENTS, GID) { // makes replay obje
   TRAIL_ID_LIST = TRAIL_ID_LIST.concat(CENTI_ID_LIST).concat(GIGA_ID_LIST).concat(GHOST_ID_LIST);
 
   REPLAYTITLE.innerHTML = '<span style="position:relative;top:-0.15vh;font-size:1.85vh">handing to renderer...</span>';
+  if(NOTIF_FLAG){
+    L_REF.innerHTML = 'Rendering...';
+  }
   await sleep(INIT_MSG_WAIT);
 
   var REPLAY_OBJECT = {
@@ -21480,6 +22178,8 @@ async function replayObjectFromEvents(REPLAY_EVENTS, GID) { // makes replay obje
 
       //  Generics
       spawn: SPAWN_EVENTS,
+      nonDaggerSpawns: NDAG_SPAWNS, // all non-dagger spawns
+
       inputs: INPUT_EVENTS,
       end: END_EVENT,
 
@@ -21504,6 +22204,8 @@ async function replayObjectFromEvents(REPLAY_EVENTS, GID) { // makes replay obje
       ghostLifespans: GHOST_LIFESPAN_ARRAY,
 
       thornSpawns: THORN_SPAWNS,
+
+      eliteSquidSpawns: ELITE_SQUID_SPAWNS,
 
       leviSpawn: LEVI_SPAWN,
 
@@ -21605,7 +22307,7 @@ function updateReplayBuffer(PLAYER_MOVEMENT_POINT_INDEX) {
   }
 }
 
-function updateSlice(TICK, LOOKBEHIND, LOOKAHEAD) {
+async function updateSlice(TICK, LOOKBEHIND, LOOKAHEAD, IS_LB_PB, doNotObjectify, LBNAME, LBTIME, C) {
   // uses the global movement points arrays, when called by the scrubber input change,
   // to build new arrays used for the drawing of movement paths, and positions for other entities
   //  based on a given Tick (0.0166 Time), Lookahead, and Lookbehind,  each with default values
@@ -21667,6 +22369,22 @@ function updateSlice(TICK, LOOKBEHIND, LOOKAHEAD) {
   var THIS_TICK = SLICE_REPLAY_PLAYER_POSITION.tick; // the rest of the caches are based on this value
   var THIS_BUFFER_INDEX = SLICE_REPLAY_PLAYER_POSITION.index;
 
+  //  Determine modernity of this replay 
+  //    (SLICE_IS_MODERN_REPLAY = false means that this is is a pre-3.1 loose-frame replay,
+  //     and thus is not as accurate here as modern strictly-framed 1.5second keyframe replays)
+  var SLICE_MOV_LAST = REPLAY_PLAYER_MOVEMENT_POINTS[REPLAY_PLAYER_MOVEMENT_POINTS.length-1];
+  var SLICE_MOV_PREV = REPLAY_PLAYER_MOVEMENT_POINTS[REPLAY_PLAYER_MOVEMENT_POINTS.length-2];
+  if(typeof SLICE_MOV_LAST != 'undefined' && typeof SLICE_MOV_PREV != 'undefined'){
+    //  both positions are real
+    if(SLICE_MOV_LAST.tick - SLICE_MOV_PREV.tick > 91){
+      SLICE_IS_MODERN_REPLAY = false;
+    } else {
+      SLICE_IS_MODERN_REPLAY = true;
+    }
+  } else {
+    SLICE_IS_MODERN_REPLAY = false; // is not a modern replay or is too short to be accurate
+  }
+
   if (SLICE_CACHE[THIS_TICK] == undefined) { // if this tick has never been scrubbed to, resolve it 
 
     var SCOOPY_BUCKET = REPLAY_OBJECT_CACHE.organizedEvents[THIS_TICK]; // we will push specials next
@@ -21707,14 +22425,19 @@ function updateSlice(TICK, LOOKBEHIND, LOOKAHEAD) {
     var LEVI_nodeHealthArray = [250, 250, 250, 250, 250, 250];
     var segmentHealth = 250;
 
+    var levi_down_value = DD_GAMEPAGE_GAME.block.levi_down_time;
+    if(typeof IS_LB_PB != 'undefined'){
+      levi_down_value = calcLeviDownTimeFromReplayEvents();
+    }
+
     if (LEVI != undefined) { // only if levi exists!
-      if (DD_GAMEPAGE_GAME.block.levi_down_time != 0 && timeFromTick(THIS_TICK) > DD_GAMEPAGE_GAME.block.levi_down_time) { // this is the orb
+      if (levi_down_value != 0 && timeFromTick(THIS_TICK) > levi_down_value) { // this is the orb
         RENDER_LEVI = true;
         IS_LEVI_FLAG = false;
         NHP = 2400;
 
         LEVI_ENT_HITS = REPLAY_OBJECT_CACHE.categories.hit.filter(obj => {
-          return (obj.a == LEVI.entityId && obj.tick > (Math.ceil(DD_GAMEPAGE_GAME.block.levi_down_time * 60)) && obj.tick <= THIS_TICK) // only include hits after levi died!
+          return (obj.a == LEVI.entityId && obj.tick > (Math.ceil(levi_down_value * 60)) && obj.tick <= THIS_TICK) // only include hits after levi died!
         });
 
         for (var HIT of LEVI_ENT_HITS) { // There are no weakspots on the Orb so do the simple math
@@ -21793,20 +22516,24 @@ function updateSlice(TICK, LOOKBEHIND, LOOKAHEAD) {
         SLICE_LEVI_DATA_AND_ARB[0].push(['Normal DMG', NORMAL_DAMAGE]);
         SLICE_LEVI_DATA_AND_ARB[0].push(['Homing DMG', HOMING_DAMAGE]);
         SLICE_LEVI_DATA_AND_ARB[0].push(['<br>', 0, false]); // spacer
+        var NodeHealth_Container = [];
         for (var c = 0; c < LEVI_nodeHealthArray.length; c++) {
           var SEGNUM = c + 1;
           var HPSTRING = 'HP: ' + LEVI_nodeHealthArray[c];
           var STYLESTRING = '';
+          NodeHealth_Container.push(LEVI_nodeHealthArray[c]);
           if (LEVI_nodeHealthArray[c] <= 0) {
             HPSTRING = 'Dead';
             STYLESTRING = 'color:var(--UI-inactive)!important';
           }
-          SLICE_LEVI_DATA_AND_ARB[0].push(['<br><span style="' + STYLESTRING + '"><span style="color:var(--UI-active)">Node ' + SEGNUM + '</span><br>' + HPSTRING + '<br>(' + segmentHealth + ' - ' + DMG_PER_SEGMENT[c] + ' - ' + HOMING_DMG_PER_SEGMENT[c] + ')</span>', 0, false]);
+          SLICE_LEVI_DATA_AND_ARB[0].push(['<br><span style="' + STYLESTRING + '"><span style="color:var(--UI-active)">Node ' + SEGNUM + '</span><br>' + HPSTRING + '<br>(' + segmentHealth + ' - ' + DMG_PER_SEGMENT[c] + ' - ' + HOMING_DMG_PER_SEGMENT[c] + 'h)</span>', 0, false]);
         }
+        // SLICE_LEVI_DATA_AND_ARB[2] = [NodeHealth_Container, 0]; // [node healths, 0=levi] 
       } else { // this is the orb or it is dead
         SLICE_LEVI_DATA_AND_ARB[0].push(['HP', NHP + ' / ' + getTypeHP('orb')]);
         SLICE_LEVI_DATA_AND_ARB[0].push(['Normal DMG', NORMAL_DAMAGE]);
         SLICE_LEVI_DATA_AND_ARB[0].push(['Homing DMG', HOMING_DAMAGE]);
+        // SLICE_LEVI_DATA_AND_ARB[2] = [[NHP], 1]; // [single node health, 1=orb]
       }
 
       if (HITLIST.length > 0 && REPLAY_SHOW_DAGGER_HIT_LIST == true) {
@@ -21991,16 +22718,23 @@ function updateSlice(TICK, LOOKBEHIND, LOOKAHEAD) {
 
             if (nodeHealthArray != undefined && EVENT.entityType != 'squid 1') { // this was a squid; give it node information
               EVENT.perTickArbitraryData[THIS_TICK].push(['<br>', 0, false]); // spacer
+              if(typeof EVENT.nodeHealth == 'undefined'){ // bad branch! but fix nonetheless
+                EVENT.nodeHealth = [];
+              }
+              EVENT.nodeHealth[THIS_TICK] = []; // init nodehealth array for this squid
+              var NodeHealth_Container = [];
               for (var c = 0; c < nodeHealthArray.length; c++) {
                 var SEGNUM = c + 1;
                 var HPSTRING = 'HP: ' + nodeHealthArray[c];
                 var STYLESTRING = '';
+                NodeHealth_Container.push(nodeHealthArray[c]);
                 if (nodeHealthArray[c] <= 0) {
                   HPSTRING = 'Dead';
                   STYLESTRING = 'color:var(--UI-inactive)!important';
                 }
-                EVENT.perTickArbitraryData[THIS_TICK].push(['<br><span style="' + STYLESTRING + '"><span style="color:var(--UI-active)">Node ' + SEGNUM + '</span><br>' + HPSTRING + '<br>(' + segmentHealth + ' - ' + DMG_PER_SEGMENT[c] + ' - ' + HOMING_DMG_PER_SEGMENT[c] + ')</span>', 0, false]);
+                EVENT.perTickArbitraryData[THIS_TICK].push(['<br><span style="' + STYLESTRING + '"><span style="color:var(--UI-active)">Node ' + SEGNUM + '</span><br>' + HPSTRING + '<br>(' + segmentHealth + ' - ' + DMG_PER_SEGMENT[c] + ' - ' + HOMING_DMG_PER_SEGMENT[c] + 'h)</span>', 0, false]);
               }
+              EVENT.nodeHealth[THIS_TICK].push(NodeHealth_Container);
             }
 
             if (HITLIST.length > 0 && REPLAY_SHOW_DAGGER_HIT_LIST == true) {
@@ -22263,6 +22997,9 @@ function updateSlice(TICK, LOOKBEHIND, LOOKAHEAD) {
     SLICE_CACHE[THIS_TICK][7] = SLICE_LEVI_DATA_AND_ARB; // Leviathan and Orb cache
 
     updateReplayBuffer(THIS_BUFFER_INDEX); // update the scrollbar to show this frame was resolved,
+    if(typeof IS_LB_PB != 'undefined' && doNotObjectify == undefined){
+      await buildLeaderboardGamepageGame(IS_LB_PB, LBNAME, LBTIME, C); // PROBLEM (KINDA)
+    }
 
     return THIS_TICK; //  and finally, return the real tick used by player pos to render the scene
 
@@ -22933,10 +23670,10 @@ function animateReplayRenderer() {
 
               var SEGMENT_MAX_HP = INTERSECTED_GROUP.userData.pedeData[5];
               var SEGMENT_HP = INTERSECTED_GROUP.userData.pedeData[1][whichSegment];
-              var HP_STRING = 'HP: ' + SEGMENT_HP + '<br>(' + SEGMENT_MAX_HP + ' - ' + INTERSECTED_GROUP.userData.pedeData[6][whichSegment] + ' - ' + INTERSECTED_GROUP.userData.pedeData[7][whichSegment] + ')';
+              var HP_STRING = 'HP: ' + SEGMENT_HP + '<br>(' + SEGMENT_MAX_HP + ' - ' + INTERSECTED_GROUP.userData.pedeData[6][whichSegment] + ' - ' + INTERSECTED_GROUP.userData.pedeData[7][whichSegment] + 'h)';
 
               if (SEGMENT_HP <= 0) {
-                HP_STRING = '<span style="color:var(--UI-inactive)">Dead<br>(' + SEGMENT_MAX_HP + ' - ' + INTERSECTED_GROUP.userData.pedeData[6][whichSegment] + ' - ' + INTERSECTED_GROUP.userData.pedeData[7][whichSegment] + ')</span>';
+                HP_STRING = '<span style="color:var(--UI-inactive)">Dead<br>(' + SEGMENT_MAX_HP + ' - ' + INTERSECTED_GROUP.userData.pedeData[6][whichSegment] + ' - ' + INTERSECTED_GROUP.userData.pedeData[7][whichSegment] + 'h)</span>';
               }
 
               REPLAY_RAYCAST_PEDE_INFO_CACHE = '<br><br><span style="color:var(--UI-active)">Segment ' + (whichSegment + 1) + '</span><br>' + HP_STRING;
@@ -22985,10 +23722,10 @@ function animateReplayRenderer() {
 
                 var SEGMENT_MAX_HP = intersects[i].object.parent.userData.pedeData[5];
                 var SEGMENT_HP = intersects[i].object.parent.userData.pedeData[1][whichSegment];
-                var HP_STRING = 'HP: ' + SEGMENT_HP + '<br>(' + SEGMENT_MAX_HP + ' - ' + INTERSECTED_GROUP.userData.pedeData[6][whichSegment] + ' - ' + INTERSECTED_GROUP.userData.pedeData[7][whichSegment] + ')';
+                var HP_STRING = 'HP: ' + SEGMENT_HP + '<br>(' + SEGMENT_MAX_HP + ' - ' + INTERSECTED_GROUP.userData.pedeData[6][whichSegment] + ' - ' + INTERSECTED_GROUP.userData.pedeData[7][whichSegment] + 'h)';
 
                 if (SEGMENT_HP <= 0) {
-                  HP_STRING = '<span style="color:var(--UI-inactive)">Dead<br>(' + SEGMENT_MAX_HP + ' - ' + INTERSECTED_GROUP.userData.pedeData[6][whichSegment] + ' - ' + INTERSECTED_GROUP.userData.pedeData[7][whichSegment] + ')</span>';
+                  HP_STRING = '<span style="color:var(--UI-inactive)">Dead<br>(' + SEGMENT_MAX_HP + ' - ' + INTERSECTED_GROUP.userData.pedeData[6][whichSegment] + ' - ' + INTERSECTED_GROUP.userData.pedeData[7][whichSegment] + 'h)</span>';
                 }
 
                 REPLAY_RAYCAST_PEDE_INFO_CACHE = '<br><br><span style="color:var(--UI-active)">Segment ' + (whichSegment + 1) + '</span><br>' + HP_STRING;
@@ -23172,6 +23909,7 @@ function CLEAR_REPLAY_OBJECT() {
   CLEAR_REPLAY_OBJECT_CACHE();
   SLICE_CACHE = [];
   buildReplayBuffer(true); // clear only
+  SLICE_IS_MODERN_REPLAY = true;
 }
 
 function CLEAR_REPLAY_OBJECT_CACHE() {
@@ -23833,7 +24571,7 @@ function RENDER_V3_ARENA(TICK, RENDER) {
   }
 }
 
-async function REFRESH_REPLAY_SCENE(TICK) {
+async function REFRESH_REPLAY_SCENE(TICK, IS_LB_PB, doNotObjectify, LBNAME, LBTIME, C) {
   if (REPLAY_ABLE == true) { // only do this if initialized!
 
     //  We have a big fucking problem relating to VRAM, so kill all memory on new frame init
@@ -23843,7 +24581,7 @@ async function REFRESH_REPLAY_SCENE(TICK) {
 
     CLEAR_REPLAY_SHADOWMAPS(); // clear only the lights; solved VRAM issue
 
-    REPLAY_TICK = updateSlice(TICK); // get the slice data, and, more importantly, the posterized tick
+    REPLAY_TICK = await updateSlice(TICK, undefined, undefined, IS_LB_PB, doNotObjectify, LBNAME, LBTIME, C); // get the slice data, and, more importantly, the posterized tick
     var TICK_AS_FLOORSEC = Math.floor(REPLAY_TICK / 60);
 
     if (REPLAY[REPLAY_TICK] == undefined) {
@@ -24917,6 +25655,11 @@ function setReplayTitle(noneExists) {
   } else {
     if (REPLAY_TICK != undefined && REPLAY_OBJECT_CACHE != undefined && DD_GAMEPAGE_GAME != undefined) { // only set this title if a replay exists
 
+      var WARNING_STRING = '';
+      if(SLICE_IS_MODERN_REPLAY == false){
+        WARNING_STRING = '[OLD REPLAY]<br>Pre-3.1 data!<br>Run shown is<br>INACCURATE.<br><br>';
+      }
+
       var DEBUG_STRING = '';
       if (REPLAY_DEBUG) {
         DEBUG_STRING = 'f' + replayRenderer.info.render.frame + ': ' + replayRenderer.info.memory.geometries + ' geos, ' + replayRenderer.info.memory.textures + ' txturs<br>' + replayRenderer.info.render.calls + ' calls, ' + replayRenderer.info.render.triangles + ' tris, ' + replayRenderer.info.render.lines + ' lines<br>';
@@ -24936,7 +25679,7 @@ function setReplayTitle(noneExists) {
       }
 
       REPLAY_TITLE_ELEMENT.innerHTML = timeFromTickStr(REPLAY_TICK); // replay • 
-      REPLAY_SUBTITLE_ELEMENT.innerHTML = DEBUG_STRING + DEATH_STRING + HOMING_STRING + REPLAY_FPS_ARRAY[REPLAY_FPS_INDEX][1] + REPLAY_RAYCAST_INFORMATION_STRING + REPLAY_RAYCAST_PEDE_INFO_CACHE;
+      REPLAY_SUBTITLE_ELEMENT.innerHTML = WARNING_STRING + DEBUG_STRING + DEATH_STRING + HOMING_STRING + REPLAY_FPS_ARRAY[REPLAY_FPS_INDEX][1] + REPLAY_RAYCAST_INFORMATION_STRING + REPLAY_RAYCAST_PEDE_INFO_CACHE;
     }
     //  otherwise, don't do anything
   }
@@ -24955,18 +25698,25 @@ function START_REPLAY_RENDERING() {
   animateReplayRenderer();
 }
 
-async function UPDATE_REPLAY(REPLAY_OBJECT) {
+async function UPDATE_REPLAY(REPLAY_OBJECT, IS_LB, doNotObjectify, LBNAME, LBTIME, C) {
   updateScrubberLimits(REPLAY_OBJECT);
   setReplayMovementPoints(REPLAY_OBJECT);
   buildReplayBuffer();
   REPLAY_RESET_CAMERA();
   REPLAY_LOADED = true;
-  await REFRESH_REPLAY_SCENE();
+  await REFRESH_REPLAY_SCENE(undefined, IS_LB, doNotObjectify, LBNAME, LBTIME, C);
   REPLAY_SCRUBBER_ENABLED_FLAG = true;
   HAS_EVER_LOADED_REPLAY = true;
 }
 
-async function REPLAY_SCENE_LINK(LINK, TOKEN, FORCE) {
+async function leaderboardGamepage(LB_USER_ID, doNotObjectify, LBNAME, LBTIME, C){
+  await REPLAY_SCENE_LINK(LB_USER_ID, LB_USER_ID, undefined, LB_USER_ID, doNotObjectify, LBNAME, C, LBTIME);
+  drapeLog(arguments.callee.name, 'leaderboardGamepage Done!'); 
+  console.log(DD_GAMEPAGE_GAME);
+  return DD_GAMEPAGE_GAME;
+}
+
+async function REPLAY_SCENE_LINK(LINK, TOKEN, FORCE, LB_PB_Instead_UserID, doNotObjectify, LBNAME, C, LBTIME) {
   if ((LINK != GAMEPAGE_RESOLVER_LINK_LAST || FORCE != undefined) && TOKEN != REPLAY_LAST_TOKEN) {
     if (REN_scene != undefined && REN_scene != null) { //  only do this if stuff is initialized!
 
@@ -24978,16 +25728,18 @@ async function REPLAY_SCENE_LINK(LINK, TOKEN, FORCE) {
       GAMEPAGE_RESOLVER_LINK_LAST = LINK;
       CLEAR_REPLAY_OBJECT();
       LINK_TARGET_ELEMENT.innerHTML = '<span style="position:relative;top:-0.15vh;font-size:1.85vh">downloading replay...</span>';
-      var z = await getReplayEvents(undefined, LINK);
+      var z = await getReplayEvents(undefined, LINK, undefined, undefined, LB_PB_Instead_UserID, C);
       drapeLog(arguments.callee.name, 'Replay events parsed: ', z);
       UPDATE_REPLAY_OBJECT_CACHE(z);
-      await UPDATE_REPLAY(z);
+      await UPDATE_REPLAY(z, LB_PB_Instead_UserID, doNotObjectify, LBNAME, LBTIME, C);
 
+      REPLAY_OBJECT_CACHE = z;
       drapeLog(arguments.callee.name, 'Replay successfully updated with link ' + LINK);
+      return true;
 
     } else {
       setTimeout(async function() {
-        await REPLAY_SCENE_LINK(LINK, TOKEN);
+        await REPLAY_SCENE_LINK(LINK, TOKEN, undefined, LB_PB_Instead_UserID, doNotObjectify, LBNAME);
       }, 500);
     }
   } else {
@@ -25013,10 +25765,12 @@ async function REPLAY_SCENE_ID(ID, TOKEN, FORCE) {
       await UPDATE_REPLAY(z);
 
       drapeLog(arguments.callee.name, 'Replay successfully updated with DDStats ID ' + ID);
+      return z;
 
     } else {
       setTimeout(async function() {
-        await REPLAY_SCENE_LINK(LINK, TOKEN);
+        var v = await REPLAY_SCENE_ID(ID, TOKEN);
+        return v;
       }, 500);
     }
   } else {
@@ -25033,7 +25787,7 @@ function MINIMAP(REPLAY_EVENTS) { // Draw the Minimap view based on Replay Event
   }
 }
 
-function makeSplitGridCell(Split, vsGivenGame, Min, Max, minIsMax, noItems, Color1, Color2, ID, SGLO) {
+function makeSplitGridCell(Split, vsGivenGame, Min, Max, minIsMax, noItems, Color1, Color2, ID, SGLO, B){
   var DEGREE;
   var CELL_COLOR;
   var BG_COLOR_FOR_CONTRAST;
@@ -25050,6 +25804,14 @@ function makeSplitGridCell(Split, vsGivenGame, Min, Max, minIsMax, noItems, Colo
     TEXTCOLOR = 'var(--UI-inactive)'
     CELL_COLOR = 'background-color:' + ui_bg_fill;
     BG_COLOR_FOR_CONTRAST = ui_bg_fill;
+    if (SPLITGRID_CONDENSED == false && SGLO == undefined) {
+        STYLE_OVERRIDE = 'font-size:1.35vh;padding-top:0vh;';
+        // MAIN_S_OVERRIDE = 'padding-top:0.6;';
+      }
+    if(B == true){ // B = "Big Game"; 1260 or more
+      STYLE_OVERRIDE = 'font-size:1vh;padding-top:0vh;';
+      MAIN_S_OVERRIDE = 'padding-top:0vh;';
+    }
   } else { //  this is a real split; do math on it
     splitToString = signer(Split[0]);
     if (Split[3] != undefined) {
@@ -25060,11 +25822,21 @@ function makeSplitGridCell(Split, vsGivenGame, Min, Max, minIsMax, noItems, Colo
       ADDITIONAL_SPLIT_DATA = '<br><span class="subSplit">' + Split[2][0] + ' [' + Split[2][1] + '-' + Split[2][2] + ']</span>';
       if (SPLITGRID_CONDENSED == false && SGLO == undefined) {
         STYLE_OVERRIDE = 'font-size:1.35vh;padding-top:0vh;';
-        MAIN_S_OVERRIDE = 'padding-top:0.6;';
+        // MAIN_S_OVERRIDE = 'padding-top:0.6;';
+      }
+      if(B == true){ // B = "Big Game"; 1260 or more
+        STYLE_OVERRIDE = 'font-size:1vh;padding-top:0vh;line-height:0.7vh;top:0.05vh';
+        MAIN_S_OVERRIDE = 'padding-top:0vh;';
+        if(SPLITGRID_CONDENSED == true){
+          STYLE_OVERRIDE = 'font-size:1.2vh;padding-top:0vh;line-height:0.7vh;top:0.1vh';
+        }
       }
       if (SGLO != undefined) {
         ADDITIONAL_SPLIT_DATA = '';
       }
+    } else if(B == true){ // bestgame only
+        STYLE_OVERRIDE = 'font-size:1.2vh;padding-top:0.25vh;text-decoration-thickness:0.1vh!important;';
+        MAIN_S_OVERRIDE = 'padding-top:0vh;';
     }
     if (Split[1] == true) { // if this split is in progress, give it the hashed pattern
       CELL_COLOR = 'background:repeating-linear-gradient(45deg,var(--UI-inactive),var(--UI-inactive) 0.5vh,var(--BGFill) 0.5vh,var(--BGFill) 1vh);text-shadow:-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill),-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill),-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill);';
@@ -25207,6 +25979,17 @@ function splitGrid(LIVEGAME) {
 
   // console.log('GRID_DATA: ', GRID_DATA);
 
+  var BIGGAME = false;
+  var HEADERLEAD = '';
+  var HEADERTOP = '-0.025vh';
+  var HEADERLEADTOP = '';
+  if(HIGHEST_SPLIT_CELL >= 13){
+    BIGGAME = true;
+    HEADERLEAD = 'padding-top:0.3vh';
+    HEADERTOP = '0.1vh';
+    HEADERLEADTOP = 'padding-top:0.4vh!important';
+  }
+
   //  construct the actual grid. REMEMBER: GRID_DATA is accessed by [ROW][TYPE][COLUMN], not vice-versa
   for (var c = 0; c < GAMES_SPLITS.length; c++) { //  COLUMNS (+1 for the Sum Of Best column)
     if (c == 0) {
@@ -25218,20 +26001,21 @@ function splitGrid(LIVEGAME) {
       if (LIVEGAME == undefined) {
         EXPAND_BUTTON = ' <div id="SPLITS_EXPAND_BUTTON" class="condenserButton" onmousedown="toggleSplitGridCondensed()" onmouseenter="tooltip(\'toggleCondensedSplitgrid\')" onmouseleave="tooltip(\'close\')">' + COLLAPSE_BUTTON + '</div>';
       }
-      GRID_CONSTRUCTOR += '<div class="splitGridColumn"><div class="splitGridCell splitGridCellCondensed" style="background-color:var(--BGFill)" style=""><span class="splitGridCellText" style="display: inline-flex;flex-direction:row;justify-content:center;align-items:center;color:var(--UI-foretext);top:-0.295vh;font-family:mainFont;left:-0.075vh;font-size:1.75vh;">splits' + EXPAND_BUTTON + '</span></div>';
+      GRID_CONSTRUCTOR += '<div class="splitGridColumn"><div class="splitGridCell splitGridCellCondensed" style="background-color:var(--BGFill);'+HEADERLEADTOP+'"><span class="splitGridCellText" style="display: inline-flex;flex-direction:row;justify-content:center;align-items:center;color:var(--UI-foretext);top:-0.295vh;font-family:mainFont;left:-0.075vh;font-size:1.75vh;">splits' + EXPAND_BUTTON + '</span></div>';
       for (var rS = 0; rS < HIGHEST_SPLIT_CELL; rS++) {
-        GRID_CONSTRUCTOR += '<div class="splitGridCell splitGridHeaderSider" style="justify-content:flex-start;padding-left:0.8vh"><span class="splitGridCellText">' + V3_SPLITS[rS][0] + '</span></div>'; /* text-shadow:-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill),-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill),-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill);" */
+        GRID_CONSTRUCTOR += '<div class="splitGridCell splitGridHeaderSider" style="justify-content:flex-start;padding-left:0.8vh;'+HEADERLEAD+'"><span class="splitGridCellText">' + V3_SPLITS[rS][0] + '</span></div>'; /* text-shadow:-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill),-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill),-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill);" */
       }
       GRID_CONSTRUCTOR += '</div>';
     }
     GRID_CONSTRUCTOR += '<div class="splitGridColumn">';
+
     for (var r = 0; r < HIGHEST_SPLIT_CELL; r++) { //  ROWS (max split index = number of rows)
       //  if first item in row, label this
       if (r == 0) {
-        GRID_CONSTRUCTOR += '<div class="splitGridCell splitGridCellCondensed splitGridHeaderSider"><span class="splitGridCellText" style="top:-0.025vh;">' + /* text-shadow:-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill),-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill),-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill);" */ GAME_TITLES[c] + '</span></div>'
+        GRID_CONSTRUCTOR += '<div class="splitGridCell splitGridCellCondensed splitGridHeaderSider" style="'+HEADERLEAD+'"><span class="splitGridCellText" style="top:'+HEADERTOP+';">' + /* text-shadow:-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill),-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill),-0.15vh -0.15vh 0 var(--BGFill),0   -0.15vh 0 var(--BGFill),0.15vh -0.15vh 0 var(--BGFill),0.15vh  0   0 var(--BGFill),0.15vh  0.15vh 0 var(--BGFill),0    0.15vh 0 var(--BGFill),-0.15vh  0.15vh 0 var(--BGFill),-0.15vh  0   0 var(--BGFill);" */ GAME_TITLES[c] + '</span></div>'
       }
       // makeSplitGridCell(Split, vsGivenGame, Min, Max, minIsMax, noItems, Color1, Color2, ID, Live)
-      GRID_CONSTRUCTOR += makeSplitGridCell(GRID_DATA[r][0][c], undefined, GRID_DATA[r][1][0], GRID_DATA[r][1][1], GRID_DATA[r][1][3], GRID_DATA[r][1][2], ui_badsplit, ui_goodsplit, undefined, LIVEGAME);
+      GRID_CONSTRUCTOR += makeSplitGridCell(GRID_DATA[r][0][c], undefined, GRID_DATA[r][1][0], GRID_DATA[r][1][1], GRID_DATA[r][1][3], GRID_DATA[r][1][2], ui_badsplit, ui_goodsplit, undefined, LIVEGAME, BIGGAME);
     }
     GRID_CONSTRUCTOR += '</div>';
   }
@@ -25294,7 +26078,7 @@ function setInsightsCondensed(FORCED) {
   }
 }
 
-function buildGameOverview(GAME_OBJECT, INSIGHTS_OBJECT) {
+function buildGameOverview(GAME_OBJECT, INSIGHTS_OBJECT, LBGAME) {
   var GAME_OVERVIEW_CONSTRUCTOR = '';
 
   //  general
@@ -25417,7 +26201,11 @@ function buildGameOverview(GAME_OBJECT, INSIGHTS_OBJECT) {
     '<div class="overviewItem"><div class="overviewItemTextPre" style="top:0vh">Accuracy</div><div class="overviewItemBarWrapper" style="height:1vh">' + '<div class="overviewItemInnerWrapper"><div class="overviewItemBar" style="width:' + RUN_ACCURACY + '%;background:repeating-linear-gradient(45deg,var(--UI-daggers-hit),var(--UI-daggers-hit) 0.25vh,var(--UI-accuracy) 0.25vh,var(--UI-accuracy) 0.5vh)"></div><div class="overviewItemBar" style="width:' + unhitPercent + '%;background:repeating-linear-gradient(45deg,var(--UI-daggers-fired),var(--UI-daggers-fired) 0.25vh,var(--BGFill) 0.25vh,var(--BGFill) 0.5vh)"></div></div>' + '</div><div class="overviewItemText">' + RUN_ACCURACY + '<span style="color:var(--UI-subtext)">% (</span>' + GAME_OBJECT.block.daggers_hit + '<span style="color:var(--UI-subtext)">h / </span>' + GAME_OBJECT.block.daggers_fired + '<span style="color:var(--UI-subtext)">f)</span></div></div>';
 
   document.getElementById('OVERVIEW_TITLE').innerHTML = GAME_OBJECT.block.time + ' ' + farmConstructor;
-  document.getElementById('GAME_OVERVIEW').innerHTML = GAME_OVERVIEW_CONSTRUCTOR;
+  if(IS_LEADERBOARD_REPLAY != true){ // normal DDStats game overview
+    document.getElementById('GAME_OVERVIEW').innerHTML = GAME_OVERVIEW_CONSTRUCTOR;
+  } else { // Leaderboard Game overview (currently disabled)
+    document.getElementById('GAME_OVERVIEW').innerHTML = '<div style="font-size:2vh;text-align:center;padding-top:4.5vh">Game Overview<br>is currently disabled to ensure<br>accuracy for Leaderboard games.<br><br>The Splitgrid, Graph, and<br>Replay Viewer still display.<br><br>Submit games with <a style="font-weight: bold" tabindex="-1" href="https://github.com/lsaa/ddstats-rust/releases" target="_blank">ddstats-rust</a><br>for DDLIVE to analyze them fully.</div>';
+  }
 }
 
 //  Gamepage paginators
@@ -26113,7 +26901,7 @@ function alert(msg, type, forceTitle, icon, img, e, importable, ntOverride, gran
       }
     });
   } catch (e) {
-    console.log('iziToast ERROR! This is probably because it is not defined...?', e)
+    drapeLogError('iziToast ERROR! This is probably because it is not defined...?', e)
   }
   if (notifClass == 'notifError') {
     drapeLogError(premsg);
@@ -26365,6 +27153,25 @@ function cleanString(UNSAFE_STRING) {
   // .replaceAll('&','​&amp;');
 
   return NEW_STRING;
+}
+
+function downloadBlobAsFile(blob, fileName) {
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  link.click();
+  window.URL.revokeObjectURL(url);
+}
+
+function createAndDownloadTextFile(text, filename){
+  var element=document.createElement('a');
+  element.setAttribute('href','data:text/plain;charset=utf-8,'+encodeURIComponent(text));
+  element.setAttribute('download',filename);
+  element.style.display='none';
+  document.body.appendChild(element);
+  element.click();
+  document.body.removeChild(element)
 }
 
 function randomHexColor() {
@@ -31783,6 +32590,13 @@ function getData(ifNull, GAME_PAGE_OBJECT_INSTEAD) {
       TOGGLE_PROXY = gamePageGraphToggles;
       colorFunction3 = 'gp_l3color';
       colorFunction4 = 'gp_l4color';
+      if(IS_LEADERBOARD_REPLAY){
+        // custom gamepage toggles to show only the actually legitimate data
+        document.getElementById('INSIGHTS_TOGGLES').classList.add('INSIGHTS_TOGGLES_OFF');
+        TOGGLE_PROXY = [false, true, false, true, true, true, true, true, true, true, true, true, true, true];
+      } else {
+        document.getElementById('INSIGHTS_TOGGLES').classList.remove('INSIGHTS_TOGGLES_OFF');
+      }
     }
 
     var DATA = {
