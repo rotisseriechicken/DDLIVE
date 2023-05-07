@@ -25983,7 +25983,7 @@ function splitGrid(LIVEGAME) {
   var HEADERLEAD = '';
   var HEADERTOP = '-0.025vh';
   var HEADERLEADTOP = '';
-  if(HIGHEST_SPLIT_CELL >= 13){
+  if(HIGHEST_SPLIT_CELL >= 13 && LIVEGAME == undefined){
     BIGGAME = true;
     HEADERLEAD = 'padding-top:0.3vh';
     HEADERTOP = '0.1vh';
