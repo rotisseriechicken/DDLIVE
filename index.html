@@ -19920,8 +19920,8 @@ async function gameObjectFromReplayObject(givenReplayObject, isGamepageRequest, 
   //  ########################################################
 
   //  The username will ALWAYS be the most recent loaded into cache for a leaderboard game
-  Incubation_Block.block.replay_player_name = cleanString(LB_USERNAME_GLOBAL_CACHE);
-  Incubation_Block.block.username = cleanString(LB_USERNAME_GLOBAL_CACHE);
+  Incubation_Block.block.replay_player_name = LB_USERNAME_GLOBAL_CACHE;
+  Incubation_Block.block.username = LB_USERNAME_GLOBAL_CACHE;
 
 
   Incubation_Block.block.daggers_eaten = -1;
