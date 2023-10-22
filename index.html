@@ -337,6 +337,7 @@ input[type="range"]:not(#REPLAY_SCRUBBER)::-moz-range-track {
   height: 0.25vh;
   border-radius:  100vw;
 }
+
 input[type="range"]::-moz-range-thumb {
     border: none; 
     border-radius: 0;
@@ -354,6 +355,10 @@ input[type="range"]::-webkit-slider-thumb {
    width: 1.5vh;    
    transition: background-color 0.3s cubic-bezier(.01,.81,.55,1.01) !important;
    border-radius:  100vw;
+}
+input[type="range"][linkedvariable]::-webkit-slider-thumb {
+   height: 1vh;
+   width: 1vh;    
 }
 input[type="range"]:hover::-webkit-slider-thumb {
   background-color: var(--UI-active);
@@ -3630,6 +3635,24 @@ canvas{
   cursor: pointer;
 }
 
+.SettingsButton{
+  position: relative;
+  display: inline-block;
+  font-size: 2vh;
+  width: auto;
+  height: 3.1vh;
+  background-color: var(--UI-inactive);
+  color: var(--BGFill);
+
+  top: 0.3vh;
+  margin-right: 0.375vh;
+
+  border-radius: 100vw;
+  transition: background-color 0.2s cubic-bezier(.01,.81,.55,1.01) !important;
+
+  cursor: pointer;
+}
+
 
 .gameButton{
   position: relative;
@@ -3751,6 +3774,18 @@ canvas{
 }
 
 .hybridWidthGameButton:hover .twitchPolygon{
+  fill: var(--BGFill) !important;
+}
+
+.SettingsButton:hover{
+  background-color: var(--UI-active) !important;
+}
+
+.SettingsButton:hover .gameButtonInside{
+  color: var(--BGFill);
+}
+
+.SettingsButton:hover .twitchPolygon{
   fill: var(--BGFill) !important;
 }
 
@@ -4899,7 +4934,7 @@ canvas{
   background-color: var(--UI-inactive);
 }
 .settingsInlineButton:hover{
-  background-color: var(--UI-active);
+  background-color: var(--UI-active) !important;
 }
 
 .splitEditorGrid{
@@ -6963,11 +6998,13 @@ paginateDDCL(PAGE_DDCL_MAX);">last_page</i><div id="DDCL_NAVIGATOR_TEXT" class="
                   
                   <div class="hybridWidthGameButton" style="right:-1px;" onmousedown="window.open('https://github.com/lsaa/ddstats-rust/releases','_blank');"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.9955vh;position:relative;right:0.295vh;line-height:0px;top:0.05vh;padding-left:0.175vh;">download</i><span style="position:relative;top:-0.3vh;font-size:1.8vh!important;padding-right:2vh;padding-left:0.2vh;">Get ddstats-rust</span></div></div>
 
-                  <div class="hybridWidthGameButton" style="right:-1px;" onmousedown="window.open('https://www.paypal.com/donate/?hosted_button_id=QTHYNL4JJNBKG','_blank');"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.9955vh;position:relative;right:0.295vh;line-height:0px;top:0.05vh;padding-left:0.1vh;">paid</i><span style="position:relative;top:-0.3vh;font-size:1.8vh!important;padding-right:2vh;padding-left:0.2vh;">Donate</span></div></div>
+                  <div class="hybridWidthGameButton" style="right:-1px;" onmousedown="window.open('https://www.paypal.com/donate/?hosted_button_id=QTHYNL4JJNBKG','_blank');"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.9955vh;position:relative;right:0.295vh;line-height:0px;top:0.05vh;padding-left:0.1vh;">paid</i><span style="position:relative;top:-0.3vh;font-size:1.8vh!important;padding-right:1.9vh;padding-left:0.2vh;">Donate</span></div></div>
 
                   <div class="hybridWidthGameButton" style="right:-1px;" onmousedown="reportBug(undefined,'(manually submitted)')"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.9955vh;position:relative;right:0.295vh;line-height:0px;top:0.05vh;padding-left:0.1vh;">bug_report</i><span style="position:relative;top:-0.3vh;font-size:1.8vh!important;padding-right:2vh;padding-left:0.2vh;">Report Bug</span></div></div>
 
-                  <div class="hybridWidthGameButton" style="right:-1px;" onmousedown="page(9,2);"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.9955vh;position:relative;right:0.295vh;line-height:0px;top:0.05vh;padding-left:0.1vh;">settings</i><span style="position:relative;top:-0.3vh;font-size:1.8vh!important;padding-right:2vh;padding-left:0.2vh;">Advanced</span></div></div>
+                  <div class="hybridWidthGameButton" style="right:-1px;" onmousedown="openConsole();"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.9955vh;position:relative;right:0.295vh;line-height:0px;top:0.05vh;padding-left:0.1vh;">settings</i><span style="position:relative;top:-0.3vh;font-size:1.8vh!important;padding-right:1.9vh;padding-left:0.2vh;">Console</span></div></div>
+
+                  <!-- <div class="hybridWidthGameButton" style="right:-1px;" onmousedown="page(9,2);"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.9955vh;position:relative;right:0.295vh;line-height:0px;top:0.05vh;padding-left:0.1vh;">settings</i><span style="position:relative;top:-0.3vh;font-size:1.8vh!important;padding-right:2vh;padding-left:0.2vh;">Advanced</span></div></div> -->
 
                   <div class="hybridWidthGameButton" style="right:-1px;" onmousedown="page(9,1);"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.9955vh;position:relative;right:0.295vh;line-height:0px;top:0.05vh;padding-left:0.1vh;">help</i><span style="position:relative;top:-0.3vh;font-size:1.8vh!important;padding-right:1.75vh;padding-left:0.2vh;">Help + FAQ</span></div></div>
                   
@@ -7019,22 +7056,60 @@ paginateDDCL(PAGE_DDCL_MAX);">last_page</i><div id="DDCL_NAVIGATOR_TEXT" class="
                         -->
                       </div></div>
                     </div>
-                    <div id="SPLIT_EDITOR_RIGHTSIDE_OPTIONS" style="display:flex; flex-direction: column;">
+                    <div id="SPLIT_EDITOR_RIGHTSIDE_OPTIONS" style="padding-right:3.75vh;display:flex; flex-direction: column;">
                       <h1 class="settingsHeader" style="padding-top:0.375vh;padding-bottom:1vh;">General Options</h1>
+
+                      <div class="settingsCheckboxWrapper"><div linkedBoolean="SYNC_THEMES_WITH_DDRUST" onmouseup="CHECKBOX_SENDER(this,true)" class="settingsCheckbox"><i class="material-icons">radio_button_unchecked</i></div><div class="settingsTitle">Sync Theme with ddstats-rust</div></div>
+
+                      <div class="settingsSliderWrapper"><div class="settingsTitle">Frame (full) ddstats-rust FPS:</div><div class="settingsSlider"><input tabindex="-1" linkedVariable="FULL_BLOCK_FPS" onmouseup="RANGE_SENDER(this,true,true)" ontouchend="RANGE_SENDER(this,true)" type="range" value="1" min="1" max="2" oninput="this.nextElementSibling.value = this.value"><output>-</output></div></div>
+
+                      <div class="settingsSliderWrapper"><div class="settingsTitle">Block (fast) ddstats-rust FPS:</div><div class="settingsSlider"><input tabindex="-1" linkedVariable="FULL_STAT_FPS" onmouseup="RANGE_SENDER(this,true,true)" ontouchend="RANGE_SENDER(this,true)" type="range" value="0.6" min="2" max="60" oninput="this.nextElementSibling.value = this.value"><output>-</output></div></div>
+
+                      <div class="settingsSliderWrapper"><div class="settingsTitle">Graph Animation Cutoff (sec):</div><div class="settingsSlider"><input tabindex="-1" linkedVariable="ANIMATION_THRESHOLD" onmouseup="RANGE_SENDER(this,true,true)" ontouchend="RANGE_SENDER(this,true)" type="range" value="1" min="1" max="2000" oninput="this.nextElementSibling.value = this.value"><output>-</output></div></div>
 
                       <!-- 
                         <div class="settingsCheckboxWrapper"><div linkedBoolean="SOUND" onmouseup="CHECKBOX_SENDER(this,true)" class="settingsCheckbox"><i class="material-icons">radio_button_unchecked</i></div><div class="settingsTitle">Sound Enabled</div></div>
                       -->
 
-                      <div class="settingsCheckboxWrapper"><div linkedBoolean="SPLIT_SOUNDS" onmouseup="CHECKBOX_SENDER(this,true)" class="settingsCheckbox"><i class="material-icons">radio_button_unchecked</i></div><div class="settingsTitle">Sound Alert on Split Achieved</div></div>
+                      <div class="settingsCheckboxWrapper"><div linkedBoolean="INSIGHTS_ON_GAME_GRAPH_HOVER" onmouseup="CHECKBOX_SENDER(this,true)" class="settingsCheckbox"><i class="material-icons">radio_button_unchecked</i></div><div class="settingsTitle">Show Insights on Game Graph Hover</div></div>
 
-                      <div class="settingsCheckboxWrapper"><div linkedBoolean="SOUND_ON_PARTIAL_SPLITS" onmouseup="CHECKBOX_SENDER(this,true)" class="settingsCheckbox"><i class="material-icons">radio_button_unchecked</i></div><div class="settingsTitle">Sound Alerts for Partial Splits</div></div>
+                      <div class="settingsCheckboxWrapper"><div linkedBoolean="SHOW_SPLIT_NAME_LABELS" onmouseup="CHECKBOX_SENDER(this,true)" class="settingsCheckbox"><i class="material-icons">radio_button_unchecked</i></div><div class="settingsTitle">Show Split Labels in Statsblock</div></div>
+
+                      <div class="settingsCheckboxWrapper"><div linkedBoolean="SHOW_LIVE_SPLITGRID" onmouseup="CHECKBOX_SENDER(this,true)" class="settingsCheckbox"><i class="material-icons">radio_button_unchecked</i></div><div class="settingsTitle">Live Game Splitgrids</div></div>
+
+                      <div class="settingsCheckboxWrapper"><div linkedBoolean="SHOW_BEST_IN_LIVEGAME" onmouseup="CHECKBOX_SENDER(this,true)" class="settingsCheckbox"><i class="material-icons">radio_button_unchecked</i></div><div class="settingsTitle">Global Best Splits in Live Splitgrids</div></div>
+
+                      <div class="settingsCheckboxWrapper"><div linkedBoolean="GLOBAL_STATUS_ALERTS_ENABLED" onmouseup="CHECKBOX_SENDER(this,true)" class="settingsCheckbox"><i class="material-icons">radio_button_unchecked</i></div><div class="settingsTitle">Receive & Alert on DDStats Events (1000+, etc.)</div></div>
+
+                      <div class="settingsCheckboxWrapper"><div linkedBoolean="GLOBAL_STATUS_ALERT_ALL_NOTIF" onmouseup="CHECKBOX_SENDER(this,true)" class="settingsCheckbox"><i class="material-icons">radio_button_unchecked</i></div><div class="settingsTitle">Alert on All New DDStats Games</div></div>
+
+                      <div class="settingsCheckboxWrapper"><div linkedBoolean="OBS_TRANSPARENT_BACKGROUND" onmouseup="CHECKBOX_SENDER(this,true)" class="settingsCheckbox"><i class="material-icons">radio_button_unchecked</i></div><div class="settingsTitle">Transparent Background as OBS Websource</div></div>
+
+                      <div class="settingsCheckboxWrapper"><div linkedBoolean="HASH_DISABLED" onmouseup="CHECKBOX_SENDER(this,true)" class="settingsCheckbox"><i class="material-icons">radio_button_unchecked</i></div><div class="settingsTitle">Disable Hash Navigation</div></div>
+
+                      <!-- <div class="settingsCheckboxWrapper"><div linkedBoolean="SOUND" onmouseup="CHECKBOX_SENDER(this,true)" class="settingsCheckbox"><i class="material-icons">radio_button_unchecked</i></div><div class="settingsTitle">Sound Enabled</div></div> -->
 
                       <div class="settingsNumberWrapper" style="padding-left:0.25vh"><div class="settingsTitle">Neutral Split Margin:</div><input tabindex="-1" associatedNumber="SPLIT_NEUTRAL_RANGE" onkeydown="if(event.keyCode==13){ this.blur(); return false;}"onfocusout="javascript: NUMBER_SENDER(this,true)" oninput="javascript: if (this.value.length > this.maxLength){this.value = this.value.slice(0, this.maxLength);}" maxlength="4" tabindex="-1" type="text" name_index="13"></div>
 
-                      <div class="settingsSliderWrapper"><div class="settingsTitle">Volume:</div><div class="settingsSlider"><input tabindex="-1" linkedVariable="VOLUME" onmouseup="RANGE_SENDER(this,true)" ontouchend="RANGE_SENDER(this,true)" type="range" value="0.3" min="0" max="100" oninput="this.nextElementSibling.value = this.value"><output>-</output></div></div>
+                      <div style="display:inline-flex"><h1 class="settingsHeader">Session Debug</h1></div>
 
-                      <div style="display:inline-flex"><h1 class="settingsHeader">Sound Customization</h1><div tabindex="-1" class="gameButton settingsInlineButton" style="top:1.5vh;width:2.25vh;height:2.25vh" onmouseenter="tooltip('resetSounds')" onmouseleave="tooltip('close')" onmousedown="RESET_SOUNDS_TO_DEFAULT()"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="color:var(--BGFill);font-size:1.8vh;position:relative;top:0.05vh;right:0.6vh;line-height:0px;transform: scaleX(-1);">refresh</i></div></div></div>
+                      <div class="settingsCheckboxWrapper"><div linkedBoolean="REPLAY_DEBUG" onmouseup="CHECKBOX_SENDER(this,true);" class="settingsCheckbox"><i class="material-icons">radio_button_unchecked</i></div><div class="settingsTitle">Show Replay Viewer Frame Debug</div></div>
+                      <div class="settingsCheckboxWrapper"><div linkedBoolean="REPLAY_SHOW_DAGGER_HIT_LIST" onmouseup="CHECKBOX_SENDER(this,true);" class="settingsCheckbox"><i class="material-icons">radio_button_unchecked</i></div><div class="settingsTitle">Show Replay Viewer Hit Debug</div></div>
+
+                    </div>
+                    <div id="SPLIT_EDITOR_RIGHTSIDE_OPTIONS2" style="display:flex; flex-direction: column;">
+
+                      <div style="display:inline-flex"><h1 class="settingsHeader" style="padding-top:0.375vh">Desktop Notifications</h1></div>
+
+                      <div class="settingsCheckboxWrapper"><div linkedBoolean="NOTIFY_1000" onmouseup="CHECKBOX_SENDER(this,true);requestNotificationPermissions();" class="settingsCheckbox"><i class="material-icons">radio_button_unchecked</i></div><div class="settingsTitle">Notify on Player Over 1000</div></div>
+
+                      <div class="settingsCheckboxWrapper"><div linkedBoolean="NOTIFY_PBING" onmouseup="CHECKBOX_SENDER(this,true);requestNotificationPermissions();" class="settingsCheckbox"><i class="material-icons">radio_button_unchecked</i></div><div class="settingsTitle">Notify on Player Currently Over Best</div></div>
+
+                      <div class="settingsCheckboxWrapper"><div linkedBoolean="NOTIFY_1000_DEAD" onmouseup="CHECKBOX_SENDER(this,true);requestNotificationPermissions();" class="settingsCheckbox"><i class="material-icons">radio_button_unchecked</i></div><div class="settingsTitle">Notify on Player Dying Over 1000</div></div>
+
+                      <div class="settingsCheckboxWrapper"><div linkedBoolean="NOTIFY_PBED" onmouseup="CHECKBOX_SENDER(this,true);requestNotificationPermissions();" class="settingsCheckbox"><i class="material-icons">radio_button_unchecked</i></div><div class="settingsTitle">Notify on Player Set New PB</div></div>
+
+                      <div style="display:inline-flex;"><h1 class="settingsHeader" style="">Sound Customization</h1><div tabindex="-1" class="gameButton settingsInlineButton" style="background-color:var(--UI-inactive);top:1.5vh;width:2.25vh;height:2.25vh;" onmouseenter="tooltip('resetSounds')" onmouseleave="tooltip('close')" onmousedown="RESET_SOUNDS_TO_DEFAULT()"><div class="gameButtonInside" style="left: 0.8vh;"><i class="material-icons" style="color:var(--BGFill);font-size:1.8vh;position:relative;top:0.05vh;right:0.6vh;line-height:0px;transform: scaleX(-1);">refresh</i></div></div></div>
 
                       <div class="settingsSubtitle">Good Split</div>
                       <div associatedAudioSource="SOUND_GOOD_SPLIT_BASE64" ondrop="FILE_DROPPED(event)" ondragover="FILE_DRAG_OVER(event);" class="audioPlayerOuterWrapper"><div class="replaceWrapper"><label for="PICKER_SOUND_GOOD_SPLIT_BASE64" class="customFilePicker"><i class="material-icons">audio_file</i></label><input tabindex="-1" onchange="FILE_CHANGE(this)" type="file" id="PICKER_SOUND_GOOD_SPLIT_BASE64" name="importedSound"></div><div class="playerWrapper"></div></div>
@@ -7044,6 +7119,12 @@ paginateDDCL(PAGE_DDCL_MAX);">last_page</i><div id="DDCL_NAVIGATOR_TEXT" class="
 
                       <div class="settingsSubtitle">Bad Split</div>
                       <div associatedAudioSource="SOUND_BAD_SPLIT_BASE64" ondrop="FILE_DROPPED(event)" ondragover="FILE_DRAG_OVER(event);" class="audioPlayerOuterWrapper"><div class="replaceWrapper"><label for="PICKER_SOUND_BAD_SPLIT_BASE64" class="customFilePicker"><i class="material-icons">audio_file</i></label><input tabindex="-1" onchange="FILE_CHANGE(this)" type="file" id="PICKER_SOUND_BAD_SPLIT_BASE64" name="importedSound"></div><div class="playerWrapper"></div></div>
+
+                      <div class="settingsSliderWrapper"><div class="settingsTitle">Volume:</div><div class="settingsSlider"><input tabindex="-1" linkedVariable="VOLUME" onmouseup="RANGE_SENDER(this,true)" ontouchend="RANGE_SENDER(this,true)" type="range" value="0.3" min="0" max="100" oninput="this.nextElementSibling.value = this.value"><output>-</output></div></div>
+
+                      <div class="settingsCheckboxWrapper"><div linkedBoolean="SPLIT_SOUNDS" onmouseup="CHECKBOX_SENDER(this,true)" class="settingsCheckbox"><i class="material-icons">radio_button_unchecked</i></div><div class="settingsTitle">Sound Alert on Split Achieved</div></div>
+
+                      <div class="settingsCheckboxWrapper"><div linkedBoolean="SOUND_ON_PARTIAL_SPLITS" onmouseup="CHECKBOX_SENDER(this,true)" class="settingsCheckbox"><i class="material-icons">radio_button_unchecked</i></div><div class="settingsTitle">Sound Alerts for Partial Splits</div></div>
 
                     </div>
                   </div>
@@ -7119,13 +7200,13 @@ paginateDDCL(PAGE_DDCL_MAX);">last_page</i><div id="DDCL_NAVIGATOR_TEXT" class="
                   <br>
                   <h3>It conglomerates all available game data, and lets you do as you please with it.</h3>
                   <br>
-                  <h1>Why is it better?</h1>
-                  <br>
-                  <h3>It is directly based on tools that have been around for years,<br>but allows data interplay, improves their accessibility, and brings countless other new features to the table.<br>DDLIVE relies on these other tools to work. If you like DDLIVE, please consider <a style="font-weight: bold" tabindex="-1" href="https://donorbox.org/ddstats-com" target="_blank">Donating to DDStats</a> and <a style="font-weight: bold" href="https://devildaggers.info/donations" tabindex="-1" target="_blank">DDInfo!</a></h3>
-                  <br>
                   <h1>How do I use it?</h1>
                   <br>
                   <h3>Hovering over most things in DDLIVE will explain what they do with a tooltip in the top left.</h3>
+                  <br>
+                  <h1>Why is it better?</h1>
+                  <br>
+                  <h3>It is directly based on tools that have been around for years,<br>but allows data interplay, improves their accessibility, and brings countless other new features to the table.<br>DDLIVE relies on these other tools to work. If you like DDLIVE, please consider <a style="font-weight: bold" tabindex="-1" href="https://donorbox.org/ddstats-com" target="_blank">Donating to DDStats</a> and <a style="font-weight: bold" href="https://devildaggers.info/donations" tabindex="-1" target="_blank">DDInfo!</a></h3>
                   <br>
                   <h1>How do I use DDLIVE with my own live game?</h1>
                   <br>
@@ -7133,7 +7214,7 @@ paginateDDCL(PAGE_DDCL_MAX);">last_page</i><div id="DDCL_NAVIGATOR_TEXT" class="
                   <br>
                   <h1>I'm having performance issues with DDLIVE open. Ideas?</h1>
                   <br>
-                  <h3>Try disabling all extensions for DDLIVE, and refreshing the page.<br>If this doesn't help, disable graph animations (sparkly line icon), open the inline console ( <span style="font-family: 'OPM2';">~</span> ) and enter:<br><span style="font-family: 'OPM2';">FULL_STAT_FPS = 8;</span><br>This reduces the rate at which the stat comparator draws data when live.<br><br>More fine-tuning performance options will be implemented in the future, in Settings.<br>If your performance issues still persist, contact me with the Discord username at the bottom.</h3>
+                  <h3>Try disabling all extensions for DDLIVE, and refreshing the page.<br>If this doesn't help, disable graph animations (top-right sparkly graph-line icon), open Settings, and lower <span style="font-family: 'OPM2';">Frame FPS</span> and <span style="font-family: 'OPM2';">Block FPS</span>.<br>This reduces the rate at which the stat comparator draws data when live.<br><br>If your performance issues persist, contact me with the Discord username at the bottom.</h3>
                   <br>
                   <h1>How can I load a DDStats game into DDLIVE?</h1>
                   <br>
@@ -7264,7 +7345,7 @@ paginateDDCL(PAGE_DDCL_MAX);">last_page</i><div id="DDCL_NAVIGATOR_TEXT" class="
                   <br>
                   <h1>How can I style ddstats-rust from DDLIVE?</h1>
                   <br>
-                  <h3>Click the Puzzle Piece with Paper Airplane button, atop the Theme Browser, while ddrust is open.<br>Themes can also be automatically synced to ddrust with the local variable <span style="font-family: 'OPM2';">SYNC_THEMES_WITH_DDRUST = true;</span></h3>
+                  <h3>Click the Puzzle Piece with Paper Airplane button, atop the Theme Browser, while ddrust is open.<br>Themes can also be automatically synced to ddrust with the setting <span style="font-family: 'OPM2';">Sync Theme with ddstats-rust</span> in Settings.</h3>
                   <br>
                   <h1>I know English and another language. Can I translate DDLIVE?</h1>
                   <br>
@@ -7976,7 +8057,7 @@ var REPLAY_VISUAL_CACHE_DISABLED = false; // if true, the visual cache will be c
 
 var REPLAY_BUFFER_BUCKET = []; // array of 101 numbers; 100 evenly divisible by endTick, & a remainder
 
-var REPLAY_FPS_INDEX = 8; // ReplaySpeedIndex - Used to choose which FPS (below) to run at
+var REPLAY_FPS_INDEX = 6; // ReplaySpeedIndex - Used to choose which FPS (below) to run at
 var REPLAY_FPS_ARRAY = [
   [0.5, 'Realtime'],
   [1, '2x'],
@@ -8324,6 +8405,12 @@ var CREDITS_SUBDIVISION_DEPTH = 6; // Amount of maximum levels to subdivide by (
 var CREDITS_SUBDIVISION_RATE = 15; // Amount of milliseconds to wait between subdivisions
 var CREDITS_SPECIAL_TIME_MIN = 250; // Amount of minimum milliseconds between special credits events
 var CREDITS_SPECIAL_TIME_MAX = 7750; // Amount of maximum milliseconds between special credits events
+
+var DESKTOP_NOTIFICATIONS_ENABLED = false; // If true, permissions are assumed granted
+var NOTIFY_1000 = false; // Conditions for which to notify for, if notifications are enabled
+var NOTIFY_1000_DEAD = false;
+var NOTIFY_PBING = false;
+var NOTIFY_PBED = false;
 
 var TITLE_ARRAY = [[],[],[],[],[],[],[],[],[],[],[]]; // Array of page titles
 
@@ -9509,7 +9596,7 @@ function updateTitle(){
             LIVE_CONDITIONAL = '✕ ';
           }
           if(L_statusCleaner == 'Main Menu' && DDSTATS_ANY_CACHE_LAST.death_type == -2){
-            STATUS_BUFFER = 'In Replay: ';
+            STATUS_BUFFER = 'In Replay';
             LIVE_CONDITIONAL = '✕ ';
           }
           LIVE_DATA = STATUS_BUFFER + bufferTime;
@@ -10734,6 +10821,11 @@ function makeSettings() {
       PartialSplSnd: SOUND_ON_PARTIAL_SPLITS, // v91
       HashDisabled: HASH_DISABLED, // v96
       UIWarning: ACCEPTED_UI_WARNING, // v100
+      DesktopNotifs: DESKTOP_NOTIFICATIONS_ENABLED, // v100+
+      Notify1000: NOTIFY_1000, // v100+
+      Notify1000Dead: NOTIFY_1000_DEAD, // v100+
+      NotifyPBing: NOTIFY_PBING, // v100+ 
+      NotifyPBed: NOTIFY_PBED, // v100+
 
       //  SOUNDS
       Sound_GSP: SOUND_GOOD_SPLIT_BASE64, // v90
@@ -10807,6 +10899,7 @@ function makeSettings() {
       Themes: THEMES,
       CurrentStyle: CURRENT_STYLE,
       OBSTransparent: OBS_TRANSPARENT_BACKGROUND, // v64
+      SyncThemesDDRust: SYNC_THEMES_WITH_DDRUST, // v100+
 
       //  PAGE STATES
       PlayerPageId: CURRENT_PLAYER_PAGE_ID, // v33
@@ -11016,6 +11109,12 @@ async function setSettings(SETTINGS_OBJECT, REINITIALIZE) {
         CLEANED_SETTINGS.Settings.ReplayPerspFOV = REPLAY_PERSPECTIVE_FOV;
         CLEANED_SETTINGS.Settings.FullscreenReplay = FULLSCREEN_REPLAY_MODE;
         CLEANED_SETTINGS.Settings.UIWarning = ACCEPTED_UI_WARNING;
+        CLEANED_SETTINGS.Settings.DesktopNotifs = DESKTOP_NOTIFICATIONS_ENABLED; // must be True
+        CLEANED_SETTINGS.Settings.Notify1000 = NOTIFY_1000; // must be True; is cleaned
+        CLEANED_SETTINGS.Settings.Notify1000Dead = NOTIFY_1000_DEAD; // must be True; is cleaned
+        CLEANED_SETTINGS.Settings.NotifyPBing = NOTIFY_PBING; // must be True; is cleaned
+        CLEANED_SETTINGS.Settings.NotifyPBed = NOTIFY_PBED; // must be True; is cleaned
+        CLEANED_SETTINGS.Settings.SyncThemesDDRust = SYNC_THEMES_WITH_DDRUST; 
       }
 
       if (Lcompatible) { // Perform Upgrade depending on VERSION
@@ -11034,6 +11133,11 @@ async function setSettings(SETTINGS_OBJECT, REINITIALIZE) {
       SOUND_ON_PARTIAL_SPLITS = CLEANED_SETTINGS.Settings.PartialSplSnd; // v91
       HASH_DISABLED = CLEANED_SETTINGS.Settings.HashDisabled; // v96
       ACCEPTED_UI_WARNING = CLEANED_SETTINGS.Settings.UIWarning; // v100
+      DESKTOP_NOTIFICATIONS_ENABLED = CLEANED_SETTINGS.Settings.DesktopNotifs; // must be True
+      NOTIFY_1000 = CLEANED_SETTINGS.Settings.Notify1000; // must be True; is cleaned
+      NOTIFY_1000_DEAD = CLEANED_SETTINGS.Settings.Notify1000Dead; // must be True; is cleaned
+      NOTIFY_PBING = CLEANED_SETTINGS.Settings.NotifyPBing; // must be True; is cleaned
+      NOTIFY_PBED = CLEANED_SETTINGS.Settings.NotifyPBed; // must be True; is cleaned
 
       //  SOUNDS
       SOUND_GOOD_SPLIT_BASE64 = CLEANED_SETTINGS.Settings.Sound_GSP; // v90
@@ -11107,6 +11211,7 @@ async function setSettings(SETTINGS_OBJECT, REINITIALIZE) {
       THEMES = CLEANED_SETTINGS.Settings.Themes;
       CURRENT_STYLE = CLEANED_SETTINGS.Settings.CurrentStyle;
       OBS_TRANSPARENT_BACKGROUND = CLEANED_SETTINGS.Settings.OBSTransparent; // v64
+      SYNC_THEMES_WITH_DDRUST = CLEANED_SETTINGS.Settings.SyncThemesDDRust; // v100+
 
       //  PAGE STATES
       CURRENT_PLAYER_PAGE_ID = CLEANED_SETTINGS.Settings.PlayerPageId; // v33
@@ -11141,6 +11246,8 @@ async function setSettings(SETTINGS_OBJECT, REINITIALIZE) {
       ACTIVE_PLAYERS_COLLAPSED = CLEANED_SETTINGS.Settings.ActiveCollapsed; // v79
       NEW_PLAYERS_COLLAPSED = CLEANED_SETTINGS.Settings.NewCollapsed; // v79
 
+      fixVariousUndefinedSettings();
+
       if (REINITIALIZE) {
         await reinit();
       }
@@ -11149,6 +11256,19 @@ async function setSettings(SETTINGS_OBJECT, REINITIALIZE) {
       alert('Settings are incompatible with the current version of DDLIVE and could not be set!', 'error');
     }
     APPLYING_SETTINGS = false;
+  }
+}
+
+function fixVariousUndefinedSettings(){
+  if(DESKTOP_NOTIFICATIONS_ENABLED == undefined || NOTIFY_1000 == undefined || NOTIFY_1000_DEAD == undefined || NOTIFY_PBING == undefined || NOTIFY_PBED == undefined){
+    DESKTOP_NOTIFICATIONS_ENABLED = false; 
+    NOTIFY_1000 = false; 
+    NOTIFY_1000_DEAD = false; 
+    NOTIFY_PBING = false; 
+    NOTIFY_PBED = false; 
+  }
+  if(SYNC_THEMES_WITH_DDRUST == undefined){
+    SYNC_THEMES_WITH_DDRUST = false;
   }
 }
 
@@ -11942,8 +12062,10 @@ function CHECKBOX_SETTER() {
 
 //  RANGE GENERIC
 
-function RANGE_SENDER(RANGE_ELEMENT, NO_GRAPH_OR_STYLE_RESET) {
-  window[RANGE_ELEMENT.attributes.linkedVariable.nodeValue] = RANGE_ELEMENT.value;
+function RANGE_SENDER(RANGE_ELEMENT, NO_GRAPH_OR_STYLE_RESET, INT) {
+  var Value = RANGE_ELEMENT.value;
+  if(INT == true){ Value = parseInt(Value) }
+  window[RANGE_ELEMENT.attributes.linkedVariable.nodeValue] = Value;
   saveSettings();
   reinit(true, NO_GRAPH_OR_STYLE_RESET);
 }
@@ -18380,7 +18502,7 @@ async function paginatePlayer(PLAYER_ID, FORCE, DO_NOT_GOTO, PROV_PLAYER_NAME, h
 
         var IS_CACHE_RANK = '';
         if(LEADERBOARD_BEST_RANK_CACHE[0] == PLAYER_ID){
-          IS_CACHE_RANK = '<span id="PLAYER_RANK_ELEMENT" style="white-space:pre;">Peak Rank: </span><span style="text-align:right;">' + LEADERBOARD_BEST_RANK_CACHE[1] + nth(LEADERBOARD_BEST_RANK_CACHE[1]) + '</span>';
+          IS_CACHE_RANK = '<span id="PLAYER_RANK_ELEMENT" style="white-space:pre;">Peak Rank: </span><span id="PLAYER_RANK_ELEMENT_2" style="text-align:right;">' + LEADERBOARD_BEST_RANK_CACHE[1] + nth(LEADERBOARD_BEST_RANK_CACHE[1]) + '</span>';
         }
 
         //  now we construct the player data order
@@ -18489,14 +18611,16 @@ async function paginatePlayer(PLAYER_ID, FORCE, DO_NOT_GOTO, PROV_PLAYER_NAME, h
         var data_ddinfo_history = await ajaxRequest('https://devildaggers.info/api/players/' + PLAYER_ID + '/history', true); // then to ddinfo's history endpoint for top 100 data
 
         if (data_ddinfo_history.bestRank != null && PLAYER_ID == CURRENT_PLAYER_PAGE_ID) {
-          peakRankString = '<span id="PLAYER_RANK_ELEMENT" style="white-space:pre;">Peak Rank: </span><span style="text-align:right;">' + data_ddinfo_history.bestRank + nth(data_ddinfo_history.bestRank) + '</span>';
+          peakRankString = '<span id="PLAYER_RANK_ELEMENT" style="white-space:pre;">Peak Rank: </span><span id="PLAYER_RANK_ELEMENT_2" style="text-align:right;">' + data_ddinfo_history.bestRank + nth(data_ddinfo_history.bestRank) + '</span>';
 
           LEADERBOARD_BEST_RANK_CACHE = [PLAYER_ID, data_ddinfo_history.bestRank];
 
           var insertPoint = document.getElementById('PLAYER_RANK_INSERT_POINT');
           var prevRankHtml = document.querySelector('#PLAYER_RANK_ELEMENT');
+          var prevRankHtml2 = document.querySelector('#PLAYER_RANK_ELEMENT_2');
           if(prevRankHtml != null){
             prevRankHtml.remove();
+            prevRankHtml2.remove();
           }
           insertPoint.insertAdjacentHTML('beforebegin', peakRankString);
         }
@@ -27242,6 +27366,25 @@ function colorizeHex(HEX_TEXT_ELEMENT) { // colorization of hex is not instant; 
   }
 }
 
+function requestNotificationPermissions() {
+  if(DESKTOP_NOTIFICATIONS_ENABLED != true){ // Unnecessary to ask again
+    if (!("Notification" in window)) {
+      alert("This browser does not support desktop notifications.");
+    } else if (Notification.permission === "granted" && DESKTOP_NOTIFICATIONS_ENABLED) {
+      //  No notification required for granting permissions.
+    } else {
+      // Request permissions
+      Notification.requestPermission().then((permission) => {
+        if (permission === "granted") {
+          alert('Desktop notifications enabled.');
+          DESKTOP_NOTIFICATIONS_ENABLED = true;
+          saveSettings();
+        }
+      });
+    }
+  }
+}
+
 var levenshtein = function(s, t) {
   var d = [];
   var n = s.length;
@@ -29048,7 +29191,17 @@ LIVE_PLAYER_SOCKET.onmessage = function(message) {
     console.info('%c 🡻 Live Player Socket %c  ', console_message_blue, console_message_neutral, JSON.parse(message.data).func, JSON.parse(JSON.parse(message.data).body));
   }
 
-  // alert(message.data);
+  //  Active run detection: Used to prevent jumpscares from desktop notifications
+  var IN_ACTIVE_RUN = false;
+  if(CLIENT_ACTIVE){
+    if(DD != undefined){
+      if(DD.block != undefined){
+        if(DD.block.status == 3){
+          IN_ACTIVE_RUN = true;
+        }
+      }
+    }
+  }
 
   var ThisData = JSON.parse(message.data);
 
@@ -29056,12 +29209,47 @@ LIVE_PLAYER_SOCKET.onmessage = function(message) {
     if (GLOBAL_STATUS_ALERTS_ENABLED) {
       var ddstats_alertBody = JSON.parse(ThisData.body);
       alert(ddstats_alertBody.PlayerName + ' just passed their best time of ' + ddstats_alertBody.PreviousGameTime.toFixed(4) + 's!', 'LiveGame', undefined, 'more_time', undefined, undefined, undefined, 15000, ddstats_alertBody.PlayerID);
+
+      if(DESKTOP_NOTIFICATIONS_ENABLED && NOTIFY_PBING && IN_ACTIVE_RUN == false){ // Desktop notification
+        var thisNotif = new Notification(ddstats_alertBody.PlayerName + ' just passed their best time of ' + ddstats_alertBody.PreviousGameTime.toFixed(4) + 's!', {
+            body:  'Click to watch live!',
+            icon:  'https://ddstats.live/media/ddlive_logo.png',
+            badge: 'https://ddstats.live/icons/apple-touch-icon.png',
+        });
+        thisNotif.onclick = (event) => {
+          window.focus();
+          if (ddstats_alertBody.PlayerID != CURRENT_PLAYER_PAGE_ID || (GLOBAL_NAV_PAGE != 3 || GLOBAL_NAV_PAGE_OFFSETS[3] != 1)) {
+            //  do not do these things if you're already on the player's page
+            LIVE_PLAYER_SOCKET.send(JSON.stringify({
+              "func": "leave_room",
+              "body": ""
+            }));
+            setTimeout(function() {
+              paginatePlayer(ddstats_alertBody.PlayerID);
+            }, 125);
+          }
+        };
+      }
+
     }
   } else if (ThisData.func == 'new_personal_best_broadcast') {
     if (GLOBAL_STATUS_ALERTS_ENABLED) {
       var ddstats_alertBody = JSON.parse(ThisData.body);
       var pb_improvement = parseFloat(ddstats_alertBody.GameTime) - parseFloat(ddstats_alertBody.PreviousGameTime);
       alert(ddstats_alertBody.PlayerName + ' just got a new PB of ' + ddstats_alertBody.GameTime.toFixed(4) + 's, beating their previous PB by ' + pb_improvement.toFixed(4) + 's!', 'DoneGame', undefined, 'leaderboard', undefined, undefined, undefined, 15000, ddstats_alertBody.GameID);
+
+      if(DESKTOP_NOTIFICATIONS_ENABLED && NOTIFY_PBED && IN_ACTIVE_RUN == false){ // Desktop notification
+        var thisNotif = new Notification(ddstats_alertBody.PlayerName + ' just got a new PB of ' + ddstats_alertBody.GameTime.toFixed(4) + 's, beating their previous PB by ' + pb_improvement.toFixed(4) + 's!', {
+            body:  'Click to review game #' + ddstats_alertBody.GameID + '.',
+            icon:  'https://ddstats.live/media/ddlive_logo.png',
+            badge: 'https://ddstats.live/icons/apple-touch-icon.png',
+        });
+        thisNotif.onclick = (event) => {
+          window.focus();
+          paginateGame(ddstats_alertBody.GameID);
+        };
+      }
+
       //  also update the player page if the player page has this player open
       if (ddstats_alertBody.GameID == CURRENT_PLAYER_PAGE_ID) {
         paginatePlayer(CURRENT_PLAYER_PAGE_ID, true);
@@ -29072,8 +29260,29 @@ LIVE_PLAYER_SOCKET.onmessage = function(message) {
     if (GLOBAL_STATUS_ALERTS_ENABLED) {
       var ddstats_alertBody = JSON.parse(ThisData.body);
       alert(ddstats_alertBody.PlayerName + ' is over 1000!', 'LiveGame', undefined, '1k_plus', undefined, undefined, undefined, undefined, ddstats_alertBody.PlayerID);
-    }
 
+      if(DESKTOP_NOTIFICATIONS_ENABLED && NOTIFY_1000 && IN_ACTIVE_RUN == false){ // Desktop notification
+        var thisNotif = new Notification(ddstats_alertBody.PlayerName + ' is over 1000!', {
+            body:  'Click to watch live!',
+            icon:  'https://ddstats.live/media/ddlive_logo.png',
+            badge: 'https://ddstats.live/icons/apple-touch-icon.png',
+        });
+        thisNotif.onclick = (event) => {
+          window.focus();
+          if (ddstats_alertBody.PlayerID != CURRENT_PLAYER_PAGE_ID || (GLOBAL_NAV_PAGE != 3 || GLOBAL_NAV_PAGE_OFFSETS[3] != 1)) {
+            //  do not do these things if you're already on the player's page
+            LIVE_PLAYER_SOCKET.send(JSON.stringify({
+              "func": "leave_room",
+              "body": ""
+            }));
+            setTimeout(function() {
+              paginatePlayer(ddstats_alertBody.PlayerID);
+            }, 125);
+          }
+        };
+      }
+
+    }
   } else if (ThisData.func == 'death_past_threshold_broadcast') {
     if (GLOBAL_STATUS_ALERTS_ENABLED) {
       var ddstats_alertBody = JSON.parse(ThisData.body);
@@ -29082,6 +29291,19 @@ LIVE_PLAYER_SOCKET.onmessage = function(message) {
         fallenCase = ' has ';
       }
       alert(ddstats_alertBody.PlayerName + fallenCase + ddstats_alertBody.DeathType + ' at ' + ddstats_alertBody.GameTime.toFixed(4) + 's.', 'DoneGame', undefined, 'heart_broken', undefined, undefined, undefined, undefined, ddstats_alertBody.GameID);
+
+      if(DESKTOP_NOTIFICATIONS_ENABLED && NOTIFY_1000_DEAD && IN_ACTIVE_RUN == false){ // Desktop notification
+        var thisNotif = new Notification(ddstats_alertBody.PlayerName + fallenCase + ddstats_alertBody.DeathType + ' at ' + ddstats_alertBody.GameTime.toFixed(4) + 's.', {
+            body:  'Click to review game #' + ddstats_alertBody.GameID + '.',
+            icon:  'https://ddstats.live/media/ddlive_logo.png',
+            badge: 'https://ddstats.live/icons/apple-touch-icon.png',
+        });
+        thisNotif.onclick = (event) => {
+          window.focus();
+          paginateGame(ddstats_alertBody.GameID);
+        };
+      }
+
     }
 
   } else if (ThisData.func == 'status') {
@@ -29495,6 +29717,9 @@ function verifySession() {
         alert('ddstats-rust connected!', undefined, undefined, 'link');
         setTimeout(function() {
           splitGrid();
+          if(SYNC_THEMES_WITH_DDRUST){
+            exportThemeToDDRust(true);
+          }
           socket.send(JSON.stringify({
             type: "get_saved_games",
             data: null
