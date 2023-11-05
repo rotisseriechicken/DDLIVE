@@ -7238,7 +7238,7 @@ paginateDDCL(PAGE_DDCL_MAX);">last_page</i><div id="DDCL_NAVIGATOR_TEXT" class="
                   <br>
                   <h1>How are splits compared?</h1>
                   <br>
-                  <h3>Splits are compared literally; One side's difference from the other.<br>The VS column's "Total" can also be used to see the total difference at a split.<br>Splits are colored Good or Bad when they're above or below the Neutral threshold, which is, by default, 20.<br><br>The latest split, bottom-of-stack, is unfinished and uncommitted; Therefore, it is Inactive-colored.<br>This split, in a Live game, is the Live Split. The "Time" column label will be replaced with current gametime, floored.</h3>
+                  <h3>Splits are compared literally; One side's difference to the other.<br>The VS column's "Total" can also be used to see the total difference at a split.<br>Splits are colored Good or Bad when they're above or below the Neutral threshold, which is, by default, 20.<br><br>The latest split, bottom-of-stack, is unfinished and uncommitted; Therefore, it is Inactive-colored.<br>This split, in a Live game, is the Live Split. The "Time" column label will be replaced with current gametime, floored.</h3>
                   <br>
                   <h1>Can I use custom splits?</h1>
                   <br>
@@ -7361,7 +7361,7 @@ paginateDDCL(PAGE_DDCL_MAX);">last_page</i><div id="DDCL_NAVIGATOR_TEXT" class="
                   <br>
                   <h1>My question isn't here. Now what?</h1>
                   <br>
-                  <h3>Ask me! <span style="font-family: 'OPM2';"> @matt.#3869</span></h3>
+                  <h3>Ask me on Discord! <span style="font-family: 'OPM2';"> @skunk_fucker</span></h3>
                   <br>
                   
                 </div>
@@ -8407,6 +8407,7 @@ var CREDITS_SPECIAL_TIME_MIN = 250; // Amount of minimum milliseconds between sp
 var CREDITS_SPECIAL_TIME_MAX = 7750; // Amount of maximum milliseconds between special credits events
 
 var DESKTOP_NOTIFICATIONS_ENABLED = false; // If true, permissions are assumed granted
+var DESKTOP_NOTIFICATIONS = {}; // Object where each ID is a property, w/ array each; Clears notifs
 var NOTIFY_1000 = false; // Conditions for which to notify for, if notifications are enabled
 var NOTIFY_1000_DEAD = false;
 var NOTIFY_PBING = false;
@@ -27385,6 +27386,23 @@ function requestNotificationPermissions() {
   }
 }
 
+function clearUserDesktopNotifications(ID){
+  if(DESKTOP_NOTIFICATIONS[ID] == undefined){
+    DESKTOP_NOTIFICATIONS[ID] = [];
+  } else {
+    for(var NOTIFICATION of DESKTOP_NOTIFICATIONS[ID]){
+      NOTIFICATION.close(); // Closes the notification
+    }
+  }
+}
+
+function pushClearableDesktopNotification(ID, NOTIFICATION){
+  if(DESKTOP_NOTIFICATIONS[ID] == undefined){
+    DESKTOP_NOTIFICATIONS[ID] = [];
+  }
+  DESKTOP_NOTIFICATIONS[ID].push(NOTIFICATION);
+}
+
 var levenshtein = function(s, t) {
   var d = [];
   var n = s.length;
@@ -29211,11 +29229,13 @@ LIVE_PLAYER_SOCKET.onmessage = function(message) {
       alert(ddstats_alertBody.PlayerName + ' just passed their best time of ' + ddstats_alertBody.PreviousGameTime.toFixed(4) + 's!', 'LiveGame', undefined, 'more_time', undefined, undefined, undefined, 15000, ddstats_alertBody.PlayerID);
 
       if(DESKTOP_NOTIFICATIONS_ENABLED && NOTIFY_PBING && IN_ACTIVE_RUN == false){ // Desktop notification
+
         var thisNotif = new Notification(ddstats_alertBody.PlayerName + ' just passed their best time of ' + ddstats_alertBody.PreviousGameTime.toFixed(4) + 's!', {
             body:  'Click to watch live!',
             icon:  'https://ddstats.live/media/ddlive_logo.png',
             badge: 'https://ddstats.live/icons/apple-touch-icon.png',
         });
+        pushClearableDesktopNotification(ddstats_alertBody.PlayerName, thisNotif);
         thisNotif.onclick = (event) => {
           window.focus();
           if (ddstats_alertBody.PlayerID != CURRENT_PLAYER_PAGE_ID || (GLOBAL_NAV_PAGE != 3 || GLOBAL_NAV_PAGE_OFFSETS[3] != 1)) {
@@ -29239,11 +29259,12 @@ LIVE_PLAYER_SOCKET.onmessage = function(message) {
       alert(ddstats_alertBody.PlayerName + ' just got a new PB of ' + ddstats_alertBody.GameTime.toFixed(4) + 's, beating their previous PB by ' + pb_improvement.toFixed(4) + 's!', 'DoneGame', undefined, 'leaderboard', undefined, undefined, undefined, 15000, ddstats_alertBody.GameID);
 
       if(DESKTOP_NOTIFICATIONS_ENABLED && NOTIFY_PBED && IN_ACTIVE_RUN == false){ // Desktop notification
-        var thisNotif = new Notification(ddstats_alertBody.PlayerName + ' just got a new PB of ' + ddstats_alertBody.GameTime.toFixed(4) + 's, beating their previous PB by ' + pb_improvement.toFixed(4) + 's!', {
-            body:  'Click to review game #' + ddstats_alertBody.GameID + '.',
+        var thisNotif = new Notification(ddstats_alertBody.PlayerName + ' just got a new PB of ' + ddstats_alertBody.GameTime.toFixed(4) + 's!', {
+            body:  '...beating their previous personal best by ' + pb_improvement.toFixed(4) + 's!\n' + 'Click to review game #' + ddstats_alertBody.GameID + '.',
             icon:  'https://ddstats.live/media/ddlive_logo.png',
             badge: 'https://ddstats.live/icons/apple-touch-icon.png',
         });
+        clearUserDesktopNotifications(ddstats_alertBody.PlayerName);
         thisNotif.onclick = (event) => {
           window.focus();
           paginateGame(ddstats_alertBody.GameID);
@@ -29267,6 +29288,7 @@ LIVE_PLAYER_SOCKET.onmessage = function(message) {
             icon:  'https://ddstats.live/media/ddlive_logo.png',
             badge: 'https://ddstats.live/icons/apple-touch-icon.png',
         });
+        pushClearableDesktopNotification(ddstats_alertBody.PlayerName, thisNotif);
         thisNotif.onclick = (event) => {
           window.focus();
           if (ddstats_alertBody.PlayerID != CURRENT_PLAYER_PAGE_ID || (GLOBAL_NAV_PAGE != 3 || GLOBAL_NAV_PAGE_OFFSETS[3] != 1)) {
@@ -29298,6 +29320,7 @@ LIVE_PLAYER_SOCKET.onmessage = function(message) {
             icon:  'https://ddstats.live/media/ddlive_logo.png',
             badge: 'https://ddstats.live/icons/apple-touch-icon.png',
         });
+        clearUserDesktopNotifications(ddstats_alertBody.PlayerName);
         thisNotif.onclick = (event) => {
           window.focus();
           paginateGame(ddstats_alertBody.GameID);
@@ -29655,7 +29678,7 @@ LIVE_PLAYER_SOCKET.onmessage = function(message) {
           return obj.player_id == formattedBody.player_id;
         })[0];
         if (GLS_NAME != undefined && GLS_NAME != null) {
-          alert(GLS_NAME.player_name + ' died - game ' + formattedBody.game_id + ' submitted.');
+          alert(GLS_NAME.player_name + ' died - game ' + formattedBody.game_id + ' submitted.', 'DoneGame', undefined, 'addchart', undefined, undefined, undefined, 15000, formattedBody.game_id);
         }
       }
     }
@@ -31330,7 +31353,7 @@ function STAT_MASTER() {
 
       //  Split error stack into newlines
       var RPL = new RegExp(window.location.href, "g");
-      var PreStack = e.stack.toString() + '\r\n \r\nPlease report this error to matt.#3869.'
+      var PreStack = e.stack.toString() + '\r\n \r\nPlease report to @skunk_fucker on Discord.'
       var Stack = [PreStack.replace(RPL, '[CLIENT]')]; //.split(/\r?\n/);
 
       //  Split lines into even more lines if they're larger than the canvas window
