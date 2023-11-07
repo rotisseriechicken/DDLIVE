@@ -21608,7 +21608,9 @@ async function paginateGame(GAME_ID, LOAD_FROM_CACHE, FORCE, MARKERS_ONLY, GAME_
     //  date prevar 
     var DATE_DATA = '';
     if (GAME_OBJECT.block.DDSTATS_GAME_TIMESTAMP != undefined) {
-      DATE_DATA = ' ‣ ' + timeSince(new Date(GAME_OBJECT.block.DDSTATS_GAME_TIMESTAMP));
+      var DateOf = new Date(GAME_OBJECT.block.DDSTATS_GAME_TIMESTAMP);
+      var EpochDate = DateOf.getTime();
+      DATE_DATA = ' ‣ <span timestamp_item="'+EpochDate+'">'+timeSince(DateOf)+'</span>';
     }
 
     var isPB = '';
