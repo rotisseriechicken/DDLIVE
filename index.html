@@ -16936,25 +16936,25 @@ function formatLeaderboardObject(DATA) {
   }
   */
 
-  var deEmojifiedPlayerName = cleanString(deEmojify(DATA.player_name));
-  var simplePlayerName_toBeDeEmojifiedLater = cleanString(DATA.player_name);
+  var deEmojifiedPlayerName = cleanString(deEmojify(DATA.username));
+  var simplePlayerName_toBeDeEmojifiedLater = cleanString(DATA.username);
 
   var ifLiveClass = '';
-  if (DD_LIVE_PLAYERS.includes(DATA.player_id)) {
+  if (DD_LIVE_PLAYERS.includes(DATA.id)) {
     ifLiveClass = ' currentlyLive';
   }
-  if (LAST_TWITCH_STREAMS_OF_LINKED.includes(DATA.player_id)) {
+  if (LAST_TWITCH_STREAMS_OF_LINKED.includes(DATA.id)) {
     ifLiveClass = ' currentlyLive';
   }
 
   var LBButton = '';
   var LBPR = '0.5vh';
-  if(parseFloat(DATA.game_time) > 10){
+  if(parseFloat(DATA.time) > 10){
     LBPR = '2.25vh';
-    LBButton = '<div class="leaderboardButton" onmouseenter="tooltip(\'viewDDStatsPB\')" onmouseleave="tooltip(\'close\')" onmousedown="paginateGame(undefined, undefined, undefined, undefined, undefined, undefined, undefined, '+DATA.player_id+', `'+simplePlayerName_toBeDeEmojifiedLater+'`,`'+DATA.game_time.toFixed(4)+'`);"><div class="leaderboardButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.2vh;position:relative;top:-0.185vh;right:0.65vh;line-height:0px;">search</i></div></div>';
+    LBButton = '<div class="leaderboardButton" onmouseenter="tooltip(\'viewDDStatsPB\')" onmouseleave="tooltip(\'close\')" onmousedown="paginateGame(undefined, undefined, undefined, undefined, undefined, undefined, undefined, '+DATA.id+', `'+simplePlayerName_toBeDeEmojifiedLater+'`,`'+DATA.time.toFixed(4)+'`);"><div class="leaderboardButtonInside" style="left: 0.8vh;"><i class="material-icons" style="font-size:1.2vh;position:relative;top:-0.185vh;right:0.65vh;line-height:0px;">search</i></div></div>';
   }
 
-  return '<div class="leaderboardItem" PLAYER_ID="' + DATA.player_id + '" PLAYER_NAME="' + deEmojifiedPlayerName + '"><div class="leaderboardName"><span class="leaderboardRank">' + DATA.rank + '  ' + DATA.game_time.toFixed(4) + 's  ·  ' + '</span><span class="leaderboardActualName' + ifLiveClass + '">' + deEmojifiedPlayerName + '</span></div><div class="leaderboardStats" style="padding-right:'+LBPR+'">   ' + DATA.death_type + ', ' + DATA.gems + ' gems, ' + DATA.enemies_killed + ' kills, ' + DATA.accuracy.toFixed(2) + '% acc</div>' + '<div class="leaderboardButtonWrapper">'+LBButton+'</div>'
+  return '<div class="leaderboardItem" PLAYER_ID="' + DATA.id + '" PLAYER_NAME="' + deEmojifiedPlayerName + '"><div class="leaderboardName"><span class="leaderboardRank">' + DATA.rank + '  ' + DATA.time.toFixed(4) + 's  ·  ' + '</span><span class="leaderboardActualName' + ifLiveClass + '">' + deEmojifiedPlayerName + '</span></div><div class="leaderboardStats" style="padding-right:'+LBPR+'">   ' + deathText(DATA.deathType) + ', ' + DATA.gems + ' gems, ' + DATA.kills + ' kills, ' + ((DATA.daggersHit / DATA.daggersFired)*100).toFixed(2) + '% acc</div>' + '<div class="leaderboardButtonWrapper">'+LBButton+'</div>'
 
     + '<div onmouseenter="tooltip(\'leaderboardItem\')" onmouseleave="tooltip(\'close\')" onclick="paginatePlayer(this.parentElement.attributes.player_id.nodeValue,undefined,undefined,this.parentElement.attributes.player_name.nodeValue)" class="gameItemBackgroundClickbox" style="width: calc(100% - 2.25vh);height:1.735vh;margin-top:0vh;"></div>'
 
@@ -19201,21 +19201,25 @@ async function paginateLeaderboard(PAGE, FORCE) {
 
     setTitle(3, 0, 'Loading...');
     TRAY_CALL(3, 0, 'loading');
-    var data = await ajaxRequest('https://ddstats.com/api/v2/ddapi/get_scores?offset=' + ((PAGE_LEADERBOARD_SIZE * (PAGE_LEADERBOARD - 1)) + 1) + '&limit=20', true);
+    var data = await ajaxRequest('https://devildaggers.info/api/leaderboards?rankStart=' + ((PAGE_LEADERBOARD_SIZE * (PAGE_LEADERBOARD - 1)) + 1) + '', true);
     // console.log('DATA: ',data);
 
     if (data != 'ERR') {
-      PAGE_LEADERBOARD_MAX = Math.ceil(data.global_player_count / PAGE_LEADERBOARD_SIZE); // floored from player amount
+      PAGE_LEADERBOARD_MAX = Math.ceil(data.totalPlayers / PAGE_LEADERBOARD_SIZE); // floored from player amount
       if (PAGE_LEADERBOARD == NPAGE) {
         //  Stop loading icon, clear LEADERBOARD_WRAPPER and fill with new games
         document.getElementById('LEADERBOARD_WRAPPER').innerHTML = '';
         var numPlayers = 0;
-        for (var GameItem_OBJ of data.players) {
+        for (var GameItem_OBJ of data.entries) {
           document.getElementById('LEADERBOARD_WRAPPER').innerHTML += formatLeaderboardObject(GameItem_OBJ);
           numPlayers++;
+
+          if(numPlayers >= 20){ // Cope for ddinfo endpoint
+            break;
+          }
         }
         var GI_indexOfFirstEntry = (1 + (PAGE_LEADERBOARD_SIZE * (PAGE_LEADERBOARD - 1)));
-        document.getElementById('LEADERBOARD_NAVIGATOR_TEXT').innerHTML = GI_indexOfFirstEntry + ' - ' + (GI_indexOfFirstEntry + (numPlayers - 1)) + ' of ' + data.global_player_count + ' players'; // (' + PAGE_LEADERBOARD_MAX + ' pages total)';
+        document.getElementById('LEADERBOARD_NAVIGATOR_TEXT').innerHTML = GI_indexOfFirstEntry + ' - ' + (GI_indexOfFirstEntry + (numPlayers - 1)) + ' of ' + data.totalPlayers + ' players'; // (' + PAGE_LEADERBOARD_MAX + ' pages total)';
         if (FORCE != true) {
           saveSettings();
         }

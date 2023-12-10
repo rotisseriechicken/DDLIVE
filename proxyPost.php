@@ -1,7 +1,7 @@
 <?php header('Access-Control-Allow-Origin: *');
 
 $userid = $_GET['userid'];
-$url = 'http://dd.hasmodai.com/backend16/get_replay.php';
+$url = 'http://dd.hasmodai.com/dd3/get_replay.php';
 $data = array('replay' => $userid);
 
 $options = array(
