@@ -17973,7 +17973,7 @@ async function getOnlineThemes(UNUSED_ATTRIBUTE, FORCE) {
 }
 
 async function getClubberUsers(UNUSED_ATTRIBUTE, FORCE) {
-  var data_users = await ajaxRequest('https://clubber.onrender.com/users', true);
+  var data_users = await ajaxRequest('https://clubber.up.railway.app/users', true);
   if (data_users != 'ERR') {
     LAST_CLUBBER_USERS = data_users;
     getLinkedTwitchUsers();
@@ -17981,7 +17981,7 @@ async function getClubberUsers(UNUSED_ATTRIBUTE, FORCE) {
 }
 
 async function getBestSplits(UNUSED_ATTRIBUTE, FORCE) {
-  var data_splits = await ajaxRequest('https://clubber.onrender.com/bestsplits', true);
+  var data_splits = await ajaxRequest('https://clubber.up.railway.app/bestsplits', true);
   if (data_splits != 'ERR') {
     LAST_CLUBBER_SPLITS = data_splits;
     updateBestSplits();
@@ -17989,7 +17989,7 @@ async function getBestSplits(UNUSED_ATTRIBUTE, FORCE) {
 }
 
 async function getClubberNews(UNUSED_ATTRIBUTE, FORCE) {
-  var data_news = await ajaxRequest('https://clubber.onrender.com/dailynews', true);
+  var data_news = await ajaxRequest('https://clubber.up.railway.app/dailynews', true);
   if (data_news != 'ERR') {
     LAST_CLUBBER_NEWS = data_news;
     makeNews();
