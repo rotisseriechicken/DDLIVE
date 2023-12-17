@@ -63,6 +63,8 @@ Use ddstats-rust to link your Devil Daggers games with DDLIVE." property="og:des
 <meta content="https://ddstats.live/media/ddlive_logo.png" property="og:image">
 <!-- <meta content="ddstats.live" property="og:site_name"> -->
 
+<script src="endpoints.js" class="Subscript"></script>
+
 <script src="lib/wavesurfer.js"></script>
 
 <script src="lib/chart.min.js?v=2"></script>
@@ -8217,6 +8219,7 @@ var ON_DEATH_AUTOREFRESH_THRESHOLD = 60000; // ms required between recent games 
 var FOCUS_FORCE = false; // will force off focus-based rate limitation (enabling makes you an asshole)
 var FOCUS_TIMEOUT = 900000; // time at which operations are internally rate limited. default 15 mins.
 var FOCUS_IS_LIMIT_THRESH = false; // per-session state which controls focus-rate-limit notifications
+var LAST_ENDPOINTS_GET = Date.now(); // last time the endpoints were updated
 var LAST_FOCUS = Date.now(); // last time page was focused when the bisecond loop ran
 var LAST_REFRESH = Date.now(); // last autorefresh time
 var LAST_LONG_REFRESH = Date.now(); // last long data refresh time
@@ -9483,7 +9486,7 @@ document.onkeydown = globalKeyListener;
 //  FIND BY ID AND RANK LISTENERS
 
 async function getRank(RANK) {
-  var RANK_PLAYER = await ajaxRequest('https://devildaggers.info/api/leaderboards/entry/by-rank?rank=' + RANK, true);
+  var RANK_PLAYER = await ajaxRequest(ENDPOINTS.playerByRank(RANK), true);
   return RANK_PLAYER;
 }
 
@@ -16838,7 +16841,7 @@ async function loadGame(ID, LR, NO_R_FORCE, JUST_RETURN, GAME_OBJECT_INSTEAD) {
     FORCE_STAT_DRAW = true;
   } else {
     if (ID != -1 && ID != undefined) {
-      var data = await ajaxRequest('https://ddstats.com/api/v2/game/full?id=' + ID, true);
+      var data = await ajaxRequest(ENDPOINTS.ddstatsGame(ID), true);
       drapeLog(arguments.callee.name, ' ID: ', ID, ' LR: ', LR, 'NO_R_FORCE:', NO_R_FORCE, 'DATA: ', data);
 
       if (JUST_RETURN) {
@@ -17683,6 +17686,9 @@ async function refreshLongData(FORCE) {
 
     LAST_LONG_REFRESH = Date.now();
 
+    await sleep(INIT_MSG_WAIT);
+    getEndpoints(); // doesn't run on init so don't message
+
     setInitState('    clubber users');
     await sleep(INIT_MSG_WAIT);
     getClubberUsers(undefined, true);
@@ -17934,7 +17940,7 @@ function updateBestSplits() {
 }
 
 async function getPlayers(UNUSED_ATTRIBUTE, FORCE) {
-  var data_players = await ajaxProxy('dd.hasmodai.com/dd3/get_active_users.php');
+  var data_players = await ajaxProxy(ENDPOINTS.ddPlayers());
   if (data_players != 'ERR') {
     LAST_INGAME_PLAYERS_ONLINE = data_players;
     propagateStats();
@@ -17942,11 +17948,11 @@ async function getPlayers(UNUSED_ATTRIBUTE, FORCE) {
 }
 
 async function getAverages(UNUSED_ATTRIBUTE, FORCE) {
-  var data_top10 = await ajaxRequest('https://devildaggers.info/api/ddlive/leaderboard-statistics?top=10', true);
-  var data_top100 = await ajaxRequest('https://devildaggers.info/api/ddlive/leaderboard-statistics?top=100', true);
-  var data_top1000 = await ajaxRequest('https://devildaggers.info/api/ddlive/leaderboard-statistics?top=1000', true);
+  var data_top10 = await ajaxRequest(ENDPOINTS.top10(), true);
+  var data_top100 = await ajaxRequest(ENDPOINTS.top100(), true);
+  var data_top1000 = await ajaxRequest(ENDPOINTS.top1000(), true);
   // var data_all = await ajaxRequest('https://devildaggers.info/api/leaderboard-statistics',true);
-  var data_all = await ajaxRequest('https://devildaggers.info/api/ddlive/leaderboard-statistics', true);
+  var data_all = await ajaxRequest(ENDPOINTS.lb_stats(), true);
   if (data_top10 != 'ERR') {
     LAST_AVERAGES_10 = data_top10;
   }
@@ -17963,7 +17969,7 @@ async function getAverages(UNUSED_ATTRIBUTE, FORCE) {
 }
 
 async function getOnlineThemes(UNUSED_ATTRIBUTE, FORCE) {
-  var data_themes = await ajaxRequest('https://ddlt.dev/themes/all?key=' + ONLINE_THEME_BROWSER_KEY, true);
+  var data_themes = await ajaxRequest(ENDPOINTS.themes(ONLINE_THEME_BROWSER_KEY), true);
   if (data_themes != 'ERR') {
     LAST_ONLINE_THEMES = data_themes;
     cleanOnlineThemesData();
@@ -17973,7 +17979,7 @@ async function getOnlineThemes(UNUSED_ATTRIBUTE, FORCE) {
 }
 
 async function getClubberUsers(UNUSED_ATTRIBUTE, FORCE) {
-  var data_users = await ajaxRequest('https://clubber.up.railway.app/users', true);
+  var data_users = await ajaxRequest(ENDPOINTS.clubber_users(), true);
   if (data_users != 'ERR') {
     LAST_CLUBBER_USERS = data_users;
     getLinkedTwitchUsers();
@@ -17981,7 +17987,7 @@ async function getClubberUsers(UNUSED_ATTRIBUTE, FORCE) {
 }
 
 async function getBestSplits(UNUSED_ATTRIBUTE, FORCE) {
-  var data_splits = await ajaxRequest('https://clubber.up.railway.app/bestsplits', true);
+  var data_splits = await ajaxRequest(ENDPOINTS.clubber_splits(), true);
   if (data_splits != 'ERR') {
     LAST_CLUBBER_SPLITS = data_splits;
     updateBestSplits();
@@ -17989,7 +17995,7 @@ async function getBestSplits(UNUSED_ATTRIBUTE, FORCE) {
 }
 
 async function getClubberNews(UNUSED_ATTRIBUTE, FORCE) {
-  var data_news = await ajaxRequest('https://clubber.up.railway.app/dailynews', true);
+  var data_news = await ajaxRequest(ENDPOINTS.clubber_news(), true);
   if (data_news != 'ERR') {
     LAST_CLUBBER_NEWS = data_news;
     makeNews();
@@ -17997,7 +18003,7 @@ async function getClubberNews(UNUSED_ATTRIBUTE, FORCE) {
 }
 
 async function getLatestDDRustVersion() {
-  var L_VER = await ajaxProxy('raw.githubusercontent.com/lsaa/ddstats-rust/master/version_info.json');
+  var L_VER = await ajaxProxy(ENDPOINTS.ddrust_ver());
   if (L_VER != 'ERR') {
     LATEST_DDRUST_VERSION = L_VER.version;
     checkForDDRustUpdate();
@@ -18005,14 +18011,29 @@ async function getLatestDDRustVersion() {
 }
 
 async function getVerified(UNUSED_ATTRIBUTE, FORCE) {
-  var data_verified = await ajaxRequest('https://devildaggers.info/api/ddlive/players/common-names', true);
+  var data_verified = await ajaxRequest(ENDPOINTS.verified(), true);
   if (data_verified != 'ERR') {
     LAST_VERIFIED_DATA = data_verified;
   }
 }
 
+function addScript(PATH){ // Strictly used for subscene scripting
+  var ABSOLUTE_PATH = PATH;
+  var newScript     = document.createElement('script');
+    newScript.src = ABSOLUTE_PATH;
+    newScript.classList.add('Subscript');
+  document.head.appendChild(newScript);
+}
+
+async function getEndpoints(UNUSED_ATTRIBUTE, FORCE) {
+  if(Date.now() - LAST_ENDPOINTS_GET > 3500000){
+    addScript('https://ddstats.live/endpoints.js');
+    LAST_ENDPOINTS_GET = Date.now();
+  }
+}
+
 async function getDonors(UNUSED_ATTRIBUTE, FORCE) {
-  var data_donors = await ajaxProxy('ddstats.live/donors.json');
+  var data_donors = await ajaxProxy(ENDPOINTS.donors());
   if (data_donors != 'ERR') {
     if (data_donors.data != '') {
       LAST_DONORS_DATA = data_donors;
@@ -18022,7 +18043,7 @@ async function getDonors(UNUSED_ATTRIBUTE, FORCE) {
 }
 
 async function paginateMainpage(UNUSED_ATTRIBUTE, FORCE) {
-  var data = await ajaxRequest('https://ddstats.com/api/v2/daily', true);
+  var data = await ajaxRequest(ENDPOINTS.ddstatsDaily(), true);
   if (data != 'ERR') {
     LAST_MAINPAGE_DATA = data;
   }
@@ -18348,8 +18369,8 @@ async function paginatePlayer(PLAYER_ID, FORCE, DO_NOT_GOTO, PROV_PLAYER_NAME, h
       setTitle(3, 1, 'Loading...');
       TRAY_CALL(3, 1, 'loading');
 
-      var data_ddinfo_lb = await ajaxRequest('https://devildaggers.info/api/leaderboards/entry/by-id?id=' + PLAYER_ID, true); // ddinfo leaderboard bridge information (necessary),
-      var data_ddinfo = await ajaxRequest('https://devildaggers.info/api/players/' + PLAYER_ID, true); // then to ddinfo for even more (player data additionals)
+      var data_ddinfo_lb = await ajaxRequest(ENDPOINTS.ddinfoById(PLAYER_ID), true); // ddinfo leaderboard bridge information (necessary),
+      var data_ddinfo = await ajaxRequest(ENDPOINTS.ddinfoPlayerData(PLAYER_ID), true); // then to ddinfo for even more (player data additionals)
 
       if (data_ddinfo_lb != 'ERR' && wrapperElement.querySelector('[player_page_player_id]').attributes.player_page_player_id.nodeValue == PLAYER_ID) { // only create page if ddstats is responding, and the page is this player id
 
@@ -18568,7 +18589,7 @@ async function paginatePlayer(PLAYER_ID, FORCE, DO_NOT_GOTO, PROV_PLAYER_NAME, h
 
         //  if player is a ddstats player, enrich with ddstats content after the fact:
 
-        var data_ddstats = await ajaxRequest('https://ddstats.com/api/v2/player?id=' + PLAYER_ID, true); // to ddstats for more player page information, for those that are registered
+        var data_ddstats = await ajaxRequest(ENDPOINTS.ddstatsPlayerData(PLAYER_ID), true); // to ddstats for more player page information, for those that are registered
         //  WILL return the following for unregistered players (act accordingly!!!):
         //  {"message":"not a ddstats player"}
 
@@ -18609,7 +18630,7 @@ async function paginatePlayer(PLAYER_ID, FORCE, DO_NOT_GOTO, PROV_PLAYER_NAME, h
 
         //  finally, make the player history graph
 
-        var data_ddinfo_history = await ajaxRequest('https://devildaggers.info/api/players/' + PLAYER_ID + '/history', true); // then to ddinfo's history endpoint for top 100 data
+        var data_ddinfo_history = await ajaxRequest(ENDPOINTS.ddinfoHistory(PLAYER_ID), true); // then to ddinfo's history endpoint for top 100 data
 
         if (data_ddinfo_history.bestRank != null && PLAYER_ID == CURRENT_PLAYER_PAGE_ID) {
           peakRankString = '<span id="PLAYER_RANK_ELEMENT" style="white-space:pre;">Peak Rank: </span><span id="PLAYER_RANK_ELEMENT_2" style="text-align:right;">' + data_ddinfo_history.bestRank + nth(data_ddinfo_history.bestRank) + '</span>';
@@ -18982,7 +19003,7 @@ async function paginateLive(UNUSED_ATTRIBUTE, FORCE) {
     LAST_TWITCH_REFRESH = Date.now(); //  otherwise we are going to fucking refresh EVERY HALF SECOND!!!!!
     //  dude chupa is going to KILL ME!!!!! hes going to make me watch iraqi anime dude.... noooo0o0o0o0o....
 
-    var data = await ajaxRequest('https://swarmer.onrender.com/streams?gameName=devil%20daggers', true);
+    var data = await ajaxRequest(ENDPOINTS.twitch(), true);
     // var THUMB_STRING = 'https://static-cdn.jtvnw.net/previews-ttv/live_user_' +  + '-480x260.jpg'
 
     if (data != 'ERR' && data != null) {
@@ -19023,7 +19044,7 @@ async function paginateDDCL(PAGE, FORCE) { // paginates the given DDCL leaderboa
   if (LAST_DDCL_DATA == undefined || FORCE) {
     setTitle(5, 1, 'Loading...');
     TRAY_CALL(5, 1, 'loading');
-    LAST_DDCL_DATA = await ajaxRequest('https://devildaggers.info/api/ddlive/custom-leaderboards/' + DDCL_LAST_ID, true);
+    LAST_DDCL_DATA = await ajaxRequest(ENDPOINTS.ddcl(DDCL_LAST_ID), true);
   }
 
   var NPAGE = PAGE;
@@ -19106,7 +19127,7 @@ async function paginateCustom(PAGE, FORCE) { // paginates the list of all DDCL m
   if (LAST_CUSTOM_DATA == undefined || FORCE) {
     setTitle(5, 0, 'Loading...');
     TRAY_CALL(5, 0, 'loading');
-    LAST_CUSTOM_DATA = await ajaxRequest('https://devildaggers.info/api/ddlive/custom-leaderboards', true);
+    LAST_CUSTOM_DATA = await ajaxRequest(ENDPOINTS.customLBs(), true);
     /*  Old time trial KILLING code
 
     var TEMP_CUSTOM_DATA = [];
@@ -19201,7 +19222,7 @@ async function paginateLeaderboard(PAGE, FORCE) {
 
     setTitle(3, 0, 'Loading...');
     TRAY_CALL(3, 0, 'loading');
-    var data = await ajaxRequest('https://devildaggers.info/api/leaderboards?rankStart=' + ((PAGE_LEADERBOARD_SIZE * (PAGE_LEADERBOARD - 1)) + 1) + '', true);
+    var data = await ajaxRequest(ENDPOINTS.leaderboard(((PAGE_LEADERBOARD_SIZE * (PAGE_LEADERBOARD - 1)) + 1)), true);
     // console.log('DATA: ',data);
 
     if (data != 'ERR') {
@@ -19266,7 +19287,7 @@ async function paginateMyGames(PAGE, FORCE) {
 
     setTitle(4, 1, 'Loading...');
     TRAY_CALL(4, 1, 'loading');
-    var data = await ajaxRequest('https://ddstats.com/api/v2/game/recent?page_size=10&page_num=' + NPAGE + '&player_id=' + USER_ID_BUFFER, true);
+    var data = await ajaxRequest(ENDPOINTS.myGames(NPAGE, USER_ID_BUFFER), true);
     // console.log('DATA: ',data);
 
     if (data != 'ERR') {
@@ -19328,7 +19349,7 @@ async function paginatePlayerGames(PAGE, FORCE, NEW_PLAYER_ID) {
 
     setTitle(4, 2, 'Loading...');
     TRAY_CALL(4, 2, 'loading');
-    var data = await ajaxRequest('https://ddstats.com/api/v2/game/recent?page_size=10&page_num=' + NPAGE + '&player_id=' + PLAYERGAMES_ID, true);
+    var data = await ajaxRequest(ENDPOINTS.playergames(NPAGE, PLAYERGAMES_ID), true);
     // console.log('DATA: ',data);
 
     if (data != 'ERR') {
@@ -19391,7 +19412,7 @@ async function paginateRecent(PAGE, FORCE) {
 
     setTitle(4, 0, 'Loading...');
     TRAY_CALL(4, 0, 'loading');
-    var data = await ajaxRequest('https://ddstats.com/api/v2/game/recent?page_size=10&page_num=' + NPAGE, true);
+    var data = await ajaxRequest(ENDPOINTS.ddstatsRecent(NPAGE), true);
     // console.log('DATA: ',data);
 
     if (data != 'ERR') {
@@ -20612,7 +20633,7 @@ async function SEARCH_playersByName(QUERY, TOKEN) {
 
   if (QUERY.length >= 3 && QUERY.length <= 16) {
 
-    var data = await ajaxRequest('https://devildaggers.info/api/leaderboards/entry/by-username?name=' + QUERY, true);
+    var data = await ajaxRequest(ENDPOINTS.ddinfoByUsername(QUERY), true);
 
     //  create the data in the FIND_RESULTS_CONTENT_BOX for its relevant category here;
     //    but ONLY if the TOKEN matches the CURRENT_SEARCH_TOKEN
@@ -20652,7 +20673,7 @@ async function SEARCH_spawnsetsByName(QUERY, TOKEN) {
   var data = LAST_CUSTOM_DATA;
   if (data == undefined || data.length == undefined || data.length == 0) {
     //  request data as the data is currently non-present!
-    var QD = await ajaxRequest('https://devildaggers.info/api/ddlive/custom-leaderboards', true);
+    var QD = await ajaxRequest(ENDPOINTS.customLBs(), true);
     if (QD != 'ERR') {
       LAST_CUSTOM_DATA = QD;
     }
@@ -20711,7 +20732,7 @@ async function SEARCH_playersByVerifiedName(QUERY, TOKEN) {
   var data = LAST_VERIFIED_DATA;
   if (data == undefined || data.length == undefined || data.length == 0) {
     //  request data as the data is currently non-present!
-    var QD = await ajaxRequest('https://devildaggers.info/api/ddlive/players/common-names', true);
+    var QD = await ajaxRequest(ENDPOINTS.verified(), true);
     if (QD != 'ERR') {
       LAST_VERIFIED_DATA = QD;
     }
@@ -20761,7 +20782,7 @@ async function SEARCH_playerByID(QUERY, TOKEN) {
 
   if (isNumber(QUERY) && QUERY.length < 32) {
 
-    var data = await ajaxRequest('https://devildaggers.info/api/leaderboards/entry/by-id?id=' + QUERY, true);
+    var data = await ajaxRequest(ENDPOINTS.byPlayerID(QUERY), true);
 
     //  create the data in the FIND_RESULTS_CONTENT_BOX for its relevant category here;
     //    but ONLY if the TOKEN matches the CURRENT_SEARCH_TOKEN
